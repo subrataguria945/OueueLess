@@ -1,5 +1,5 @@
-export default function App(){
-  return(
-    <h1>Hello</h1>
-  )
+import { ForgotPassword } from "./ForgotPassword";
+
+export default function App() {
+  return <ForgotPassword />;
 }
