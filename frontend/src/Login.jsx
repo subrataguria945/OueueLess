@@ -1,6 +1,9 @@
 import { useState } from "react";
 import "./Login.css";
 
+
+const LOGIN_API_URL = import.meta.env.VITE_API_URL || "";
+
 export function Login() {
   // State for form inputs
   const [email, setEmail] = useState("");
@@ -8,17 +11,71 @@ export function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
-  // Submit handler
-  const handleSubmit = (e) => {
+  // State for API request status & feedback
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+
+  // Submit handler - sends request to database/backend via API
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Login details:", { email, password, rememberMe });
-    alert(`Logged in successfully as: ${email}`);
+    setIsLoading(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      const response = await fetch(LOGIN_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          password: password,
+          rememberMe: rememberMe,
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (response.ok) {
+        setSuccessMessage(data.message || "Login successful! Redirecting...");
+        console.log("Login success response:", data);
+
+        // Save token/user if provided by API
+        const token = data.token || data.accessToken;
+        if (token) {
+          if (rememberMe) {
+            localStorage.setItem("token", token);
+          } else {
+            sessionStorage.setItem("token", token);
+          }
+        }
+        if (data.user) {
+          localStorage.setItem("user", JSON.stringify(data.user));
+        }
+
+      } else {
+        setErrorMessage(
+          data.message ||
+          data.error ||
+          "Invalid email or password. Please try again."
+        );
+      }
+    } catch (err) {
+      console.error("API Connection Error:", err);
+      setErrorMessage(
+        "Could not connect to the server. Please check your API URL or connection."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="login-wrapper">
       <div className="login-card">
-        
+
         {/* Brand Header */}
         <div className="brand-header">
           <div className="logo-icon">
@@ -39,9 +96,32 @@ export function Login() {
           <p>Sign in to continue to QueueLess</p>
         </div>
 
+        {/* Error Alert */}
+        {errorMessage && (
+          <div className="alert-message error-alert">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
+        {/* Success Alert */}
+        {successMessage && (
+          <div className="alert-message success-alert">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+              <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+            <span>{successMessage}</span>
+          </div>
+        )}
+
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="login-form">
-          
+
           {/* Email Input */}
           <div className="form-group">
             <label htmlFor="email">Email</label>
@@ -118,8 +198,15 @@ export function Login() {
           </div>
 
           {/* Submit Button */}
-          <button type="submit" className="submit-btn">
-            Sign In &rarr;
+          <button type="submit" className="submit-btn" disabled={isLoading}>
+            {isLoading ? (
+              <span className="btn-spinner-text">
+                <span className="spinner"></span>
+                Signing In...
+              </span>
+            ) : (
+              <>Sign In &rarr;</>
+            )}
           </button>
         </form>
 
