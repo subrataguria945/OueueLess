@@ -1,7 +1,7 @@
-import { Login } from "./Login";
+import { Register } from "./register";
 
 export default function App() {
   return (
-    <Login />
-  )
+    <Register />
+  );
 }
