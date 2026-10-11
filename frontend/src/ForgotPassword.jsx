@@ -37,24 +37,14 @@ const EyeOffIcon = () => (
 );
 
 const LogoIcon = () => (
-  <svg className="fp-logo-icon" viewBox="0 0 100 68">
-    <defs>
-      <linearGradient id="fpLogoGrad" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stopColor="#2aa0ff" />
-        <stop offset="100%" stopColor="#3b4bff" />
-      </linearGradient>
-    </defs>
-    <g fill="url(#fpLogoGrad)">
-      <circle cx="12" cy="30" r="6" />
-      <rect x="5" y="40" width="14" height="26" rx="5" />
-      <circle cx="40" cy="16" r="8" />
-      <rect x="30" y="28" width="20" height="38" rx="6" />
-      <rect x="62" y="2" width="34" height="64" rx="6" />
-    </g>
-    <text x="79" y="44" textAnchor="middle" fontSize="26" fontWeight="800" fill="#0b0c10">
-      1
-    </text>
-  </svg>
+  <div className="fp-logo-box">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  </div>
 );
 
 /* ---------- Reusable password field ---------- */
@@ -88,7 +78,7 @@ function PasswordField({ id, label, placeholder, value, onChange }) {
 }
 
 /* ---------- Main component ---------- */
-export function ForgotPassword() {
+export function ForgotPassword({ onSwitchToLogin }) {
   const [email, setEmail] = useState("");
   const [countryCode, setCountryCode] = useState("+91");
   const [mobile, setMobile] = useState("");
@@ -124,20 +114,14 @@ export function ForgotPassword() {
         {/* Brand */}
         <div className="fp-brand">
           <LogoIcon />
-          <h1 className="fp-brand-name">
-            Queue<span>Less</span>
-          </h1>
+          <h1 className="fp-brand-name">QueueLess</h1>
           <p className="fp-tagline">Smart Queue Management System</p>
         </div>
 
         {/* Heading */}
         <div className="fp-heading">
-          <h2>Forgot Password?</h2>
-          <p>
-            Enter your registered email, mobile number and
-            <br />
-            set a new password.
-          </p>
+          <h2>Reset Password</h2>
+          <p>Enter your details to create a new password</p>
         </div>
 
         {/* Form */}
@@ -220,7 +204,18 @@ export function ForgotPassword() {
             <polyline points="10,6 4,12 10,18" />
           </svg>
           <span>
-            Back to <a href="/login">Login</a>
+            Back to{" "}
+            <a
+              href="/login"
+              onClick={(e) => {
+                if (onSwitchToLogin) {
+                  e.preventDefault();
+                  onSwitchToLogin();
+                }
+              }}
+            >
+              Login
+            </a>
           </span>
         </p>
       </div>

@@ -4,7 +4,7 @@ import "./Login.css";
 
 const LOGIN_API_URL = import.meta.env.VITE_API_URL || "";
 
-export function Login({ onSwitchToRegister }) {
+export function Login({ onSwitchToRegister, onSwitchToForgot }) {
   // State for form inputs
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -147,7 +147,18 @@ export function Login({ onSwitchToRegister }) {
           <div className="form-group">
             <div className="label-row">
               <label htmlFor="password">Password</label>
-              <a href="#" className="forgot-link">Forgot password?</a>
+              <a
+                href="/forgot-password"
+                className="forgot-link"
+                onClick={(e) => {
+                  if (onSwitchToForgot) {
+                    e.preventDefault();
+                    onSwitchToForgot();
+                  }
+                }}
+              >
+                Forgot password?
+              </a>
             </div>
             <div className="input-field">
               <span className="input-icon">
