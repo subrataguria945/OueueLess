@@ -1,13 +1,23 @@
 import { useState } from "react";
 import { Login } from "./Login";
 import { Register } from "./register";
+import { ForgotPassword } from "./ForgotPassword";
 
 export default function App() {
-  const [isLogin, setIsLogin] = useState(true);
+  const [view, setView] = useState("login"); // "login" | "register" | "forgot"
 
-  return isLogin ? (
-    <Login onSwitchToRegister={() => setIsLogin(false)} />
-  ) : (
-    <Register onSwitchToLogin={() => setIsLogin(true)} />
+  if (view === "register") {
+    return <Register onSwitchToLogin={() => setView("login")} />;
+  }
+
+  if (view === "forgot") {
+    return <ForgotPassword onSwitchToLogin={() => setView("login")} />;
+  }
+
+  return (
+    <Login
+      onSwitchToRegister={() => setView("register")}
+      onSwitchToForgot={() => setView("forgot")}
+    />
   );
 }
