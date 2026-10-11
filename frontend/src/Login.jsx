@@ -4,7 +4,7 @@ import "./Login.css";
 
 const LOGIN_API_URL = import.meta.env.VITE_API_URL || "";
 
-export function Login() {
+export function Login({ onSwitchToRegister }) {
   // State for form inputs
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -228,7 +228,17 @@ export function Login() {
 
         {/* Footer */}
         <p className="card-footer">
-          Don't have an account? <a href="#" className="signup-link">Sign up</a>
+          Don't have an account?{" "}
+          <a
+            href="#"
+            className="signup-link"
+            onClick={(e) => {
+              e.preventDefault();
+              if (onSwitchToRegister) onSwitchToRegister();
+            }}
+          >
+            Sign up
+          </a>
         </p>
 
       </div>

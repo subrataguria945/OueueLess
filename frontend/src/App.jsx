@@ -1,15 +1,13 @@
-
+import { useState } from "react";
 import { Login } from "./Login";
-
-export default function App() {
-  return (
-    <Login />
-  )
-
 import { Register } from "./register";
 
 export default function App() {
-  return (
-    <Register />
+  const [isLogin, setIsLogin] = useState(true);
+
+  return isLogin ? (
+    <Login onSwitchToRegister={() => setIsLogin(false)} />
+  ) : (
+    <Register onSwitchToLogin={() => setIsLogin(true)} />
   );
 }
