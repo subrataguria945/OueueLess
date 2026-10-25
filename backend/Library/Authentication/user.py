@@ -48,11 +48,11 @@ def login_user(input : dict ):
     input = dict(input)
     email = input.get("email")
     password = input.get("password")
-
-    response = validate_login_indb(email,password)
+    hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    
+    response = validate_login_indb(email,hashed_password)
     if response.get("status") == 200:
-        pass
-        token = generate_jwt_token(email,password)
+        token = generate_jwt_token(email,hashed_password)
         return {
             "status" : "success",
             "user_id": response.get("user_id"),
@@ -68,7 +68,7 @@ def login_user(input : dict ):
             "status" : "Login Failed",
             "message" : response.get("error")
         }
-# CALL public.sp_login('admin@example.com', 'Admin@123',   NULL,  NULL,  NULL,NULL  );
+
 
 def insert_user_indb(fullname , email , phone , password , role_id):
     try:
@@ -96,10 +96,14 @@ def insert_user_indb(fullname , email , phone , password , role_id):
                     print("Message:", status_message)
 
                     if status_code == "SUCCESS":
-                        print("Login Successfull.")
+                        con.commit()
+                        con.close()
+                        print("Registration Successfull.")
                         return {"status": 200 , "user_id" : user_id, "message" : status_message}
                     else:
-                        print(f"Login Denied Reason : {status_message}")
+                        con.rollback()
+                        con.close()
+                        print(f"Registration Failed Reason : {status_message}")
                         return {"status" : 404 , "error" : status_code , "message" : status_message}
                 else:
                     return {"status" : 404, "error" : "No Response From DB"}
