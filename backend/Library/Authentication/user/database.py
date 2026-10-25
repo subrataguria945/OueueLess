@@ -44,30 +44,6 @@ def validate_login_indb(email,password):
                 return {"status" : 404, "error" : "Error While Executing The Query"}
 
 
-def login_user(input : dict ):
-    input = dict(input)
-    email = input.get("email")
-    password = input.get("password")
-    response = validate_login_indb(email,password)
-    if response.get("status") == 200:
-        token = generate_jwt_token(email,password)
-        return {
-            "status" : "success",
-            "user_id": response.get("user_id"),
-            "user_role":response.get("user_role"),
-            "email": email,
-            "message": response.get("message"),
-            "access_token": token,
-            "token_type" : "bearer" ,
-            
-        }
-    else:
-        return {
-            "status" : "Login Failed",
-            "message" : response.get("error")
-        }
-
-
 def insert_user_indb(fullname , email , phone , password , role_id):
     try:
         con = psycopg.connect(
@@ -104,40 +80,46 @@ def insert_user_indb(fullname , email , phone , password , role_id):
                         return {"status" : 404 , "error" : status_code , "message" : status_message}
                 else:
                     return {"status" : 404, "error" : "No Response From DB"}
-
             except Exception as e:
                 print(f"Error in database query: {e}")
                 return {"status" : 404, "error" : "Error While Executing The Query"}
 
             
-def register_user(input):
-    input = dict(input)
-    fullname = input.get("fullname")
-    email = input.get("email")
-    phone = input.get("phone")
-    password = input.get("password")
-    confirm_password = input.get("confirm_password")
-    if password != confirm_password:
-        return {
-            "status" : "Registration Failed",
-            "message" : "Password and Confirm Password are not same"
-        }
-    role_id = input.get("user_role")
-    response = insert_user_indb(fullname,email,phone,password,role_id)
-    if response.get("status") == 200:
-        token = generate_jwt_token(email,password)
-        return {
-            "status" : "success",
-            "user_id": response.get("user_id"),
-            "email": email,
-            "message": response.get("message"),
-            "access_token": token,
-            "token_type" : "bearer" ,
-            
-        }
+def change_password_indb(userid,action,oldpassword,newpassword):
+    try:
+        con = psycopg.connect(
+            host=os.getenv("HOST"),
+            dbname=os.getenv("DATABASE"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            port=os.getenv("DB_PORT")
+        )
+        print("Database connection established successfully.")
+    except Exception as e:
+         print(f"Error in database connection: {e}")
+         return {"status" : 404 , "error" : "Error While Connecting DB"}
     else:
-        return {
-            "status" : "Registration Failed",
-            "message" : response.get("error")
-        }
-    
+        with con.cursor() as cur:
+            try:
+                cur.execute("CALL public.sp_manage_password(%s,%s,%s,%s,NULL,NULL,NULL);")
+                result = cur.fetchone()
+                if result:
+                    status_code, status_message = result
+                    print("Status Code:", status_code)
+                    print("Message:", status_message)
+
+                    if status_code == "SUCCESS":
+                        con.commit()
+                        con.close()
+                        print("Password Changed Successfully.")
+                        return {"status": 200 , "message" : status_message}
+                    else:
+                        con.rollback()
+                        con.close()
+                        print(f"Password Change Failed Reason : {status_message}")
+                        return {"status" : 404 , "error" : status_code , "message" : status_message}
+                else:
+                    return {"status" : 404, "error" : "No Response From DB"}
+            except Exception as e:
+                print(f"Error in database query: {e}")
+                return {"status" : 404, "error" : "Error While Executing The Query"}
