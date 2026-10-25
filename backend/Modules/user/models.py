@@ -11,3 +11,9 @@ class UserRegister(BaseModel):
     password : str 
     confirm_password : str
     user_role: int
+
+class ChangeOrResetPassword(BaseModel):
+    userid : int
+    action : str
+    oldpassword : str
+    newpassword : str
