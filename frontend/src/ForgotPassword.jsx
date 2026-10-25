@@ -1,224 +1,287 @@
 import { useState } from "react";
 import "./ForgotPassword.css";
 
-/* ---------- Small icon components ---------- */
-const MailIcon = () => (
-  <svg className="fp-icon" viewBox="0 0 24 24">
-    <rect x="3" y="5" width="18" height="14" rx="2" />
-    <polyline points="3,7 12,13 21,7" />
-  </svg>
-);
+/* ── Forgot Password Panel Component (Modular & Reusable) ── */
+export function ForgotPasswordPanel({ onSwitchToLogin }) {
+  const [email, setEmail] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-const PhoneIcon = () => (
-  <svg className="fp-icon" viewBox="0 0 24 24">
-    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-  </svg>
-);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
 
-const LockIcon = () => (
-  <svg className="fp-icon" viewBox="0 0 24 24">
-    <rect x="5" y="10" width="14" height="11" rx="2" />
-    <path d="M8 10V7a4 4 0 0 1 8 0v3" />
-  </svg>
-);
+    if (newPassword.length < 8) {
+      setError("Password must be at least 8 characters long.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match!");
+      return;
+    }
 
-const EyeIcon = () => (
-  <svg className="fp-icon" viewBox="0 0 24 24">
-    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
-    <circle cx="12" cy="12" r="3" />
-  </svg>
-);
+    setIsLoading(true);
+    try {
+      const resetUrl = import.meta.env.VITE_RESET_PASSWORD_API_URL || import.meta.env.VITE_API_URL || "";
+      if (resetUrl) {
+        const res = await fetch(`${resetUrl.replace(/\/+$/, "")}/reset-password`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email.trim(),
+            mobile: mobile.trim(),
+            new_password: newPassword,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setError(data.message || data.error || "Failed to reset password. Please check your details.");
+          setIsLoading(false);
+          return;
+        }
+      }
 
-const EyeOffIcon = () => (
-  <svg className="fp-icon" viewBox="0 0 24 24">
-    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-10-8-10-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 10 8 10 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-    <line x1="2" y1="2" x2="22" y2="22" />
-  </svg>
-);
+      setTimeout(() => {
+        setIsLoading(false);
+        setSuccess("Password reset successfully! Redirecting to login...");
+        setTimeout(() => {
+          if (onSwitchToLogin) onSwitchToLogin();
+        }, 1400);
+      }, 600);
+    } catch {
+      setIsLoading(false);
+      setError("Could not reset password. Please try again.");
+    }
+  };
 
-const LogoIcon = () => (
-  <div className="fp-logo-box">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  </div>
-);
-
-/* ---------- Reusable password field ---------- */
-function PasswordField({ id, label, placeholder, value, onChange }) {
-  const [show, setShow] = useState(false);
+  const inputStyle = {
+    width: "100%",
+    height: "46px",
+    backgroundColor: "#ffffff",
+    background: "#ffffff",
+    border: "1.5px solid #dde4f0",
+    borderRadius: "11px",
+    padding: "0 44px 0 44px",
+    fontSize: "14px",
+    fontFamily: "inherit",
+    fontWeight: "450",
+    color: "#0d1b35",
+    outline: "none",
+    boxSizing: "border-box",
+    appearance: "none",
+    WebkitAppearance: "none",
+    transition: "border-color 0.15s, box-shadow 0.15s",
+  };
 
   return (
-    <div className="fp-group">
-      <label htmlFor={id}>{label}</label>
-      <div className="fp-input">
-        <LockIcon />
-        <input
-          id={id}
-          type={show ? "text" : "password"}
-          placeholder={placeholder}
-          value={value}
-          onChange={onChange}
-          required
+    <div className="ql-inner ql-inner-forgot">
+      {/* Brand Logo */}
+      <div className="ql-brand">
+        <img
+          src="/logo-transparent.png"
+          alt="Queueless - Smart Queue Management for a Smoother Tomorrow"
+          className="ql-brand-img"
         />
-        <button
-          type="button"
-          className="fp-eye"
-          onClick={() => setShow(!show)}
-          aria-label="Toggle password visibility"
-        >
-          {show ? <EyeIcon /> : <EyeOffIcon />}
+      </div>
+
+      {/* Reset Password Card */}
+      <div className="ql-card">
+        <div className="ql-card-head">
+          <h2 className="ql-card-title">Reset Your Password</h2>
+          <p className="ql-card-sub">Enter your details and create a new password for your account.</p>
+        </div>
+
+        {error && (
+          <div className="ql-alert ql-alert-error">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="ql-alert ql-alert-success">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+            {success}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="ql-form">
+          {/* Email Address */}
+          <div className="ql-field">
+            <span className="ql-field-icon">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+              </svg>
+            </span>
+            <input
+              id="ql-forgot-email"
+              type="email"
+              placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              style={inputStyle}
+              onFocus={(e) => { e.target.style.borderColor = "#1960f7"; e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)"; }}
+              onBlur={(e) => { e.target.style.borderColor = "#dde4f0"; e.target.style.boxShadow = "none"; }}
+            />
+          </div>
+
+          {/* Mobile Number */}
+          <div className="ql-field">
+            <span className="ql-field-icon">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+              </svg>
+            </span>
+            <input
+              id="ql-forgot-mobile"
+              type="tel"
+              placeholder="Mobile number"
+              value={mobile}
+              onChange={(e) => setMobile(e.target.value)}
+              required
+              style={inputStyle}
+              onFocus={(e) => { e.target.style.borderColor = "#1960f7"; e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)"; }}
+              onBlur={(e) => { e.target.style.borderColor = "#dde4f0"; e.target.style.boxShadow = "none"; }}
+            />
+          </div>
+
+          {/* New Password */}
+          <div className="ql-field">
+            <span className="ql-field-icon">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+            </span>
+            <input
+              id="ql-forgot-new-password"
+              type={showNewPassword ? "text" : "password"}
+              placeholder="New password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+              style={{ ...inputStyle, paddingRight: "46px" }}
+              onFocus={(e) => { e.target.style.borderColor = "#1960f7"; e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)"; }}
+              onBlur={(e) => { e.target.style.borderColor = "#dde4f0"; e.target.style.boxShadow = "none"; }}
+            />
+            <button type="button" className="ql-eye-btn" onClick={() => setShowNewPassword(!showNewPassword)} aria-label="Toggle password">
+              {showNewPassword ? (
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+              ) : (
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+                </svg>
+              )}
+            </button>
+          </div>
+
+          {/* Confirm New Password */}
+          <div className="ql-field">
+            <span className="ql-field-icon">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+            </span>
+            <input
+              id="ql-forgot-confirm-password"
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Confirm new password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              style={{ ...inputStyle, paddingRight: "46px" }}
+              onFocus={(e) => { e.target.style.borderColor = "#1960f7"; e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)"; }}
+              onBlur={(e) => { e.target.style.borderColor = "#dde4f0"; e.target.style.boxShadow = "none"; }}
+            />
+            <button type="button" className="ql-eye-btn" onClick={() => setShowConfirmPassword(!showConfirmPassword)} aria-label="Toggle confirm password">
+              {showConfirmPassword ? (
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+              ) : (
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+                </svg>
+              )}
+            </button>
+          </div>
+
+          {/* Submit */}
+          <button type="submit" className="ql-submit" disabled={isLoading}>
+            {isLoading ? (
+              <><span className="ql-spin"></span>Resetting password...</>
+            ) : (
+              <>Reset Password&nbsp;
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+                </svg>
+              </>
+            )}
+          </button>
+        </form>
+
+        {/* Divider */}
+        <div className="ql-divider">
+          <span className="ql-divider-line" />
+          <span className="ql-divider-text">Or</span>
+          <span className="ql-divider-line" />
+        </div>
+
+        {/* Google */}
+        <button type="button" className="ql-google">
+          <svg width="20" height="20" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
+            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.11 0-5.74-2.1-6.68-4.93H1.36v3.15C3.33 21.35 7.4 24 12 24z" />
+            <path fill="#FBBC05" d="M5.32 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.36A11.94 11.94 0 0 0 0 12c0 1.92.45 3.74 1.36 5.42l3.96-3.15z" />
+            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.4 0 3.33 2.65 1.36 6.58l3.96 3.15c.94-2.83 3.57-4.98 6.68-4.98z" />
+          </svg>
+          Continue with Google
+        </button>
+
+        {/* Back to Login */}
+        <button type="button" className="ql-back-btn" onClick={onSwitchToLogin}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+          </svg>
+          Back to Login
         </button>
       </div>
     </div>
   );
 }
 
-/* ---------- Main component ---------- */
+/* ── Standalone Forgot Password Page ─────────────────────── */
 export function ForgotPassword({ onSwitchToLogin }) {
-  const [email, setEmail] = useState("");
-  const [countryCode, setCountryCode] = useState("+91");
-  const [mobile, setMobile] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (newPassword.length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-
-    setError("");
-    // TODO: call your FastAPI reset-password endpoint here
-    console.log("Reset details:", {
-      email,
-      mobile: `${countryCode}${mobile}`,
-      newPassword,
-    });
-    alert("Password reset successfully!");
-  };
-
   return (
-    <div className="fp-page">
-      <div className="fp-card">
-        {/* Brand */}
-        <div className="fp-brand">
-          <LogoIcon />
-          <h1 className="fp-brand-name">QueueLess</h1>
-          <p className="fp-tagline">Smart Queue Management System</p>
-        </div>
+    <div className="ql-root ql-mode-forgot">
+      <div className="ql-panel ql-panel-forgot" style={{ opacity: 1, pointerEvents: "auto", transform: "none" }}>
+        <ForgotPasswordPanel onSwitchToLogin={onSwitchToLogin} />
+      </div>
 
-        {/* Heading */}
-        <div className="fp-heading">
-          <h2>Reset Password</h2>
-          <p>Enter your details to create a new password</p>
-        </div>
-
-        {/* Form */}
-        <form className="fp-form" onSubmit={handleSubmit}>
-          {/* Email */}
-          <div className="fp-group">
-            <label htmlFor="fp-email">Email Address</label>
-            <div className="fp-input">
-              <MailIcon />
-              <input
-                id="fp-email"
-                type="email"
-                placeholder="Enter your registered email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-          </div>
-
-          {/* Mobile */}
-          <div className="fp-group">
-            <label htmlFor="fp-mobile">Mobile Number</label>
-            <div className="fp-input">
-              <PhoneIcon />
-              <select
-                className="fp-country"
-                value={countryCode}
-                onChange={(e) => setCountryCode(e.target.value)}
-                aria-label="Country code"
-              >
-                <option value="+91">+91</option>
-                <option value="+880">+880</option>
-                <option value="+1">+1</option>
-                <option value="+44">+44</option>
-              </select>
-              <span className="fp-sep" />
-              <input
-                id="fp-mobile"
-                type="tel"
-                placeholder="Enter your registered mobile number"
-                value={mobile}
-                onChange={(e) => setMobile(e.target.value)}
-                required
-              />
-            </div>
-          </div>
-
-          {/* Passwords */}
-          <PasswordField
-            id="fp-new"
-            label="New Password"
-            placeholder="Enter new password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-          />
-          <PasswordField
-            id="fp-confirm"
-            label="Confirm New Password"
-            placeholder="Confirm new password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-
-          {error && <p className="fp-error">{error}</p>}
-
-          <button type="submit" className="fp-submit">
-            <span>Reset Password</span>
-            <span>&rarr;</span>
-          </button>
-        </form>
-
-        {/* Divider */}
-        <div className="fp-divider">or</div>
-
-        {/* Back to login */}
-        <p className="fp-back">
-          <svg viewBox="0 0 24 24">
-            <line x1="20" y1="12" x2="4" y2="12" />
-            <polyline points="10,6 4,12 10,18" />
-          </svg>
-          <span>
-            Back to{" "}
-            <a
-              href="/login"
-              onClick={(e) => {
-                if (onSwitchToLogin) {
-                  e.preventDefault();
-                  onSwitchToLogin();
-                }
-              }}
-            >
-              Login
-            </a>
-          </span>
-        </p>
+      <div className="ql-hero-overlay" style={{ transform: "none" }}>
+        <img
+          src="/hero-left.png?v=3"
+          alt="Queueless — Less Waiting, More Doing."
+          className="ql-hero-img ql-hero-register"
+          style={{ opacity: 1, transform: "none" }}
+        />
       </div>
     </div>
   );
 }
+
+export default ForgotPassword;
