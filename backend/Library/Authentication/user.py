@@ -48,11 +48,11 @@ def login_user(input : dict ):
     input = dict(input)
     email = input.get("email")
     password = input.get("password")
-
-    response = validate_login_indb(email,password)
+    hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    
+    response = validate_login_indb(email,hashed_password)
     if response.get("status") == 200:
-        pass
-        token = generate_jwt_token(email,password)
+        token = generate_jwt_token(email,hashed_password)
         return {
             "status" : "success",
             "user_id": response.get("user_id"),
