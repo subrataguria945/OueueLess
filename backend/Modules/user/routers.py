@@ -17,8 +17,8 @@ def register_user(dict : UserRegister):
 @router.post("/password")
 def change_or_reset_password(input : ChangeOrResetPassword):
     input = dict(input)
-    if input["action"] == "change":
+    if input["action"].upper() == "CHANGE":
         response = change_password(input)
-    # elif input["action"] == "reset":
+    # elif input["action"].upper() == "RESET":
     #     response = reset_password(input)
     return response
