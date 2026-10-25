@@ -48,11 +48,9 @@ def login_user(input : dict ):
     input = dict(input)
     email = input.get("email")
     password = input.get("password")
-    hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-    
-    response = validate_login_indb(email,hashed_password)
+    response = validate_login_indb(email,password)
     if response.get("status") == 200:
-        token = generate_jwt_token(email,hashed_password)
+        token = generate_jwt_token(email,password)
         return {
             "status" : "success",
             "user_id": response.get("user_id"),
@@ -83,11 +81,10 @@ def insert_user_indb(fullname , email , phone , password , role_id):
     except Exception as e:
          print(f"Error in database connection: {e}")
          return {"status" : 404 , "error" : "Error While Connecting DB"}
-    else:
+    else:               
         with con.cursor() as cur:
             try:
-                hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-                cur.execute("CALL public.sp_register_user(%s,%s,%s,%s,%s,NULL,NULL,NULL);",(fullname,email,phone,hashed_password,role_id))
+                cur.execute("CALL public.sp_register_user(%s,%s,%s,%s,%s,NULL,NULL,NULL);",(fullname,email,phone,password,role_id))
                 result = cur.fetchone()
                 if result:
                     user_id,status_code, status_message = result
