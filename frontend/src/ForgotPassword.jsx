@@ -268,13 +268,15 @@ export function ForgotPasswordPanel({ onSwitchToLogin }) {
 export function ForgotPassword({ onSwitchToLogin }) {
   return (
     <div className="ql-root ql-mode-forgot">
-      <div className="ql-panel ql-panel-forgot" style={{ opacity: 1, pointerEvents: "auto", transform: "none" }}>
-        <ForgotPasswordPanel onSwitchToLogin={onSwitchToLogin} />
+      <div className="ql-forms-stage">
+        <div className="ql-panel ql-panel-forgot" style={{ opacity: 1, pointerEvents: "auto", transform: "none" }}>
+          <ForgotPasswordPanel onSwitchToLogin={onSwitchToLogin} />
+        </div>
       </div>
 
-      <div className="ql-hero-overlay" style={{ transform: "none" }}>
+      <div className="ql-hero-overlay" style={{ transform: "translateX(0)" }}>
         <img
-          src="/hero-left.png?v=3"
+          src="/hero-left.png?v=5"
           alt="Queueless — Less Waiting, More Doing."
           className="ql-hero-img ql-hero-register"
           style={{ opacity: 1, transform: "none" }}

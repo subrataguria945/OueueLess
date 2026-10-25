@@ -315,13 +315,15 @@ export function RegisterPanel({ onSwitchToLogin }) {
 export function Register({ onSwitchToLogin }) {
   return (
     <div className="ql-root ql-mode-register">
-      <div className="ql-panel ql-panel-register" style={{ opacity: 1, pointerEvents: "auto", transform: "none" }}>
-        <RegisterPanel onSwitchToLogin={onSwitchToLogin} />
+      <div className="ql-forms-stage">
+        <div className="ql-panel ql-panel-register" style={{ opacity: 1, pointerEvents: "auto", transform: "none" }}>
+          <RegisterPanel onSwitchToLogin={onSwitchToLogin} />
+        </div>
       </div>
 
-      <div className="ql-hero-overlay" style={{ transform: "none" }}>
+      <div className="ql-hero-overlay" style={{ transform: "translateX(0)" }}>
         <img
-          src="/hero-left.png?v=3"
+          src="/hero-left.png?v=5"
           alt="Queueless — Be a Part of a Smarter Tomorrow."
           className="ql-hero-img ql-hero-register"
           style={{ opacity: 1, transform: "none" }}

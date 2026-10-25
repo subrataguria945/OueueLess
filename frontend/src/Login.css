@@ -35,6 +35,8 @@ body::-webkit-scrollbar,
   --ql-navy: #0f172a;
   --ql-text-sub: #64748b;
   --ql-border: #dde4f0;
+  --ql-hero-width: min(calc(100vh * 484 / 682), 50vw);
+  --ql-form-width: calc(100vw - min(calc(100vh * 484 / 682), 50vw));
 }
 
 /* ── ROOT CONTAINER ──────────────────────────────── */
@@ -106,13 +108,38 @@ body::-webkit-scrollbar,
   }
 }
 
-/* ── FORM PANELS (LEFT & RIGHT) ──────────────────── */
-.ql-panel {
+/* ── FORM STAGE (SYNCHRONIZED OPPOSING SLIDE) ────── */
+.ql-forms-stage {
   position: absolute;
   top: 0;
   bottom: 0;
+  left: 0;
+  width: var(--ql-form-width);
   height: 100vh;
-  width: calc(100vw - min(calc(100vh * 484 / 682), 50vw));
+  z-index: 2;
+  overflow: hidden;
+  transition: transform 1.2s cubic-bezier(0.65, 0, 0.35, 1);
+  will-change: transform;
+}
+
+/* In Login mode: Form Stage sits on the LEFT */
+.ql-mode-login .ql-forms-stage {
+  transform: translateX(0);
+}
+
+/* In Register & Forgot mode: Form Stage glides to the RIGHT */
+.ql-mode-register .ql-forms-stage,
+.ql-mode-forgot .ql-forms-stage {
+  transform: translateX(var(--ql-hero-width));
+}
+
+/* ── FORM PANELS (INSIDE THE SLIDING FORM STAGE) ─── */
+.ql-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -121,8 +148,6 @@ body::-webkit-scrollbar,
   overflow: hidden;
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
-  z-index: 2;
-  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.72s cubic-bezier(0.76, 0, 0.24, 1);
   will-change: opacity, transform;
 }
 
@@ -132,65 +157,64 @@ body::-webkit-scrollbar,
   height: 0 !important;
 }
 
-/* Login Panel on the Left */
-.ql-panel-login {
-  left: 0;
-}
-
-/* Register & Forgot Panels on the Right */
-.ql-panel-register,
-.ql-panel-forgot {
-  right: 0;
-}
-
-/* Active / Inactive states for panels */
+/* Panel transitions: Form progressively morphs in-flight as the stage travels */
 .ql-mode-login .ql-panel-login {
   opacity: 1;
   pointer-events: auto;
-  transform: translateX(0) scale(1);
+  transform: scale(1) translateX(0);
+  transition: opacity 0.85s cubic-bezier(0.4, 0, 0.2, 1) 0.2s, transform 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.2s;
 }
 
 .ql-mode-login .ql-panel-register,
 .ql-mode-login .ql-panel-forgot {
   opacity: 0;
   pointer-events: none;
-  transform: translateX(45px) scale(0.97);
+  transform: scale(0.97) translateX(35px);
+  transition: opacity 0.75s cubic-bezier(0.4, 0, 0.2, 1) 0.05s, transform 0.85s cubic-bezier(0.4, 0, 0.2, 1) 0.05s;
 }
 
+/* While traveling to Register: Login smoothly dissolves across the journey, Register smoothly emerges */
 .ql-mode-register .ql-panel-login {
   opacity: 0;
   pointer-events: none;
-  transform: translateX(-45px) scale(0.97);
+  transform: scale(0.97) translateX(35px);
+  transition: opacity 0.75s cubic-bezier(0.4, 0, 0.2, 1) 0.05s, transform 0.85s cubic-bezier(0.4, 0, 0.2, 1) 0.05s;
 }
 
 .ql-mode-register .ql-panel-register {
   opacity: 1;
   pointer-events: auto;
-  transform: translateX(0) scale(1);
+  transform: scale(1) translateX(0);
+  transition: opacity 0.85s cubic-bezier(0.4, 0, 0.2, 1) 0.2s, transform 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.2s;
 }
 
 .ql-mode-register .ql-panel-forgot {
   opacity: 0;
   pointer-events: none;
-  transform: translateX(45px) scale(0.97);
+  transform: scale(0.97) translateX(-35px);
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0s, transform 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0s;
 }
 
+/* While traveling to Forgot Password */
 .ql-mode-forgot .ql-panel-login {
   opacity: 0;
   pointer-events: none;
-  transform: translateX(-45px) scale(0.97);
+  transform: scale(0.97) translateX(35px);
+  transition: opacity 0.75s cubic-bezier(0.4, 0, 0.2, 1) 0.05s, transform 0.85s cubic-bezier(0.4, 0, 0.2, 1) 0.05s;
 }
 
 .ql-mode-forgot .ql-panel-register {
   opacity: 0;
   pointer-events: none;
-  transform: translateX(45px) scale(0.97);
+  transform: scale(0.97) translateX(-35px);
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0s, transform 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0s;
 }
 
 .ql-mode-forgot .ql-panel-forgot {
   opacity: 1;
   pointer-events: auto;
-  transform: translateX(0) scale(1);
+  transform: scale(1) translateX(0);
+  transition: opacity 0.85s cubic-bezier(0.4, 0, 0.2, 1) 0.2s, transform 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.2s;
 }
 
 .ql-inner {
@@ -240,19 +264,6 @@ body::-webkit-scrollbar,
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   transition: box-shadow 0.3s ease, transform 0.3s ease;
-  animation: qlCardEnter 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes qlCardEnter {
-  from {
-    opacity: 0;
-    transform: translateY(14px) scale(0.98);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
 }
 
 /* Card Header */
@@ -584,27 +595,28 @@ body::-webkit-scrollbar,
   text-decoration: underline;
 }
 
-/* ── SLIDING HERO OVERLAY ────────────────────────── */
+/* ── SLIDING HERO OVERLAY (COORDINATED OPPOSING SLIDE) ─ */
 .ql-hero-overlay {
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
+  width: var(--ql-hero-width);
   height: 100vh;
-  width: min(calc(100vh * 484 / 682), 50vw);
   z-index: 10;
   overflow: hidden;
   background: transparent;
-  transition: transform 0.75s cubic-bezier(0.76, 0, 0.24, 1);
+  pointer-events: none;
+  transition: transform 1.2s cubic-bezier(0.65, 0, 0.35, 1);
   will-change: transform;
 }
 
-/* In Login mode: Hero sits on the right edge */
+/* In Login mode: Hero sits on the RIGHT */
 .ql-mode-login .ql-hero-overlay {
-  transform: translateX(calc(100vw - 100%));
+  transform: translateX(var(--ql-form-width));
 }
 
-/* In Register or Forgot mode: Hero sits on the left edge */
+/* In Register or Forgot mode: Hero moves to the LEFT */
 .ql-mode-register .ql-hero-overlay,
 .ql-mode-forgot .ql-hero-overlay {
   transform: translateX(0);
@@ -619,48 +631,50 @@ body::-webkit-scrollbar,
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1), transform 0.75s cubic-bezier(0.76, 0, 0.24, 1);
   will-change: opacity, transform;
 }
 
-/* Login Hero Image (wave on left) */
+/* Login Hero Image (for Right edge, wavy mask on left edge) */
 .ql-hero-login {
   object-position: left center;
   mask-image: linear-gradient(to right, transparent 0px, black 32px);
   -webkit-mask-image: linear-gradient(to right, transparent 0px, black 32px);
 }
 
-.ql-mode-login .ql-hero-login {
-  opacity: 1;
-  transform: scale(1) translateX(0);
-  pointer-events: auto;
-}
-
-.ql-mode-register .ql-hero-login,
-.ql-mode-forgot .ql-hero-login {
-  opacity: 0;
-  transform: scale(1.06) translateX(35px);
-  pointer-events: none;
-}
-
-/* Register Hero Image (wave on right) */
+/* Register Hero Image (for Left edge, wavy mask on right edge) */
 .ql-hero-register {
   object-position: right center;
   mask-image: linear-gradient(to left, transparent 0px, black 32px);
   -webkit-mask-image: linear-gradient(to left, transparent 0px, black 32px);
 }
 
+/* Slide Transition with Gentle Opacity Dip:
+   When moving across, active image fades down smoothly (opacity kombe),
+   and the incoming image blooms back in as it settles into place (abar barbe)! */
+.ql-mode-login .ql-hero-login {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.65s cubic-bezier(0.4, 0, 0.2, 1) 0.45s, transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 .ql-mode-login .ql-hero-register {
   opacity: 0;
-  transform: scale(1.06) translateX(-35px);
-  pointer-events: none;
+  transform: scale(1.02);
+  transition: opacity 0.52s cubic-bezier(0.4, 0, 0.2, 1) 0s, transform 1.2s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.ql-mode-register .ql-hero-login,
+.ql-mode-forgot .ql-hero-login {
+  opacity: 0;
+  transform: scale(1.02);
+  transition: opacity 0.52s cubic-bezier(0.4, 0, 0.2, 1) 0s, transform 1.2s cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 .ql-mode-register .ql-hero-register,
 .ql-mode-forgot .ql-hero-register {
   opacity: 1;
-  transform: scale(1) translateX(0);
-  pointer-events: auto;
+  transform: scale(1);
+  transition: opacity 0.65s cubic-bezier(0.4, 0, 0.2, 1) 0.45s, transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 
@@ -696,7 +710,15 @@ body::-webkit-scrollbar,
   }
 
   .ql-hero-overlay {
-    display: none;
+    display: none !important;
+  }
+
+  .ql-forms-stage {
+    position: relative;
+    width: 100%;
+    height: auto;
+    min-height: 100vh;
+    transform: none !important;
   }
 
   .ql-panel {
@@ -705,20 +727,21 @@ body::-webkit-scrollbar,
     height: auto;
     min-height: 100vh;
     padding: 24px 16px;
+    transform: none !important;
   }
 
   .ql-mode-login .ql-panel-register,
   .ql-mode-login .ql-panel-forgot {
-    display: none;
+    display: none !important;
   }
 
   .ql-mode-register .ql-panel-login,
   .ql-mode-register .ql-panel-forgot {
-    display: none;
+    display: none !important;
   }
 
   .ql-mode-forgot .ql-panel-login,
   .ql-mode-forgot .ql-panel-register {
-    display: none;
+    display: none !important;
   }
 }

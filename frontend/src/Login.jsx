@@ -102,9 +102,12 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
   return (
     <div className={`ql-root ql-mode-${mode}`}>
 
-      {/* ── 1. LOGIN FORM PANEL (LEFT) ──────────────────── */}
-      <div className="ql-panel ql-panel-login">
-        <div className="ql-inner">
+      {/* ── FORM STAGE (SLIDES LEFT <-> RIGHT) ───────────── */}
+      <div className="ql-forms-stage">
+
+        {/* ── 1. LOGIN FORM PANEL ─────────────────────────── */}
+        <div className="ql-panel ql-panel-login">
+          <div className="ql-inner">
 
           {/* Brand Logo */}
           <div className="ql-brand">
@@ -274,23 +277,25 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
         <RegisterPanel onSwitchToLogin={handleSwitchToLogin} />
       </div>
 
-      {/* ── 3. FORGOT PASSWORD FORM PANEL (RIGHT) ────────── */}
+      {/* ── 3. FORGOT PASSWORD FORM PANEL ────────────────── */}
       <div className="ql-panel ql-panel-forgot">
         <ForgotPasswordPanel onSwitchToLogin={handleSwitchToLogin} />
       </div>
 
-      {/* ── 3. SLIDING HERO OVERLAY PANEL ────────────────── */}
+    </div>
+
+      {/* ── 4. SLIDING HERO OVERLAY (RIGHT <-> LEFT) ────── */}
       <div className="ql-hero-overlay">
-        {/* Login Hero Illustration (shown when in login mode) */}
+        {/* Active on Right edge in Login mode */}
         <img
-          src="/hero-right.png?v=3"
+          src="/hero-right.png?v=5"
           alt="Queueless — Less Waiting, More Doing."
           className="ql-hero-img ql-hero-login"
         />
 
-        {/* Register Hero Illustration (shown when in register mode) */}
+        {/* Active on Left edge in Register & Forgot mode */}
         <img
-          src="/hero-left.png?v=3"
+          src="/hero-left.png?v=5"
           alt="Queueless — Be a Part of a Smarter Tomorrow."
           className="ql-hero-img ql-hero-register"
         />
