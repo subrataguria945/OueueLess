@@ -101,7 +101,7 @@ def change_password_indb(userid,action,oldpassword,newpassword):
     else:
         with con.cursor() as cur:
             try:
-                cur.execute("CALL public.sp_manage_password(%s,%s,%s,%s,NULL,NULL,NULL);")
+                cur.execute("CALL public.sp_manage_password(%s,%s,%s,%s,NULL,NULL,NULL);",(userid,action,oldpassword,newpassword))
                 result = cur.fetchone()
                 if result:
                     status_code, status_message = result
