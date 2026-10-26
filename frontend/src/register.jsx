@@ -1,7 +1,9 @@
 import { useState } from "react";
 import "./register.css";
+import { sendEmailOtp } from "./emailVerification";
+import { EmailOtpModal } from "./EmailOtpModal";
 
-const REGISTER_API_URL = import.meta.env.VITE_REGISTER_API_URL || import.meta.env.VITE_API_URL || "";
+const REGISTER_API_URL = import.meta.env.VITE_REGISTER_API_URL || import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com/user/register";
 
 /* ── Register Panel Component (Modular & Reusable) ────────── */
 export function RegisterPanel({ onSwitchToLogin }) {
@@ -16,11 +18,61 @@ export function RegisterPanel({ onSwitchToLogin }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+
+  const hasMinLength = password.length >= 8;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const hasSpecial = /[^A-Za-z0-9]/.test(password);
+
+  const strengthScore = [hasMinLength, hasUppercase, hasNumber, hasSpecial].filter(Boolean).length;
+  const strengthInfo = (() => {
+    if (!password) return { label: "", color: "#e2e8f0" };
+    if (strengthScore <= 1) return { label: "Weak", color: "#ef4444" };
+    if (strengthScore === 2) return { label: "Fair", color: "#f97316" };
+    if (strengthScore === 3) return { label: "Good", color: "#eab308" };
+    return { label: "Strong", color: "#10b981" };
+  })();
+
+  const handleSendOtp = async () => {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes("@")) {
+      setError("Please enter a valid email address to verify.");
+      return;
+    }
+    setIsSendingOtp(true);
+    setError("");
+    try {
+      await sendEmailOtp(cleanEmail);
+      setIsSendingOtp(false);
+      setIsOtpModalOpen(true);
+    } catch (err) {
+      setIsSendingOtp(false);
+      setError(err?.message || "Failed to send verification code to your email. Please try again.");
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
+
+    if (!isEmailVerified) {
+      await handleSendOtp();
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long.");
+      return;
+    }
+
+    if (!hasUppercase || !hasNumber || !hasSpecial) {
+      setError("Password must include at least one uppercase letter, one number, and one symbol.");
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match!");
@@ -38,10 +90,12 @@ export function RegisterPanel({ onSwitchToLogin }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: name.trim(),
+          fullname: name.trim(),
           email: email.trim(),
           phone: phone.trim(),
           password,
+          confirm_password: confirmPassword,
+          user_role: 1,
         }),
       });
       const data = await response.json().catch(() => ({}));
@@ -51,7 +105,12 @@ export function RegisterPanel({ onSwitchToLogin }) {
           if (onSwitchToLogin) onSwitchToLogin();
         }, 1400);
       } else {
-        setError(data.message || data.error || "Failed to create account.");
+        const errorMsg =
+          (Array.isArray(data.detail) ? data.detail.map((d) => d.msg).join(", ") : data.detail) ||
+          data.message ||
+          data.error ||
+          "Failed to create account.";
+        setError(errorMsg);
       }
     } catch {
       setError("Could not connect to server. Check connection or API URL.");
@@ -136,7 +195,7 @@ export function RegisterPanel({ onSwitchToLogin }) {
           </div>
 
           {/* Email */}
-          <div className="ql-field">
+          <div className="ql-field" style={{ position: "relative" }}>
             <span className="ql-field-icon">
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
@@ -147,12 +206,76 @@ export function RegisterPanel({ onSwitchToLogin }) {
               type="email"
               placeholder="Email address"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (isEmailVerified) setIsEmailVerified(false);
+              }}
               required
-              style={regInputStyle}
-              onFocus={(e) => { e.target.style.borderColor = "#1960f7"; e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)"; }}
-              onBlur={(e) => { e.target.style.borderColor = "#dde4f0"; e.target.style.boxShadow = "none"; }}
+              style={{
+                ...regInputStyle,
+                paddingRight: isEmailVerified ? "95px" : (email.includes("@") ? "75px" : "42px"),
+                borderColor: isEmailVerified ? "#10b981" : undefined,
+                backgroundColor: isEmailVerified ? "#f0fdf4" : "#ffffff",
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = isEmailVerified ? "#10b981" : "#1960f7";
+                e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = isEmailVerified ? "#10b981" : "#dde4f0";
+                e.target.style.boxShadow = "none";
+              }}
             />
+            {isEmailVerified ? (
+              <span
+                style={{
+                  position: "absolute",
+                  right: "10px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  fontSize: "11px",
+                  fontWeight: "700",
+                  color: "#15803d",
+                  background: "#dcfce7",
+                  border: "1px solid #bbf7d0",
+                  padding: "3px 8px",
+                  borderRadius: "6px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "3px",
+                  pointerEvents: "none",
+                }}
+              >
+                <span>✓</span>
+                <span>Verified</span>
+              </span>
+            ) : (
+              email.includes("@") && (
+                <button
+                  type="button"
+                  onClick={handleSendOtp}
+                  disabled={isSendingOtp}
+                  style={{
+                    position: "absolute",
+                    right: "8px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "linear-gradient(135deg, #1960f7 0%, #0d47a1 100%)",
+                    color: "#ffffff",
+                    border: "none",
+                    borderRadius: "6px",
+                    fontSize: "11px",
+                    fontWeight: "600",
+                    padding: "5px 9px",
+                    cursor: isSendingOtp ? "not-allowed" : "pointer",
+                    boxShadow: "0 2px 6px rgba(25, 96, 247, 0.25)",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  {isSendingOtp ? "Sending..." : "Verify"}
+                </button>
+              )
+            )}
           </div>
 
           {/* Phone number (optional) */}
@@ -205,6 +328,58 @@ export function RegisterPanel({ onSwitchToLogin }) {
               )}
             </button>
           </div>
+
+          {/* Password Strength Indicator */}
+          {password && (
+            <div style={{ marginTop: "-2px", marginBottom: "3px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "3px" }}>
+                <span style={{ fontSize: "11px", color: "#64748b", fontWeight: "500" }}>Password Strength:</span>
+                <span style={{ fontSize: "11.5px", fontWeight: "700", color: strengthInfo.color }}>
+                  {strengthInfo.label}
+                </span>
+              </div>
+              <div style={{ display: "flex", gap: "4px", height: "3.5px", marginBottom: "5px" }}>
+                {[1, 2, 3, 4].map((seg) => (
+                  <div
+                    key={seg}
+                    style={{
+                      flex: 1,
+                      borderRadius: "2px",
+                      background: seg <= strengthScore ? strengthInfo.color : "#e2e8f0",
+                      transition: "background 0.2s ease",
+                    }}
+                  />
+                ))}
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                {[
+                  { label: "8+ chars", met: hasMinLength },
+                  { label: "Uppercase", met: hasUppercase },
+                  { label: "Number", met: hasNumber },
+                  { label: "Symbol", met: hasSpecial },
+                ].map((req) => (
+                  <span
+                    key={req.label}
+                    style={{
+                      fontSize: "10px",
+                      fontWeight: "600",
+                      padding: "1.5px 6px",
+                      borderRadius: "5px",
+                      background: req.met ? "#dcfce7" : "#f1f5f9",
+                      color: req.met ? "#15803d" : "#94a3b8",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "3px",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    <span>{req.met ? "✓" : "○"}</span>
+                    <span>{req.label}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Confirm password */}
           <div className="ql-field">
@@ -281,23 +456,7 @@ export function RegisterPanel({ onSwitchToLogin }) {
           </button>
         </form>
 
-        {/* Divider */}
-        <div className="ql-divider">
-          <span className="ql-divider-line" />
-          <span className="ql-divider-text">Or continue with</span>
-          <span className="ql-divider-line" />
-        </div>
 
-        {/* Google */}
-        <button type="button" className="ql-google">
-          <svg width="20" height="20" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
-            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.11 0-5.74-2.1-6.68-4.93H1.36v3.15C3.33 21.35 7.4 24 12 24z" />
-            <path fill="#FBBC05" d="M5.32 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.36A11.94 11.94 0 0 0 0 12c0 1.92.45 3.74 1.36 5.42l3.96-3.15z" />
-            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.4 0 3.33 2.65 1.36 6.58l3.96 3.15c.94-2.83 3.57-4.98 6.68-4.98z" />
-          </svg>
-          Continue with Google
-        </button>
 
         {/* Footer switch to Login */}
         <p className="ql-footer">
@@ -307,6 +466,19 @@ export function RegisterPanel({ onSwitchToLogin }) {
           </button>
         </p>
       </div>
+
+      {/* 6-Digit Email OTP Verification Modal */}
+      <EmailOtpModal
+        isOpen={isOtpModalOpen}
+        email={email}
+        onVerified={() => {
+          setIsEmailVerified(true);
+          setIsOtpModalOpen(false);
+          setSuccess("Gmail verified successfully! Click Create Account to finish.");
+          setError("");
+        }}
+        onCancel={() => setIsOtpModalOpen(false)}
+      />
     </div>
   );
 }
@@ -329,6 +501,7 @@ export function Register({ onSwitchToLogin }) {
           style={{ opacity: 1, transform: "none" }}
         />
       </div>
+
     </div>
   );
 }
