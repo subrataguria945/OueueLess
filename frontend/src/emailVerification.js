@@ -25,7 +25,16 @@ export async function sendEmailOtp(email) {
   }
 
   try {
-    const res = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
+    const redirectUrl =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/register`
+        : "https://queueless-dusky.vercel.app/register";
+
+    const endpoint = `${SUPABASE_URL}/auth/v1/otp?redirect_to=${encodeURIComponent(
+      redirectUrl
+    )}`;
+
+    const res = await fetch(endpoint, {
       method: "POST",
       headers: {
         apikey: SUPABASE_ANON_KEY,
@@ -34,6 +43,9 @@ export async function sendEmailOtp(email) {
       body: JSON.stringify({
         email: cleanEmail,
         create_user: true,
+        options: {
+          email_redirect_to: redirectUrl,
+        },
       }),
     });
 

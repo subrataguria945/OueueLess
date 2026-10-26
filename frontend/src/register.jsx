@@ -22,6 +22,24 @@ export function RegisterPanel({ onSwitchToLogin }) {
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
 
+  // Auto-verify if user clicked the confirmation link in their Gmail
+  useEffect(() => {
+    const hash = window.location.hash || "";
+    const search = window.location.search || "";
+    if (
+      hash.includes("access_token") ||
+      hash.includes("type=signup") ||
+      hash.includes("type=email") ||
+      search.includes("code=")
+    ) {
+      setIsEmailVerified(true);
+      setIsOtpModalOpen(false);
+      setSuccess("Gmail verified successfully via confirmation link! You can now create your account.");
+      setError("");
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, []);
+
   const hasMinLength = password.length >= 8;
   const hasUppercase = /[A-Z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
