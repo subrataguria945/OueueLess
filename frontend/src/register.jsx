@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./register.css";
 import { sendEmailOtp } from "./emailVerification";
 import { EmailOtpModal } from "./EmailOtpModal";

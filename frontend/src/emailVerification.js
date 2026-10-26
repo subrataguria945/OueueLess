@@ -25,16 +25,7 @@ export async function sendEmailOtp(email) {
   }
 
   try {
-    const redirectUrl =
-      typeof window !== "undefined"
-        ? `${window.location.origin}/register`
-        : "https://queueless-dusky.vercel.app/register";
-
-    const endpoint = `${SUPABASE_URL}/auth/v1/otp?redirect_to=${encodeURIComponent(
-      redirectUrl
-    )}`;
-
-    const res = await fetch(endpoint, {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
       method: "POST",
       headers: {
         apikey: SUPABASE_ANON_KEY,
@@ -43,9 +34,6 @@ export async function sendEmailOtp(email) {
       body: JSON.stringify({
         email: cleanEmail,
         create_user: true,
-        options: {
-          email_redirect_to: redirectUrl,
-        },
       }),
     });
 
@@ -64,9 +52,9 @@ export async function sendEmailOtp(email) {
     if (!res.ok) {
       throw new Error(
         data.msg ||
-          data.message ||
-          data.error_description ||
-          "Failed to send verification email. Please check your email address."
+        data.message ||
+        data.error_description ||
+        "Failed to send verification email. Please check your email address."
       );
     }
 
