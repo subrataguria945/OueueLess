@@ -593,7 +593,7 @@ export function AdminDashboard() {
               <div className="ql-donut-content">
                 {/* SVG Multi-segment Donut Ring Matching Mockup */}
                 <div className="ql-donut-graphic">
-                  <svg width="130" height="130" viewBox="0 0 140 140">
+                  <svg width="112" height="112" viewBox="0 0 140 140">
                     {/* Background light ring */}
                     <circle cx="70" cy="70" r="50" fill="none" stroke="#f1f5f9" strokeWidth="18" />
                     {/* Blue segment: 38% */}
