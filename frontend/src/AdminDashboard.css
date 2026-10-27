@@ -165,16 +165,17 @@
   min-width: 0;
   box-sizing: border-box;
   background-color: var(--admin-main-bg);
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
-.ql-admin-main::-webkit-scrollbar {
-  width: 6px;
-  display: block;
-}
-
-.ql-admin-main::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+.ql-admin-main::-webkit-scrollbar,
+.ql-admin-layout::-webkit-scrollbar,
+.ql-admin-sidebar::-webkit-scrollbar,
+.ql-table-wrapper::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 /* ── TOP NAVBAR ────────────────────────────────────────────────────────── */
@@ -705,6 +706,8 @@
   border-radius: 12px;
   box-sizing: border-box;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 .ql-table {
