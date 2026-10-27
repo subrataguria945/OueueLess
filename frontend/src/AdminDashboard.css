@@ -1163,9 +1163,9 @@
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  gap: 11px;
-  padding: 6px 2px 4px 0;
+  overflow: hidden;
+  justify-content: space-between;
+  padding: 4px 2px 4px 0;
 }
 
 .ql-timeline-item {
