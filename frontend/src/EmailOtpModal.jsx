@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { verifyEmailOtp, sendEmailOtp } from "./emailVerification";
 
-export function EmailOtpModal({ isOpen, email, onVerified, onCancel }) {
+export function EmailOtpModal({ isOpen, email, onVerified, onCancel, onVerifyOtp, onResendOtp }) {
   const [digits, setDigits] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [infoMessage, setInfoMessage] = useState("");
@@ -80,9 +80,13 @@ export function EmailOtpModal({ isOpen, email, onVerified, onCancel }) {
     setError("");
     setInfoMessage("");
     try {
-      await verifyEmailOtp(email, otpCode);
+      if (onVerifyOtp) {
+        await onVerifyOtp(otpCode);
+      } else {
+        await verifyEmailOtp(email, otpCode);
+      }
       setIsVerifying(false);
-      onVerified();
+      onVerified?.();
     } catch (err) {
       setIsVerifying(false);
       setError(err?.message || "Invalid or expired code. Please try again.");
@@ -95,11 +99,15 @@ export function EmailOtpModal({ isOpen, email, onVerified, onCancel }) {
     setError("");
     setInfoMessage("");
     try {
-      await sendEmailOtp(email);
+      if (onResendOtp) {
+        await onResendOtp();
+      } else {
+        await sendEmailOtp(email);
+      }
       setIsResending(false);
       setCountdown(60);
       setDigits(["", "", "", "", "", ""]);
-      setInfoMessage("A new 6-digit verification code has been sent to your Gmail.");
+      setInfoMessage("A new 6-digit verification code has been sent to your email.");
       inputRefs.current[0]?.focus();
     } catch (err) {
       setIsResending(false);

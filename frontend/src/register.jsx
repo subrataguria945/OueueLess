@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
 import "./register.css";
-import { sendEmailOtp } from "./emailVerification";
 import { EmailOtpModal } from "./EmailOtpModal";
 
-const REGISTER_API_URL = import.meta.env.VITE_REGISTER_API_URL || import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com/user/register";
+const BACKEND_BASE_URL =
+  import.meta.env.VITE_BACKEND_URL ||
+  "https://queueless-backend-b2qh.onrender.com";
+
+const REGISTER_INITIATE_URL = `${BACKEND_BASE_URL}/user/register/initiate`;
+const REGISTER_VERIFY_URL = `${BACKEND_BASE_URL}/user/register/verify`;
 
 /* ── Register Panel Component (Modular & Reusable) ────────── */
 export function RegisterPanel({ onSwitchToLogin }) {
@@ -12,6 +16,7 @@ export function RegisterPanel({ onSwitchToLogin }) {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState(() => localStorage.getItem("signup_password") || "");
   const [confirmPassword, setConfirmPassword] = useState(() => localStorage.getItem("signup_confirm_password") || "");
+  const [signupToken, setSignupToken] = useState(() => localStorage.getItem("signup_token") || "");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(true);
@@ -20,25 +25,6 @@ export function RegisterPanel({ onSwitchToLogin }) {
   const [success, setSuccess] = useState("");
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
-  const [isSendingOtp, setIsSendingOtp] = useState(false);
-
-  // Auto-verify if user clicked the confirmation link in their Gmail
-  useEffect(() => {
-    const hash = window.location.hash || "";
-    const search = window.location.search || "";
-    if (
-      hash.includes("access_token") ||
-      hash.includes("type=signup") ||
-      hash.includes("type=email") ||
-      search.includes("code=")
-    ) {
-      setIsEmailVerified(true);
-      setIsOtpModalOpen(false);
-      setSuccess("Gmail verified successfully via confirmation link! You can now create your account.");
-      setError("");
-      window.history.replaceState(null, "", window.location.pathname);
-    }
-  }, []);
 
   const hasMinLength = password.length >= 8;
   const hasUppercase = /[A-Z]/.test(password);
@@ -54,109 +40,168 @@ export function RegisterPanel({ onSwitchToLogin }) {
     return { label: "Strong", color: "#10b981" };
   })();
 
-  const handleSendOtp = async () => {
-    // Save password & confirm password to localStorage first
-    if (password) localStorage.setItem("signup_password", password);
-    if (confirmPassword) localStorage.setItem("signup_confirm_password", confirmPassword);
-
-    const cleanEmail = email.trim().toLowerCase();
-    if (!cleanEmail || !cleanEmail.includes("@")) {
-      setError("Please enter a valid email address to verify.");
-      return;
-    }
-    setIsSendingOtp(true);
-    setError("");
-    try {
-      await sendEmailOtp(cleanEmail);
-      setIsSendingOtp(false);
-      setIsOtpModalOpen(true);
-    } catch (err) {
-      setIsSendingOtp(false);
-      setError(err?.message || "Failed to send verification code to your email. Please try again.");
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  /* ── 1. STEP 1: INITIATE REGISTRATION & SEND OTP ────────────── */
+  const handleInitiateRegister = async () => {
     setError("");
     setSuccess("");
 
-    // Store password and confirm password to localStorage first as requested
-    localStorage.setItem("signup_password", password);
-    localStorage.setItem("signup_confirm_password", confirmPassword);
+    if (!name.trim()) {
+      setError("Please enter your full name.");
+      return false;
+    }
 
-    if (!isEmailVerified) {
-      await handleSendOtp();
-      return;
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes("@")) {
+      setError("Please enter a valid email address.");
+      return false;
     }
 
     const cleanPhone = phone.trim();
     if (!cleanPhone) {
       setError("Phone number is required.");
-      return;
+      return false;
     }
 
     if (cleanPhone.length !== 10) {
       setError("Please enter a valid 10-digit phone number.");
-      return;
+      return false;
     }
 
     if (password.length < 8) {
       setError("Password must be at least 8 characters long.");
-      return;
+      return false;
     }
 
     if (!hasUppercase || !hasNumber || !hasSpecial) {
       setError("Password must include at least one uppercase letter, one number, and one symbol.");
-      return;
+      return false;
     }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match!");
-      return;
+      return false;
     }
 
     if (!agreeTerms) {
       setError("Please accept the Terms of Service & Privacy Policy.");
-      return;
+      return false;
     }
+
+    // Store password and confirm password in localStorage first as requested
+    localStorage.setItem("signup_password", password);
+    localStorage.setItem("signup_confirm_password", confirmPassword);
 
     setIsLoading(true);
     try {
-      const response = await fetch(REGISTER_API_URL, {
+      const response = await fetch(REGISTER_INITIATE_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullname: name.trim(),
-          email: email.trim(),
-          phone: phone.trim(),
-          password,
-          confirm_password: confirmPassword,
-          user_role: 1,
+          email: cleanEmail,
+          phone: cleanPhone,
+          user_role: 2,
         }),
       });
       const data = await response.json().catch(() => ({}));
-      if (response.ok) {
-        // Clear saved signup passwords on success
-        localStorage.removeItem("signup_password");
-        localStorage.removeItem("signup_confirm_password");
 
-        setSuccess(data.message || "Account created successfully! Switching to login...");
-        setTimeout(() => {
-          if (onSwitchToLogin) onSwitchToLogin();
-        }, 1400);
-      } else {
+      if (!response.ok || data.status === "failed" || data.status === "error") {
         const errorMsg =
-          (Array.isArray(data.detail) ? data.detail.map((d) => d.msg).join(", ") : data.detail) ||
           data.message ||
+          (Array.isArray(data.detail) ? data.detail.map((d) => d.msg).join(", ") : data.detail) ||
           data.error ||
-          "Failed to create account.";
+          "Registration failed. Please check your details and try again.";
         setError(errorMsg);
+        return false;
       }
+
+      const receivedToken = data.token || data.signup_token;
+      if (receivedToken) {
+        setSignupToken(receivedToken);
+        localStorage.setItem("signup_token", receivedToken);
+      }
+
+      setSuccess(data.message || "OTP sent to your email. Please verify within 5 minutes.");
+      setIsOtpModalOpen(true);
+      return true;
     } catch {
-      setError("Could not connect to server. Check connection or API URL.");
+      setError("Unable to connect to the server. Please check your internet connection.");
+      return false;
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await handleInitiateRegister();
+  };
+
+  /* ── 2. STEP 2: VERIFY OTP & SAVE TO DATABASE ───────────────── */
+  const handleVerifyOtp = async (otpCode) => {
+    const tokenToUse = signupToken || localStorage.getItem("signup_token");
+    const passToUse = password || localStorage.getItem("signup_password");
+
+    if (!tokenToUse) {
+      throw new Error("Registration session expired. Please click Create Account again.");
+    }
+
+    const response = await fetch(REGISTER_VERIFY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        signup_token: tokenToUse,
+        otp: otpCode.trim(),
+        password: passToUse,
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok || data.status === "failed" || data.status === "error") {
+      const errorMsg =
+        data.message ||
+        (Array.isArray(data.detail) ? data.detail.map((d) => d.msg).join(", ") : data.detail) ||
+        "Invalid or expired OTP. Please try again.";
+      throw new Error(errorMsg);
+    }
+
+    // Success: Account saved in database!
+    localStorage.removeItem("signup_password");
+    localStorage.removeItem("signup_confirm_password");
+    localStorage.removeItem("signup_token");
+
+    setIsOtpModalOpen(false);
+    setIsEmailVerified(true);
+    setSuccess(data.message || "Account created successfully! Switching to login...");
+
+    setTimeout(() => {
+      if (onSwitchToLogin) onSwitchToLogin();
+      else window.location.href = "/login";
+    }, 1500);
+  };
+
+  /* ── 3. RESEND OTP ───────────────────────────────────────────── */
+  const handleResendOtp = async () => {
+    const response = await fetch(REGISTER_INITIATE_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fullname: name.trim(),
+        email: email.trim().toLowerCase(),
+        phone: phone.trim(),
+        user_role: 2,
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok || data.status === "failed" || data.status === "error") {
+      throw new Error(data.message || "Failed to resend verification OTP.");
+    }
+
+    const receivedToken = data.token || data.signup_token;
+    if (receivedToken) {
+      setSignupToken(receivedToken);
+      localStorage.setItem("signup_token", receivedToken);
     }
   };
 
@@ -294,8 +339,8 @@ export function RegisterPanel({ onSwitchToLogin }) {
               email.includes("@") && (
                 <button
                   type="button"
-                  onClick={handleSendOtp}
-                  disabled={isSendingOtp}
+                  onClick={handleInitiateRegister}
+                  disabled={isLoading}
                   style={{
                     position: "absolute",
                     right: "8px",
@@ -308,12 +353,12 @@ export function RegisterPanel({ onSwitchToLogin }) {
                     fontSize: "11px",
                     fontWeight: "600",
                     padding: "5px 9px",
-                    cursor: isSendingOtp ? "not-allowed" : "pointer",
+                    cursor: isLoading ? "not-allowed" : "pointer",
                     boxShadow: "0 2px 6px rgba(25, 96, 247, 0.25)",
                     transition: "all 0.15s ease",
                   }}
                 >
-                  {isSendingOtp ? "Sending..." : "Verify"}
+                  {isLoading ? "Sending..." : "Verify"}
                 </button>
               )
             )}
@@ -520,10 +565,12 @@ export function RegisterPanel({ onSwitchToLogin }) {
       <EmailOtpModal
         isOpen={isOtpModalOpen}
         email={email}
+        onVerifyOtp={handleVerifyOtp}
+        onResendOtp={handleResendOtp}
         onVerified={() => {
           setIsEmailVerified(true);
           setIsOtpModalOpen(false);
-          setSuccess("Gmail verified successfully! Click Create Account to finish.");
+          setSuccess("Account created successfully! Switching to login...");
           setError("");
         }}
         onCancel={() => setIsOtpModalOpen(false)}
