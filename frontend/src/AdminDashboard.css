@@ -24,14 +24,14 @@
 
 .ql-admin-layout {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
   width: 100%;
   max-width: 100%;
   background-color: var(--admin-main-bg);
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: var(--admin-text-main);
   box-sizing: border-box;
-  overflow-x: hidden;
+  overflow: hidden;
   position: relative;
 }
 
@@ -157,10 +157,24 @@
 /* ── MAIN CONTENT AREA ─────────────────────────────────────────────────── */
 .ql-admin-main {
   flex: 1;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  overflow-y: auto;
+  box-sizing: border-box;
+  background-color: var(--admin-main-bg);
+}
+
+.ql-admin-main::-webkit-scrollbar {
+  width: 6px;
+  display: block;
+}
+
+.ql-admin-main::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
 }
 
 /* ── TOP NAVBAR ────────────────────────────────────────────────────────── */
@@ -418,15 +432,17 @@
 /* ── STATS CARDS GRID ──────────────────────────────────────────────────── */
 .ql-stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .ql-stat-card {
   background: #ffffff;
   border: 1px solid var(--admin-border);
   border-radius: 16px;
-  padding: 20px 22px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -434,6 +450,8 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   position: relative;
   overflow: hidden;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .ql-stat-card:hover {
@@ -445,15 +463,17 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  gap: 8px;
 }
 
 .ql-stat-icon-wrap {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .ql-stat-card.blue .ql-stat-icon-wrap {
@@ -477,8 +497,9 @@
 }
 
 .ql-stat-info {
-  margin-left: 14px;
+  margin-left: 10px;
   flex: 1;
+  min-width: 0;
 }
 
 .ql-stat-label {
@@ -486,10 +507,13 @@
   font-weight: 600;
   color: var(--admin-text-muted);
   margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ql-stat-number {
-  font-size: 32px;
+  font-size: clamp(22px, 2.2vw, 30px);
   font-weight: 800;
   color: var(--admin-text-main);
   line-height: 1;
@@ -999,9 +1023,12 @@
 }
 
 /* ── RESPONSIVE DESIGN ─────────────────────────────────────────────────── */
-@media (max-width: 1100px) {
+@media (max-width: 1200px) {
   .ql-stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ql-admin-content {
+    padding: 20px 20px 36px;
   }
 }
 
@@ -1010,6 +1037,7 @@
     position: fixed;
     transform: translateX(-100%);
     box-shadow: 10px 0 30px rgba(0, 0, 0, 0.2);
+    z-index: 999;
   }
 
   .ql-admin-sidebar.mobile-open {
@@ -1021,7 +1049,7 @@
   }
 
   .ql-stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .ql-admin-content {

@@ -3,30 +3,32 @@
    Smooth Sliding Hero Overlay Transition
    =================================================== */
 
-/* Global reset to prevent document-level scrollbars */
+/* Base document styling */
 html,
 body {
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100%;
-  overflow: hidden;
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
+  min-height: 100%;
 }
 
-html::-webkit-scrollbar,
-body::-webkit-scrollbar,
-*::-webkit-scrollbar {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-}
-
-* {
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
+*, *::before, *::after {
   box-sizing: border-box;
+}
+
+/* Auth Pages (.ql-root) scroll lock */
+.ql-root {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.ql-root::-webkit-scrollbar,
+.ql-root *::-webkit-scrollbar {
+  display: none;
 }
 
 :root {
