@@ -97,24 +97,21 @@
 }
 
 .ql-brand-icon-box {
-  width: 38px;
-  height: 38px;
-  min-width: 38px;
-  min-height: 38px;
-  border-radius: 10px;
-  background: #ffffff;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  padding: 0;
   flex-shrink: 0;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
 .ql-brand-icon-box:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.38);
+  transform: scale(1.05);
 }
 
 .ql-brand-logo-img {
