@@ -2,6 +2,9 @@ from Library.Authentication.user.database import validate_login_indb , insert_us
 from Library.Security.JWT import generate_access_token , generate_signup_token , decode_token
 import secrets
 import hashlib
+from Library.Notification.email import send_otp_email
+from dotenv import load_dotenv
+load_dotenv() 
 def login_user(input : dict ):
     email = input.get("email")
     password = input.get("password")
@@ -81,7 +84,10 @@ def initiate_register(input: dict):
     print("OTP:", otp)
     print("OTP Hash:", otp_hash)
     # email send
+    email = input.get("email")
 
+    send_otp_email(to_email=email, otp = otp    )
+    
     token = generate_signup_token(input , otp_hash)
 
     return {
