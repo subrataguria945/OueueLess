@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import "./register.css";
 import { initiateSignup, verifySignupOtp } from "./authApi";
 import { EmailOtpModal } from "./EmailOtpModal";
@@ -13,11 +13,13 @@ export function RegisterPanel({ onSwitchToLogin }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [signupToken, setSignupToken] = useState("");
+  const [isSendingCode, setIsSendingCode] = useState(false);
+  const [sendingError, setSendingError] = useState("");
+  const pendingInitiateRef = useRef(null);
 
   const hasMinLength = password.length >= 8;
   const hasUppercase = /[A-Z]/.test(password);
@@ -33,11 +35,12 @@ export function RegisterPanel({ onSwitchToLogin }) {
     return { label: "Strong", color: "#10b981" };
   })();
 
-  /* ── 1. CLICK 'CREATE ACCOUNT' -> INITIATE OTP & OPEN MODAL ─ */
-  const handleSubmit = async (e) => {
+  /* ── 1. CLICK 'CREATE ACCOUNT' -> INSTANTLY OPEN OTP MODAL ── */
+  const handleSubmit = (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
+    setSendingError("");
 
     const cleanName = name.trim();
     const cleanEmail = email.trim().toLowerCase();
@@ -48,8 +51,8 @@ export function RegisterPanel({ onSwitchToLogin }) {
       return;
     }
 
-    if (!cleanEmail || !cleanEmail.includes("@") || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
-      setError("Please enter a valid Gmail address.");
+    if (!cleanEmail || !cleanEmail.includes("@")) {
+      setError("Please enter a valid email address.");
       return;
     }
 
@@ -73,34 +76,47 @@ export function RegisterPanel({ onSwitchToLogin }) {
       return;
     }
 
-    setIsLoading(true);
-    try {
-      // Calls POST /user/register/initiate to send real OTP to user's Gmail
-      const result = await initiateSignup({
-        fullname: cleanName,
-        email: cleanEmail,
-        phone: cleanPhone,
-        user_role: 2,
+    // Instantly open the OTP modal so user sees it right away!
+    setIsOtpModalOpen(true);
+    setIsSendingCode(true);
+    setSendingError("");
+
+    // Initiate API in the background
+    const initiatePromise = initiateSignup({
+      fullname: cleanName,
+      email: cleanEmail,
+      phone: cleanPhone,
+      user_role: 2,
+    })
+      .then((result) => {
+        setSignupToken(result.signup_token);
+        setIsSendingCode(false);
+        return result.signup_token;
+      })
+      .catch((err) => {
+        const msg = err?.message || "Failed to send verification code. Please check your details.";
+        setSendingError(msg);
+        setIsSendingCode(false);
+        throw err;
       });
 
-      setSignupToken(result.signup_token);
-      setIsOtpModalOpen(true);
-    } catch (err) {
-      setError(err?.message || "Failed to send verification code. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+    pendingInitiateRef.current = initiatePromise;
   };
 
   /* ── 2. SUBMIT OTP IN MODAL -> VERIFY & REGISTER IN DB ────── */
   const handleVerifyOtp = async (otpCode) => {
-    if (!signupToken) {
-      throw new Error("Registration session expired. Please click Create Account again.");
+    let tokenToUse = signupToken;
+    if (!tokenToUse && pendingInitiateRef.current) {
+      tokenToUse = await pendingInitiateRef.current.catch(() => null);
+    }
+
+    if (!tokenToUse) {
+      throw new Error(sendingError || "Sending code failed. Please click Resend Code.");
     }
 
     // Calls POST /user/register/verify to verify OTP and register user in database
     await verifySignupOtp({
-      signup_token: signupToken,
+      signup_token: tokenToUse,
       otp: otpCode,
       password,
     });
@@ -116,6 +132,7 @@ export function RegisterPanel({ onSwitchToLogin }) {
     setPassword("");
     setConfirmPassword("");
     setSignupToken("");
+    pendingInitiateRef.current = null;
 
     // Redirect to login page
     setTimeout(() => {
@@ -126,18 +143,28 @@ export function RegisterPanel({ onSwitchToLogin }) {
 
   /* ── 3. RESEND OTP ────────────────────────────────────────── */
   const handleResendOtp = async () => {
+    setSendingError("");
+    setIsSendingCode(true);
     const cleanName = name.trim();
     const cleanEmail = email.trim().toLowerCase();
     const cleanPhone = phone.trim().replace(/\D/g, "");
 
-    const result = await initiateSignup({
-      fullname: cleanName,
-      email: cleanEmail,
-      phone: cleanPhone,
-      user_role: 2,
-    });
+    try {
+      const result = await initiateSignup({
+        fullname: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone,
+        user_role: 2,
+      });
 
-    setSignupToken(result.signup_token);
+      setSignupToken(result.signup_token);
+      return result;
+    } catch (err) {
+      setSendingError(err?.message || "Failed to resend verification code.");
+      throw err;
+    } finally {
+      setIsSendingCode(false);
+    }
   };
 
   const regInputStyle = {
@@ -399,20 +426,11 @@ export function RegisterPanel({ onSwitchToLogin }) {
           </label>
 
           {/* Submit Button */}
-          <button type="submit" className="ql-submit" disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <span className="ql-spin"></span>
-                Sending verification code...
-              </>
-            ) : (
-              <>
-                Create Account&nbsp;
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
-                </svg>
-              </>
-            )}
+          <button type="submit" className="ql-submit">
+            Create Account&nbsp;
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+            </svg>
           </button>
         </form>
 
@@ -429,6 +447,8 @@ export function RegisterPanel({ onSwitchToLogin }) {
       <EmailOtpModal
         isOpen={isOtpModalOpen}
         email={email}
+        isSendingCode={isSendingCode}
+        sendingError={sendingError}
         onVerifyOtp={handleVerifyOtp}
         onResendOtp={handleResendOtp}
         onCancel={() => setIsOtpModalOpen(false)}

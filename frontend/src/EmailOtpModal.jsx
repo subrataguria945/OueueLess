@@ -15,6 +15,8 @@ function maskEmail(email) {
 export function EmailOtpModal({
   isOpen,
   email,
+  isSendingCode = false,
+  sendingError = "",
   onVerifyOtp,
   onResendOtp,
   onCancel,
@@ -143,7 +145,7 @@ export function EmailOtpModal({
         backgroundColor: "rgba(15, 23, 42, 0.72)",
         backdropFilter: "blur(6px)",
         WebkitBackdropFilter: "blur(6px)",
-        zIndex: 9999,
+        zIndex: 999999,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -241,6 +243,19 @@ export function EmailOtpModal({
           >
             {maskEmail(email)}
           </div>
+
+          {isSendingCode && (
+            <div style={{ marginTop: "10px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", fontSize: "12px", color: "#2563eb", fontWeight: "500" }}>
+              <span style={{ width: "12px", height: "12px", border: "2px solid #2563eb", borderTopColor: "transparent", borderRadius: "50%", display: "inline-block", animation: "qlSpin 0.75s linear infinite" }} />
+              Sending code to your email...
+            </div>
+          )}
+
+          {sendingError && !isSendingCode && (
+            <div style={{ marginTop: "10px", padding: "6px 12px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "8px", fontSize: "12px", color: "#dc2626" }}>
+              {sendingError}
+            </div>
+          )}
         </div>
 
         {/* 6 Digit Inputs */}
