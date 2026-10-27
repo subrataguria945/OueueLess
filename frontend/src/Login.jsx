@@ -109,7 +109,16 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
         body: JSON.stringify({ email: loginEmail.trim(), password: loginPassword }),
       });
       const data = await response.json().catch(() => ({}));
-      if (response.ok) {
+
+      // Backend returns HTTP 200 with status: 'Login Failed' and message: 'ERR_INVALID_CREDENTIALS'
+      const isFailed =
+        !response.ok ||
+        data.status === "Login Failed" ||
+        data.status === "error" ||
+        data.status === "failed" ||
+        (!data.token && !data.accessToken && !data.access_token);
+
+      if (!isFailed) {
         setLoginSuccess(data.message || "Login successful! Redirecting...");
         const token = data.token || data.accessToken || data.access_token;
         if (token) {
@@ -118,17 +127,28 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
         if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
       } else {
         const rawError =
-          (Array.isArray(data.detail) ? data.detail.map((d) => d.msg).join(", ") : data.detail) ||
           data.message ||
+          (Array.isArray(data.detail) ? data.detail.map((d) => d.msg).join(", ") : data.detail) ||
           data.error ||
           "";
 
         const lower = String(rawError).toLowerCase();
         let formattedMessage = "Incorrect credentials. Check your email/password or use 'Forgot password'.";
 
-        if (lower.includes("not found") || lower.includes("doesn't exist") || lower.includes("no user") || lower.includes("unregistered")) {
+        if (
+          lower.includes("not_found") ||
+          lower.includes("not found") ||
+          lower.includes("doesn't exist") ||
+          lower.includes("no user") ||
+          lower.includes("unregistered")
+        ) {
           formattedMessage = "No account found with this email. Please sign up first.";
-        } else if (lower.includes("invalid") || lower.includes("incorrect") || lower.includes("password") || lower.includes("credential")) {
+        } else if (
+          lower.includes("invalid") ||
+          lower.includes("incorrect") ||
+          lower.includes("credential") ||
+          lower.includes("password")
+        ) {
           formattedMessage = "Incorrect credentials. Check your email/password or use 'Forgot password'.";
         } else if (rawError) {
           formattedMessage = rawError;

@@ -82,6 +82,17 @@ export function RegisterPanel({ onSwitchToLogin }) {
       return;
     }
 
+    const cleanPhone = phone.trim();
+    if (!cleanPhone) {
+      setError("Phone number is required.");
+      return;
+    }
+
+    if (cleanPhone.length !== 10) {
+      setError("Please enter a valid 10-digit phone number.");
+      return;
+    }
+
     if (password.length < 8) {
       setError("Password must be at least 8 characters long.");
       return;
@@ -296,7 +307,7 @@ export function RegisterPanel({ onSwitchToLogin }) {
             )}
           </div>
 
-          {/* Phone number (optional) */}
+          {/* Phone number (mandatory) */}
           <div className="ql-field">
             <span className="ql-field-icon">
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -306,9 +317,11 @@ export function RegisterPanel({ onSwitchToLogin }) {
             <input
               id="ql-reg-phone"
               type="tel"
-              placeholder="Phone number (optional)"
+              placeholder="Phone number"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+              required
+              maxLength={10}
               style={regInputStyle}
               onFocus={(e) => { e.target.style.borderColor = "#1960f7"; e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)"; }}
               onBlur={(e) => { e.target.style.borderColor = "#dde4f0"; e.target.style.boxShadow = "none"; }}
