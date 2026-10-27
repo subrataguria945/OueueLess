@@ -10,6 +10,25 @@ const BACKEND_BASE_URL =
   "https://queueless-backend-b2qh.onrender.com";
 
 /**
+ * Wakes up Render backend immediately when application opens.
+ * Prevents cold-start delays when user registers or performs actions.
+ */
+export function warmupBackendServer() {
+  try {
+    fetch(`${BACKEND_BASE_URL}/`, { method: "GET", mode: "cors" })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("⚡ QueueLess Backend Server Active:", data?.message || "Awake");
+      })
+      .catch((err) => {
+        console.log("⚡ QueueLess Backend warming up in background...", err?.message || "");
+      });
+  } catch {
+    // Silent catch
+  }
+}
+
+/**
  * Step 1: Initiate signup, send OTP to user's Gmail, and obtain signup_token.
  * Does NOT create user in database yet.
  * @param {Object} payload
