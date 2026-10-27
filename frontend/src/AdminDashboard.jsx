@@ -260,15 +260,20 @@ export function AdminDashboard() {
           {/* Brand Header with Stylized Circular 'Q' Badge */}
           <div className="ql-admin-brand">
             <div className="ql-brand-icon-circle">
-              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                <circle cx="20" cy="20" r="19" fill="url(#ql-logo-grad)" />
-                {/* Modern Crisp Geometric Q */}
-                <circle cx="19" cy="19" r="8" stroke="#ffffff" strokeWidth="3.6" fill="none" />
-                <path d="M23.5 23.5L29.5 29.5" stroke="#ffffff" strokeWidth="3.8" strokeLinecap="round" />
+              <svg width="40" height="40" viewBox="0 0 100 100" fill="none">
+                {/* Vibrant Blue Gradient Background Circle */}
+                <circle cx="50" cy="50" r="48" fill="url(#ql-official-q-grad)" />
+                {/* Official Q White Ring */}
+                <circle cx="48" cy="46" r="21" stroke="#ffffff" strokeWidth="8.5" fill="none" />
+                {/* Distinctive Inner Dot */}
+                <circle cx="55.5" cy="53.5" r="4.5" fill="#ffffff" />
+                {/* Rounded Magnifying Tail */}
+                <line x1="55" y1="53" x2="73" y2="71" stroke="#ffffff" strokeWidth="9.5" strokeLinecap="round" />
                 <defs>
-                  <linearGradient id="ql-logo-grad" x1="4" y1="4" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#0ea5e9" />
-                    <stop offset="1" stopColor="#1d4ed8" />
+                  <linearGradient id="ql-official-q-grad" x1="10" y1="10" x2="90" y2="90" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#00b0ff" />
+                    <stop offset="0.45" stopColor="#0077ff" />
+                    <stop offset="1" stopColor="#1a56db" />
                   </linearGradient>
                 </defs>
               </svg>
