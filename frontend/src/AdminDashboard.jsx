@@ -257,26 +257,10 @@ export function AdminDashboard() {
       {/* ── 1. SIDEBAR (MATCHES UI MOCKUP EXACTLY) ─────────────── */}
       <aside className={`ql-admin-sidebar ${mobileMenuOpen ? "open" : ""}`}>
         <div>
-          {/* Brand Header with Stylized Circular 'Q' Badge */}
+          {/* Brand Header with Official Queueless 'Q' Logo */}
           <div className="ql-admin-brand">
-            <div className="ql-brand-icon-circle">
-              <svg width="40" height="40" viewBox="0 0 100 100" fill="none">
-                {/* Vibrant Blue Gradient Background Circle */}
-                <circle cx="50" cy="50" r="48" fill="url(#ql-official-q-grad)" />
-                {/* Official Q White Ring */}
-                <circle cx="48" cy="46" r="21" stroke="#ffffff" strokeWidth="8.5" fill="none" />
-                {/* Distinctive Inner Dot */}
-                <circle cx="55.5" cy="53.5" r="4.5" fill="#ffffff" />
-                {/* Rounded Magnifying Tail */}
-                <line x1="55" y1="53" x2="73" y2="71" stroke="#ffffff" strokeWidth="9.5" strokeLinecap="round" />
-                <defs>
-                  <linearGradient id="ql-official-q-grad" x1="10" y1="10" x2="90" y2="90" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#00b0ff" />
-                    <stop offset="0.45" stopColor="#0077ff" />
-                    <stop offset="1" stopColor="#1a56db" />
-                  </linearGradient>
-                </defs>
-              </svg>
+            <div className="ql-brand-icon-box">
+              <img src="/favicon.png" alt="QueueLess" className="ql-brand-logo-img" />
             </div>
             <div className="ql-brand-text">
               <span className="ql-brand-title">Queueless</span>

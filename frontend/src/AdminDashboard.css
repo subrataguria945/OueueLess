@@ -96,15 +96,32 @@
   padding: 8px 8px 18px;
 }
 
-.ql-brand-icon-circle {
-  width: 40px;
-  height: 40px;
+.ql-brand-icon-box {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  border-radius: 10px;
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 4px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
   flex-shrink: 0;
-  border-radius: 50%;
-  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ql-brand-icon-box:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.38);
+}
+
+.ql-brand-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 .ql-brand-text {
