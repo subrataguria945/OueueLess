@@ -231,7 +231,7 @@ export function AdminDashboard() {
   const [dateDropdownOpen, setDateDropdownOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // Selected owner for detail view
   const [detailModalOwner, setDetailModalOwner] = useState(null);
@@ -254,18 +254,40 @@ export function AdminDashboard() {
 
   return (
     <div className="ql-admin-layout">
-      {/* ── 1. SIDEBAR (MATCHES UI MOCKUP EXACTLY) ─────────────── */}
-      <aside className={`ql-admin-sidebar ${mobileMenuOpen ? "open" : ""}`}>
+      {/* Mobile Backdrop for sidebar */}
+      {sidebarOpen && (
+        <div
+          className="ql-sidebar-backdrop"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* ── 1. SIDEBAR (TOGGLE OFF / ON) ────────────────────────── */}
+      <aside className={`ql-admin-sidebar ${sidebarOpen ? "open" : "collapsed"}`}>
         <div>
-          {/* Brand Header with Official Queueless 'Q' Logo */}
+          {/* Brand Header with Official Queueless 'Q' Logo & Collapse Button */}
           <div className="ql-admin-brand">
-            <div className="ql-brand-icon-box">
-              <img src="/favicon.png" alt="QueueLess" className="ql-brand-logo-img" />
+            <div className="ql-brand-left">
+              <div className="ql-brand-icon-box">
+                <img src="/favicon.png" alt="QueueLess" className="ql-brand-logo-img" />
+              </div>
+              <div className="ql-brand-text">
+                <span className="ql-brand-title">Queueless</span>
+                <span className="ql-brand-subtitle">Admin Panel</span>
+              </div>
             </div>
-            <div className="ql-brand-text">
-              <span className="ql-brand-title">Queueless</span>
-              <span className="ql-brand-subtitle">Admin Panel</span>
-            </div>
+            <button
+              type="button"
+              className="ql-sidebar-close-btn"
+              onClick={() => setSidebarOpen(false)}
+              title="Hide Sidebar (Off)"
+              aria-label="Hide sidebar"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
           </div>
 
           {/* Navigation Links */}
@@ -418,11 +440,12 @@ export function AdminDashboard() {
           <div className="ql-topbar-left">
             <button
               type="button"
-              className="ql-mobile-menu-btn"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle navigation"
+              className="ql-sidebar-toggle-btn"
+              onClick={() => setSidebarOpen((prev) => !prev)}
+              aria-label="Toggle sidebar"
+              title={sidebarOpen ? "Hide Sidebar (Off)" : "Show Sidebar (On)"}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="3" y1="12" x2="21" y2="12" />
                 <line x1="3" y1="6" x2="21" y2="6" />
                 <line x1="3" y1="18" x2="21" y2="18" />
