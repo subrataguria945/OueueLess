@@ -13,6 +13,21 @@ export function ForgotPasswordPanel({ onSwitchToLogin }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+
+  const hasMinLength = newPassword.length >= 8;
+  const hasUppercase = /[A-Z]/.test(newPassword);
+  const hasNumber = /[0-9]/.test(newPassword);
+  const hasSpecial = /[^A-Za-z0-9]/.test(newPassword);
+
+  const strengthScore = [hasMinLength, hasUppercase, hasNumber, hasSpecial].filter(Boolean).length;
+  const strengthInfo = (() => {
+    if (!newPassword) return { label: "", color: "#e2e8f0" };
+    if (strengthScore <= 1) return { label: "Weak", color: "#ef4444" };
+    if (strengthScore === 2) return { label: "Fair", color: "#f97316" };
+    if (strengthScore === 3) return { label: "Good", color: "#eab308" };
+    return { label: "Strong", color: "#10b981" };
+  })();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -20,6 +35,11 @@ export function ForgotPasswordPanel({ onSwitchToLogin }) {
 
     if (newPassword.length < 8) {
       setError("Password must be at least 8 characters long.");
+      return;
+    }
+
+    if (!hasUppercase || !hasNumber || !hasSpecial) {
+      setError("Password must include at least one uppercase letter, one number, and one symbol.");
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -188,6 +208,58 @@ export function ForgotPasswordPanel({ onSwitchToLogin }) {
             </button>
           </div>
 
+          {/* Password Strength Indicator */}
+          {newPassword && (
+            <div style={{ marginTop: "-2px", marginBottom: "3px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "3px" }}>
+                <span style={{ fontSize: "11px", color: "#64748b", fontWeight: "500" }}>Password Strength:</span>
+                <span style={{ fontSize: "11.5px", fontWeight: "700", color: strengthInfo.color }}>
+                  {strengthInfo.label}
+                </span>
+              </div>
+              <div style={{ display: "flex", gap: "4px", height: "3.5px", marginBottom: "5px" }}>
+                {[1, 2, 3, 4].map((seg) => (
+                  <div
+                    key={seg}
+                    style={{
+                      flex: 1,
+                      borderRadius: "2px",
+                      background: seg <= strengthScore ? strengthInfo.color : "#e2e8f0",
+                      transition: "background 0.2s ease",
+                    }}
+                  />
+                ))}
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                {[
+                  { label: "8+ chars", met: hasMinLength },
+                  { label: "Uppercase", met: hasUppercase },
+                  { label: "Number", met: hasNumber },
+                  { label: "Symbol", met: hasSpecial },
+                ].map((req) => (
+                  <span
+                    key={req.label}
+                    style={{
+                      fontSize: "10px",
+                      fontWeight: "600",
+                      padding: "1.5px 6px",
+                      borderRadius: "5px",
+                      background: req.met ? "#dcfce7" : "#f1f5f9",
+                      color: req.met ? "#15803d" : "#94a3b8",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "3px",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    <span>{req.met ? "✓" : "○"}</span>
+                    <span>{req.label}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Confirm New Password */}
           <div className="ql-field">
             <span className="ql-field-icon">
@@ -234,23 +306,7 @@ export function ForgotPasswordPanel({ onSwitchToLogin }) {
           </button>
         </form>
 
-        {/* Divider */}
-        <div className="ql-divider">
-          <span className="ql-divider-line" />
-          <span className="ql-divider-text">Or</span>
-          <span className="ql-divider-line" />
-        </div>
 
-        {/* Google */}
-        <button type="button" className="ql-google">
-          <svg width="20" height="20" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
-            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.11 0-5.74-2.1-6.68-4.93H1.36v3.15C3.33 21.35 7.4 24 12 24z" />
-            <path fill="#FBBC05" d="M5.32 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.36A11.94 11.94 0 0 0 0 12c0 1.92.45 3.74 1.36 5.42l3.96-3.15z" />
-            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.4 0 3.33 2.65 1.36 6.58l3.96 3.15c.94-2.83 3.57-4.98 6.68-4.98z" />
-          </svg>
-          Continue with Google
-        </button>
 
         {/* Back to Login */}
         <button type="button" className="ql-back-btn" onClick={onSwitchToLogin}>
@@ -260,6 +316,8 @@ export function ForgotPasswordPanel({ onSwitchToLogin }) {
           Back to Login
         </button>
       </div>
+
+
     </div>
   );
 }

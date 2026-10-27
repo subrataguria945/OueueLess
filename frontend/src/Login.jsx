@@ -2,8 +2,13 @@ import { useState, useEffect } from "react";
 import "./Login.css";
 import { RegisterPanel } from "./register";
 import { ForgotPasswordPanel } from "./ForgotPassword";
+import { triggerGoogleSignIn } from "./googleAuth";
+import { GooglePhoneModal } from "./GooglePhoneModal";
 
-const LOGIN_API_URL = import.meta.env.VITE_API_URL || "";
+const LOGIN_API_URL =
+  import.meta.env.VITE_LOGIN_API_URL ||
+  import.meta.env.VITE_API_URL ||
+  "https://queueless-backend-b2qh.onrender.com/user/login";
 
 export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLogin, onSwitchToForgot }) {
   const [mode, setMode] = useState(initialMode); // "login" | "register" | "forgot"
@@ -49,6 +54,41 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
   const [isLoginLoading, setIsLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [loginSuccess, setLoginSuccess] = useState("");
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [pendingGoogleAuth, setPendingGoogleAuth] = useState(null);
+
+
+  const handleGoogleSuccess = (user, token) => {
+    setLoginSuccess("Login successful!");
+    setLoginError("");
+    if (token) {
+      rememberMe ? localStorage.setItem("token", token) : sessionStorage.setItem("token", token);
+    }
+    if (user) localStorage.setItem("user", JSON.stringify(user));
+  };
+
+  const handleGoogleClick = () => {
+    setLoginError("");
+    setLoginSuccess("");
+    setIsGoogleLoading(true);
+    triggerGoogleSignIn({
+      onSuccess: (user, token) => {
+        setIsGoogleLoading(false);
+        handleGoogleSuccess(user, token);
+      },
+      onError: (err) => {
+        setIsGoogleLoading(false);
+        if (err) setLoginError(err);
+      },
+      onCancel: () => {
+        setIsGoogleLoading(false);
+      },
+      onPhoneRequired: (pendingAuth) => {
+        setIsGoogleLoading(false);
+        setPendingGoogleAuth(pendingAuth);
+      },
+    });
+  };
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -59,18 +99,23 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
       const response = await fetch(LOGIN_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: loginEmail.trim(), password: loginPassword, rememberMe }),
+        body: JSON.stringify({ email: loginEmail.trim(), password: loginPassword }),
       });
       const data = await response.json().catch(() => ({}));
       if (response.ok) {
         setLoginSuccess(data.message || "Login successful! Redirecting...");
-        const token = data.token || data.accessToken;
+        const token = data.token || data.accessToken || data.access_token;
         if (token) {
           rememberMe ? localStorage.setItem("token", token) : sessionStorage.setItem("token", token);
         }
         if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
       } else {
-        setLoginError(data.message || data.error || "Invalid email or password.");
+        const errorMsg =
+          (Array.isArray(data.detail) ? data.detail.map((d) => d.msg).join(", ") : data.detail) ||
+          data.message ||
+          data.error ||
+          "Invalid email or password.";
+        setLoginError(errorMsg);
       }
     } catch {
       setLoginError("Could not connect to the server.");
@@ -250,14 +295,29 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
             </div>
 
             {/* Google */}
-            <button type="button" className="ql-google">
-              <svg width="20" height="20" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
-                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.11 0-5.74-2.1-6.68-4.93H1.36v3.15C3.33 21.35 7.4 24 12 24z"/>
-                <path fill="#FBBC05" d="M5.32 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.36A11.94 11.94 0 0 0 0 12c0 1.92.45 3.74 1.36 5.42l3.96-3.15z"/>
-                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.4 0 3.33 2.65 1.36 6.58l3.96 3.15c.94-2.83 3.57-4.98 6.68-4.98z"/>
-              </svg>
-              Continue with Google
+            <button
+              type="button"
+              className="ql-google"
+              onClick={handleGoogleClick}
+              disabled={isGoogleLoading}
+              style={{ opacity: isGoogleLoading ? 0.75 : 1, cursor: isGoogleLoading ? "wait" : "pointer" }}
+            >
+              {isGoogleLoading ? (
+                <>
+                  <span className="ql-spin" />
+                  <span>Checking Google account...</span>
+                </>
+              ) : (
+                <>
+                  <svg width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.11 0-5.74-2.1-6.68-4.93H1.36v3.15C3.33 21.35 7.4 24 12 24z"/>
+                    <path fill="#FBBC05" d="M5.32 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.36A11.94 11.94 0 0 0 0 12c0 1.92.45 3.74 1.36 5.42l3.96-3.15z"/>
+                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.4 0 3.33 2.65 1.36 6.58l3.96 3.15c.94-2.83 3.57-4.98 6.68-4.98z"/>
+                  </svg>
+                  Continue with Google
+                </>
+              )}
             </button>
 
             {/* Footer switch to Register */}
@@ -301,6 +361,23 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
         />
       </div>
 
+      {/* Google Phone Number Modal for New Users */}
+      <GooglePhoneModal
+        isOpen={Boolean(pendingGoogleAuth)}
+        googleUser={pendingGoogleAuth?.googleUser}
+        onSubmit={async (phone) => {
+          if (pendingGoogleAuth?.onComplete) {
+            await pendingGoogleAuth.onComplete(phone);
+            setPendingGoogleAuth(null);
+          }
+        }}
+        onCancel={() => {
+          if (pendingGoogleAuth?.onCancel) {
+            pendingGoogleAuth.onCancel();
+          }
+          setPendingGoogleAuth(null);
+        }}
+      />
     </div>
   );
 }
