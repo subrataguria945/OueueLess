@@ -643,8 +643,8 @@
   grid-template-columns: 1fr 1.35fr 1.25fr;
   gap: 10px;
   width: 100%;
-  height: 200px;
-  min-height: 200px;
+  height: 182px;
+  min-height: 182px;
   box-sizing: border-box;
   flex-shrink: 0;
 }
@@ -1163,32 +1163,31 @@
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  overflow: hidden;
-  gap: 3px;
-  padding: 4px 0;
+  overflow-y: auto;
+  gap: 11px;
+  padding: 6px 2px 4px 0;
 }
 
 .ql-timeline-item {
   display: flex;
   align-items: flex-start;
-  gap: 11px;
+  gap: 12px;
   position: relative;
-  flex: 1;
+  flex-shrink: 0;
 }
 
 .ql-timeline-marker {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 20px;
+  width: 24px;
   flex-shrink: 0;
-  padding-top: 2px;
-  height: 100%;
+  position: relative;
 }
 
 .ql-timeline-circle-badge {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1196,43 +1195,56 @@
   flex-shrink: 0;
   z-index: 2;
   color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+}
+
+.ql-timeline-circle-badge svg {
+  width: 12px;
+  height: 12px;
 }
 
 .ql-timeline-line {
-  width: 1.5px;
-  flex: 1;
-  background: #cbd5e1;
-  margin-top: 2px;
+  position: absolute;
+  top: 24px;
+  bottom: -13px;
+  width: 2px;
+  background: #e2e8f0;
+  z-index: 1;
 }
 
 .ql-timeline-content {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: 1px;
 }
 
 .ql-timeline-title {
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 800;
   color: var(--admin-text-main);
-  line-height: 1.25;
+  line-height: 1.3;
 }
 
 .ql-timeline-desc {
   font-size: 11.5px;
   color: #475569;
   font-weight: 500;
+  margin-top: 2px;
+  line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.25;
 }
 
 .ql-timeline-time {
-  font-size: 11px;
+  font-size: 11.5px;
   color: #64748b;
   white-space: nowrap;
   font-weight: 600;
+  padding-top: 2px;
 }
 
 /* ── OWNER DETAIL MODAL ────────────────────────────────────────────────── */
