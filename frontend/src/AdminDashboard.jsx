@@ -821,10 +821,9 @@ export function AdminDashboard() {
                   <thead>
                     <tr>
                       <th style={{ width: "24px" }}>#</th>
-                      <th>Owner Name</th>
-                      <th>Email</th>
+                      <th>Owner</th>
                       <th>Phone</th>
-                      <th style={{ textAlign: "center", width: "50px" }}>Shops</th>
+                      <th style={{ textAlign: "center", width: "55px" }}>Shops</th>
                       <th>Status</th>
                       <th>Joined On</th>
                       <th style={{ textAlign: "center", width: "70px" }}>Actions</th>
@@ -845,12 +844,14 @@ export function AdminDashboard() {
                             >
                               {owner.initial}
                             </span>
-                            <span className="ql-owner-name">{owner.name}</span>
+                            <div className="ql-owner-details">
+                              <span className="ql-owner-name">{owner.name}</span>
+                              <span className="ql-owner-email">{owner.email}</span>
+                            </div>
                           </div>
                         </td>
-                        <td>{owner.email}</td>
                         <td>{owner.phone}</td>
-                        <td style={{ textAlign: "center", fontWeight: "600" }}>{owner.shops}</td>
+                        <td style={{ textAlign: "center", fontWeight: "700" }}>{owner.shops}</td>
                         <td>
                           <span
                             className={`ql-badge-pill ${
