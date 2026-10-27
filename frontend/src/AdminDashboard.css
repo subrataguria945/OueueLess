@@ -1,0 +1,1013 @@
+/* ==========================================================================
+   QUEUELESS — MODERN ADMIN DASHBOARD STYLES
+   Pixel-perfect match to the sleek dark sidebar & high-contrast clean cards
+   ========================================================================== */
+
+:root {
+  --admin-sidebar-bg: #091932;
+  --admin-sidebar-hover: rgba(255, 255, 255, 0.08);
+  --admin-sidebar-active: #1960f7;
+  --admin-main-bg: #f4f7fb;
+  --admin-card-bg: #ffffff;
+  --admin-text-main: #0f172a;
+  --admin-text-muted: #64748b;
+  --admin-border: #e2e8f0;
+  --admin-blue: #1960f7;
+  --admin-blue-light: #eff6ff;
+  --admin-green: #10b981;
+  --admin-green-light: #ecfdf5;
+  --admin-amber: #f59e0b;
+  --admin-amber-light: #fffbeb;
+  --admin-red: #ef4444;
+  --admin-red-light: #fef2f2;
+}
+
+.ql-admin-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100vw;
+  background-color: var(--admin-main-bg);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--admin-text-main);
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* ── SIDEBAR ───────────────────────────────────────────────────────────── */
+.ql-admin-sidebar {
+  width: 250px;
+  min-width: 250px;
+  background: linear-gradient(180deg, #091932 0%, #061224 100%);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px 16px;
+  box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 50;
+  transition: transform 0.25s ease;
+}
+
+.ql-admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 10px 24px;
+}
+
+.ql-brand-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #00b4d8 0%, #1960f7 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(25, 96, 247, 0.4);
+}
+
+.ql-brand-icon-text {
+  font-size: 24px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.ql-brand-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: #ffffff;
+}
+
+.ql-admin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.ql-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 14.5px;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: all 0.18s ease;
+  font-family: inherit;
+}
+
+.ql-nav-item:hover {
+  background: var(--admin-sidebar-hover);
+  color: #ffffff;
+}
+
+.ql-nav-item.active {
+  background: var(--admin-sidebar-active);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(25, 96, 247, 0.45);
+}
+
+.ql-nav-badge {
+  margin-left: auto;
+  background: rgba(255, 255, 255, 0.2);
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  color: #ffffff;
+}
+
+.ql-sidebar-footer {
+  margin-top: auto;
+  padding: 18px 12px 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+}
+
+.ql-sidebar-graphic {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+  opacity: 0.8;
+}
+
+.ql-sidebar-tagline {
+  font-size: 11.5px;
+  color: #64748b;
+  line-height: 1.45;
+  text-align: center;
+  margin: 0;
+}
+
+/* ── MAIN CONTENT AREA ─────────────────────────────────────────────────── */
+.ql-admin-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+/* ── TOP NAVBAR ────────────────────────────────────────────────────────── */
+.ql-admin-topbar {
+  height: 70px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--admin-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  box-sizing: border-box;
+}
+
+.ql-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ql-mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--admin-text-main);
+  cursor: pointer;
+  padding: 6px;
+}
+
+.ql-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--admin-text-muted);
+}
+
+.ql-breadcrumb-link {
+  color: var(--admin-text-muted);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ql-breadcrumb-sep {
+  color: #cbd5e1;
+}
+
+.ql-breadcrumb-current {
+  color: var(--admin-text-main);
+  font-weight: 600;
+}
+
+.ql-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.ql-topbar-search {
+  position: relative;
+  width: 320px;
+}
+
+.ql-topbar-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+  display: flex;
+}
+
+.ql-topbar-search input {
+  width: 100%;
+  height: 40px;
+  background: #f8fafc;
+  border: 1px solid var(--admin-border);
+  border-radius: 20px;
+  padding: 0 16px 0 40px;
+  font-size: 13.5px;
+  font-family: inherit;
+  color: var(--admin-text-main);
+  outline: none;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+
+.ql-topbar-search input:focus {
+  background: #ffffff;
+  border-color: var(--admin-blue);
+  box-shadow: 0 0 0 3px rgba(25, 96, 247, 0.12);
+}
+
+.ql-notif-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid var(--admin-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ql-notif-btn:hover {
+  background: #f1f5f9;
+  color: var(--admin-text-main);
+}
+
+.ql-notif-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 10.5px;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+}
+
+.ql-topbar-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--admin-border);
+}
+
+.ql-admin-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease;
+  position: relative;
+}
+
+.ql-admin-profile:hover {
+  background: #f8fafc;
+}
+
+.ql-avatar-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1960f7 0%, #0d47a1 100%);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(25, 96, 247, 0.3);
+}
+
+.ql-profile-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--admin-text-main);
+}
+
+.ql-profile-dropdown {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  width: 180px;
+  background: #ffffff;
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 6px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+
+.ql-dropdown-item {
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 13.5px;
+  color: var(--admin-text-main);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.15s ease;
+}
+
+.ql-dropdown-item:hover {
+  background: #f1f5f9;
+}
+
+.ql-dropdown-item.danger {
+  color: #ef4444;
+}
+
+.ql-dropdown-item.danger:hover {
+  background: #fef2f2;
+}
+
+/* ── PAGE CONTENT ──────────────────────────────────────────────────────── */
+.ql-admin-content {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* ── HEADER ────────────────────────────────────────────────────────────── */
+.ql-page-header {
+  margin-bottom: 4px;
+}
+
+.ql-page-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--admin-text-main);
+  margin: 0 0 6px 0;
+  letter-spacing: -0.5px;
+}
+
+.ql-page-sub {
+  font-size: 14px;
+  color: var(--admin-text-muted);
+  margin: 0;
+}
+
+/* ── STATS CARDS GRID ──────────────────────────────────────────────────── */
+.ql-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.ql-stat-card {
+  background: #ffffff;
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.ql-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+.ql-stat-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.ql-stat-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ql-stat-card.blue .ql-stat-icon-wrap {
+  background: #eff6ff;
+  color: #1960f7;
+}
+
+.ql-stat-card.green .ql-stat-icon-wrap {
+  background: #ecfdf5;
+  color: #10b981;
+}
+
+.ql-stat-card.amber .ql-stat-icon-wrap {
+  background: #fffbeb;
+  color: #f59e0b;
+}
+
+.ql-stat-card.red .ql-stat-icon-wrap {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.ql-stat-info {
+  margin-left: 14px;
+  flex: 1;
+}
+
+.ql-stat-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--admin-text-muted);
+  margin-bottom: 4px;
+}
+
+.ql-stat-number {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--admin-text-main);
+  line-height: 1;
+}
+
+/* Mini Bar Chart Mock in Stat Card */
+.ql-mini-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 32px;
+}
+
+.ql-mini-bar {
+  width: 5px;
+  border-radius: 2px;
+  transition: height 0.3s ease;
+}
+
+.ql-stat-card.blue .ql-mini-bar {
+  background: #93c5fd;
+}
+.ql-stat-card.green .ql-mini-bar {
+  background: #86efac;
+}
+.ql-stat-card.amber .ql-mini-bar {
+  background: #fde68a;
+}
+.ql-stat-card.red .ql-mini-bar {
+  background: #fca5a5;
+}
+
+.ql-stat-bottom {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.ql-trend-up {
+  color: #10b981;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.ql-trend-down {
+  color: #10b981; /* reduction in suspended is good */
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.ql-trend-context {
+  color: #94a3b8;
+}
+
+/* ── TABLE CARD (OWNER MANAGEMENT) ─────────────────────────────────────── */
+.ql-card-panel {
+  background: #ffffff;
+  border: 1px solid var(--admin-border);
+  border-radius: 18px;
+  padding: 24px 28px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.ql-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.ql-panel-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--admin-text-main);
+  margin: 0 0 4px 0;
+}
+
+.ql-panel-sub {
+  font-size: 13.5px;
+  color: var(--admin-text-muted);
+  margin: 0;
+}
+
+.ql-btn-primary {
+  background: linear-gradient(135deg, #1960f7 0%, #0d47a1 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(25, 96, 247, 0.3);
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.ql-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(25, 96, 247, 0.4);
+}
+
+.ql-table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.ql-toolbar-search {
+  position: relative;
+  flex: 1;
+  max-width: 480px;
+}
+
+.ql-toolbar-search input {
+  width: 100%;
+  height: 42px;
+  background: #ffffff;
+  border: 1.5px solid var(--admin-border);
+  border-radius: 11px;
+  padding: 0 16px 0 42px;
+  font-size: 13.5px;
+  font-family: inherit;
+  color: var(--admin-text-main);
+  outline: none;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+
+.ql-toolbar-search input:focus {
+  border-color: var(--admin-blue);
+  box-shadow: 0 0 0 3px rgba(25, 96, 247, 0.1);
+}
+
+.ql-toolbar-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ql-btn-filter {
+  height: 42px;
+  padding: 0 16px;
+  background: #ffffff;
+  border: 1.5px solid var(--admin-border);
+  border-radius: 11px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.ql-btn-filter:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+/* ── TABLE ─────────────────────────────────────────────────────────────── */
+.ql-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+}
+
+.ql-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13.5px;
+}
+
+.ql-table th {
+  background: #f8fafc;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 12.5px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--admin-border);
+  white-space: nowrap;
+}
+
+.ql-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.ql-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ql-table tbody tr:hover td {
+  background-color: #f8fafc;
+}
+
+.ql-owner-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ql-owner-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.ql-owner-name {
+  font-weight: 600;
+  color: var(--admin-text-main);
+}
+
+.ql-badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ql-badge-status.active {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.ql-badge-status.expiring {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+.ql-badge-status.suspended {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.ql-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.ql-actions-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ql-action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid var(--admin-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ql-action-btn:hover {
+  background: #f1f5f9;
+  color: var(--admin-blue);
+  border-color: var(--admin-blue);
+}
+
+.ql-action-btn.delete:hover {
+  background: #fef2f2;
+  color: #ef4444;
+  border-color: #fca5a5;
+}
+
+/* ── RECENT ACTIVITY ───────────────────────────────────────────────────── */
+.ql-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ql-activity-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.ql-activity-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.ql-activity-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ql-activity-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.ql-activity-icon.green {
+  background: #ecfdf5;
+  color: #10b981;
+}
+
+.ql-activity-icon.blue {
+  background: #eff6ff;
+  color: #1960f7;
+}
+
+.ql-activity-icon.amber {
+  background: #fffbeb;
+  color: #f59e0b;
+}
+
+.ql-activity-icon.gray {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.ql-activity-text {
+  font-size: 13.5px;
+  color: #334155;
+}
+
+.ql-activity-title {
+  font-weight: 600;
+  color: var(--admin-text-main);
+  margin-right: 6px;
+}
+
+.ql-activity-time {
+  font-size: 12px;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.ql-btn-secondary {
+  background: #ffffff;
+  border: 1.5px solid var(--admin-border);
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.ql-btn-secondary:hover {
+  background: #f8fafc;
+  color: var(--admin-text-main);
+}
+
+/* ── MODAL DIALOGS ─────────────────────────────────────────────────────── */
+.ql-admin-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.ql-admin-modal {
+  width: 100%;
+  max-width: 500px;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--admin-border);
+  animation: qlCardEnter 0.2s ease both;
+  box-sizing: border-box;
+}
+
+.ql-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.ql-modal-head h3 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--admin-text-main);
+}
+
+.ql-modal-close {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+}
+
+.ql-modal-close:hover {
+  color: #0f172a;
+  background: #f1f5f9;
+}
+
+.ql-form-group {
+  margin-bottom: 16px;
+}
+
+.ql-form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+.ql-form-group input,
+.ql-form-group select {
+  width: 100%;
+  height: 42px;
+  border: 1.5px solid var(--admin-border);
+  border-radius: 10px;
+  padding: 0 14px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--admin-text-main);
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+.ql-form-group input:focus,
+.ql-form-group select:focus {
+  border-color: var(--admin-blue);
+  box-shadow: 0 0 0 3px rgba(25, 96, 247, 0.12);
+}
+
+.ql-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* ── RESPONSIVE DESIGN ─────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .ql-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .ql-admin-sidebar {
+    position: fixed;
+    transform: translateX(-100%);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.2);
+  }
+
+  .ql-admin-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .ql-mobile-menu-btn {
+    display: flex;
+  }
+
+  .ql-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ql-admin-content {
+    padding: 16px;
+  }
+
+  .ql-topbar-search {
+    display: none;
+  }
+}
