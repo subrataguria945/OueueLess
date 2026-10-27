@@ -1,13 +1,13 @@
 from Library.Authentication.user.database import validate_login_indb , insert_user_indb , change_password_indb
-from Library.Security.JWT import generate_jwt_token
-
+from Library.Security.JWT import generate_access_token , generate_signup_token , decode_token
+import secrets
+import hashlib
 def login_user(input : dict ):
-    input = dict(input)
     email = input.get("email")
     password = input.get("password")
     response = validate_login_indb(email,password)
     if response.get("status") == 200:
-        token = generate_jwt_token(email,password)
+        token = generate_access_token(response.get("user_id"),email)
         return {
             "status" : "success",
             "user_id": response.get("user_id"),
@@ -25,8 +25,7 @@ def login_user(input : dict ):
         }
 
 
-def register_user(input):
-    input = dict(input)
+def register_user(input : dict ):
     fullname = input.get("fullname")
     email = input.get("email")
     phone = input.get("phone")
@@ -41,9 +40,8 @@ def register_user(input):
     response = insert_user_indb(fullname,email,phone,password,role_id)
     if response.get("status") == 200:
         return {
-            "status" : "success",
+            "status" : 200,
             "user_id": response.get("user_id"),
-            "email": email,
             "message": response.get("message")
         }
     else:
@@ -53,7 +51,6 @@ def register_user(input):
         }
   
 def change_password(input : dict):
-    input = dict(input)
     userid = input.get("userid")
     action = input.get("action")
     oldpassword = input.get("oldpassword")
@@ -76,3 +73,57 @@ def change_password(input : dict):
                 "message" : response.get("error")
             }
             
+def initiate_register(input: dict):
+
+    otp = str(secrets.randbelow(900000) + 100000)
+    otp_hash = hashlib.sha256(otp.encode()).hexdigest()
+
+    print("OTP:", otp)
+    print("OTP Hash:", otp_hash)
+    # email send
+
+    token = generate_signup_token(input , otp_hash)
+
+    return {
+        "status" : "success",
+        "message" : "OTP sent to your email. Please verify within 5 minutes",
+        "token" : token
+    }
+
+# Signup token - userdata , otphash , exp , iat
+def veriy_and_register_user(input : dict ):
+    signup_token = input.get("signup_token")
+    otp = input.get("otp")
+    password = input.get("password")
+    
+    payload = decode_token(signup_token)
+    if "error" in payload:
+        return { "status" : "failed" , "message" : payload["error"]}
+    
+    otp_hash = hashlib.sha256(otp.strip().encode()).hexdigest()
+    if otp_hash != payload["otp_hash"]:
+        return { "status" : "failed" , "message" : "Invalid OTP"}
+    
+    user_data = payload["user_data"]
+    full_name = user_data.get("fullname")
+    email = user_data.get("email")
+    phone = user_data.get("phone")
+    role_id = user_data.get("user_role")
+
+    response = insert_user_indb(full_name,email,phone,password,role_id)
+    if response.get("status") == 200:
+        token = generate_access_token(response.get("user_id"),email)
+        return {
+            "status" : "success",
+            "user_id": response.get("user_id"),
+            "user_role": role_id,
+            "email": email,
+            "message": response.get("message"),
+            "access_token": token,
+            "token_type" : "bearer"
+        }
+    else:
+        return {
+            "status" : "Registration Failed",
+            "message" : response.get("error")
+        }   
