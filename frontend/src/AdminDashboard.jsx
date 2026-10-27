@@ -546,197 +546,200 @@ export function AdminDashboard() {
             </div>
           </div>
 
-          {/* ── 4. OWNER MANAGEMENT TABLE CARD ─────────────────────── */}
-          <div className="ql-card-panel">
-            <div className="ql-panel-header">
-              <div>
-                <h2 className="ql-panel-title">Owner Management</h2>
-                <p className="ql-panel-sub">
-                  View, add, edit or manage all owners in the platform.
-                </p>
-              </div>
-              <button
-                type="button"
-                className="ql-btn-primary"
-                onClick={handleOpenAddModal}
-              >
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                <span>Add Owner</span>
-              </button>
-            </div>
-
-            {/* Search & Filter Toolbar */}
-            <div className="ql-table-toolbar">
-              <div className="ql-toolbar-search">
-                <span className="ql-topbar-search-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="11" cy="11" r="8" />
-                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                  </svg>
-                </span>
-                <input
-                  type="text"
-                  placeholder="Search by name, email or phone..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-
-              <div className="ql-toolbar-filter">
-                <select
-                  className="ql-btn-filter"
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
+          {/* ── 4. BOTTOM GRID (SIDE-BY-SIDE: TABLE & RECENT ACTIVITY) ─── */}
+          <div className="ql-dashboard-bottom-grid">
+            {/* 4A. OWNER MANAGEMENT TABLE CARD */}
+            <div className="ql-card-panel ql-table-panel">
+              <div className="ql-panel-header">
+                <div>
+                  <h2 className="ql-panel-title">Owner Management</h2>
+                  <p className="ql-panel-sub">
+                    View, add, edit or manage all owners in the platform.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="ql-btn-primary"
+                  onClick={handleOpenAddModal}
                 >
-                  <option value="All">All Status</option>
-                  <option value="Active">Active</option>
-                  <option value="Expiring Soon">Expiring Soon</option>
-                  <option value="Suspended">Suspended</option>
-                </select>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  <span>Add Owner</span>
+                </button>
               </div>
-            </div>
 
-            {/* Table */}
-            <div className="ql-table-wrapper">
-              <table className="ql-table">
-                <thead>
-                  <tr>
-                    <th style={{ width: "40px" }}>#</th>
-                    <th>Owner</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Shops</th>
-                    <th>Expires At</th>
-                    <th>Status</th>
-                    <th style={{ textAlign: "center", width: "120px" }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredOwners.length > 0 ? (
-                    filteredOwners.map((owner, idx) => (
-                      <tr key={owner.id}>
-                        <td>{idx + 1}</td>
-                        <td>
-                          <div className="ql-owner-cell">
-                            <div
-                              className="ql-owner-avatar"
-                              style={{ backgroundColor: owner.avatarBg }}
-                            >
-                              {owner.name.charAt(0)}
+              {/* Search & Filter Toolbar */}
+              <div className="ql-table-toolbar">
+                <div className="ql-toolbar-search">
+                  <span className="ql-topbar-search-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="11" cy="11" r="8" />
+                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="Search by name, email or phone..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+
+                <div className="ql-toolbar-filter">
+                  <select
+                    className="ql-btn-filter"
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                  >
+                    <option value="All">All Status</option>
+                    <option value="Active">Active</option>
+                    <option value="Expiring Soon">Expiring Soon</option>
+                    <option value="Suspended">Suspended</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Table */}
+              <div className="ql-table-wrapper">
+                <table className="ql-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: "36px" }}>#</th>
+                      <th>Owner</th>
+                      <th>Email</th>
+                      <th>Phone</th>
+                      <th>Shops</th>
+                      <th>Expires</th>
+                      <th>Status</th>
+                      <th style={{ textAlign: "center", width: "100px" }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredOwners.length > 0 ? (
+                      filteredOwners.map((owner, idx) => (
+                        <tr key={owner.id}>
+                          <td>{idx + 1}</td>
+                          <td>
+                            <div className="ql-owner-cell">
+                              <div
+                                className="ql-owner-avatar"
+                                style={{ backgroundColor: owner.avatarBg }}
+                              >
+                                {owner.name.charAt(0)}
+                              </div>
+                              <span className="ql-owner-name">{owner.name}</span>
                             </div>
-                            <span className="ql-owner-name">{owner.name}</span>
-                          </div>
-                        </td>
-                        <td>{owner.email}</td>
-                        <td>{owner.phone}</td>
-                        <td>{owner.shops}</td>
-                        <td>{owner.expiresAt}</td>
-                        <td>
-                          <span
-                            className={`ql-badge-status ${
-                              owner.status === "Active"
-                                ? "active"
-                                : owner.status === "Expiring Soon"
-                                ? "expiring"
-                                : "suspended"
-                            }`}
-                          >
-                            <span className="ql-status-dot" />
-                            {owner.status}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="ql-actions-cell" style={{ justifyContent: "center" }}>
-                            {/* View */}
-                            <button
-                              type="button"
-                              className="ql-action-btn"
-                              title="View details"
-                              onClick={() => alert(`Owner: ${owner.name}\nEmail: ${owner.email}\nPhone: ${owner.phone}\nShops: ${owner.shops}\nExpires: ${owner.expiresAt}\nStatus: ${owner.status}`)}
+                          </td>
+                          <td>{owner.email}</td>
+                          <td>{owner.phone}</td>
+                          <td>{owner.shops}</td>
+                          <td>{owner.expiresAt}</td>
+                          <td>
+                            <span
+                              className={`ql-badge-status ${
+                                owner.status === "Active"
+                                  ? "active"
+                                  : owner.status === "Expiring Soon"
+                                  ? "expiring"
+                                  : "suspended"
+                              }`}
                             >
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                <circle cx="12" cy="12" r="3" />
-                              </svg>
-                            </button>
+                              <span className="ql-status-dot" />
+                              {owner.status}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="ql-actions-cell" style={{ justifyContent: "center" }}>
+                              {/* View */}
+                              <button
+                                type="button"
+                                className="ql-action-btn"
+                                title="View details"
+                                onClick={() => alert(`Owner: ${owner.name}\nEmail: ${owner.email}\nPhone: ${owner.phone}\nShops: ${owner.shops}\nExpires: ${owner.expiresAt}\nStatus: ${owner.status}`)}
+                              >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                  <circle cx="12" cy="12" r="3" />
+                                </svg>
+                              </button>
 
-                            {/* Edit */}
-                            <button
-                              type="button"
-                              className="ql-action-btn"
-                              title="Edit owner"
-                              onClick={() => handleOpenEditModal(owner)}
-                            >
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                              </svg>
-                            </button>
+                              {/* Edit */}
+                              <button
+                                type="button"
+                                className="ql-action-btn"
+                                title="Edit owner"
+                                onClick={() => handleOpenEditModal(owner)}
+                              >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                </svg>
+                              </button>
 
-                            {/* Delete */}
-                            <button
-                              type="button"
-                              className="ql-action-btn delete"
-                              title="Delete owner"
-                              onClick={() => handleDeleteOwner(owner.id)}
-                            >
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <polyline points="3 6 5 6 21 6" />
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                              </svg>
-                            </button>
-                          </div>
+                              {/* Delete */}
+                              <button
+                                type="button"
+                                className="ql-action-btn delete"
+                                title="Delete owner"
+                                onClick={() => handleDeleteOwner(owner.id)}
+                              >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <polyline points="3 6 5 6 21 6" />
+                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                </svg>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="8" style={{ textAlign: "center", padding: "20px", color: "#94a3b8" }}>
+                          No owners match your criteria.
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="8" style={{ textAlign: "center", padding: "36px", color: "#94a3b8" }}>
-                        No owners match your search or filter criteria.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* ── 5. RECENT ACTIVITY CARD ────────────────────────────── */}
-          <div className="ql-card-panel">
-            <div className="ql-panel-header">
-              <div>
-                <h2 className="ql-panel-title">Recent Activity</h2>
-                <p className="ql-panel-sub">
-                  Latest actions performed in the platform.
-                </p>
+                    )}
+                  </tbody>
+                </table>
               </div>
-              <button
-                type="button"
-                className="ql-btn-secondary"
-                onClick={() => alert("All activity logs are up to date.")}
-              >
-                View All
-              </button>
             </div>
 
-            <div className="ql-activity-list">
-              {RECENT_ACTIVITIES.map((act) => (
-                <div key={act.id} className="ql-activity-item">
-                  <div className="ql-activity-left">
-                    <div className={`ql-activity-icon ${act.color}`}>
-                      {act.icon}
-                    </div>
-                    <div className="ql-activity-text">
-                      <span className="ql-activity-title">{act.title}</span>
-                      <span>— {act.detail}</span>
-                    </div>
-                  </div>
-                  <div className="ql-activity-time">{act.time}</div>
+            {/* 4B. RECENT ACTIVITY CARD */}
+            <div className="ql-card-panel ql-activity-panel">
+              <div className="ql-panel-header">
+                <div>
+                  <h2 className="ql-panel-title">Recent Activity</h2>
+                  <p className="ql-panel-sub">
+                    Latest platform events
+                  </p>
                 </div>
-              ))}
+                <button
+                  type="button"
+                  className="ql-btn-secondary"
+                  onClick={() => alert("All activity logs are up to date.")}
+                >
+                  View All
+                </button>
+              </div>
+
+              <div className="ql-activity-list">
+                {RECENT_ACTIVITIES.map((act) => (
+                  <div key={act.id} className="ql-activity-item">
+                    <div className="ql-activity-left">
+                      <div className={`ql-activity-icon ${act.color}`}>
+                        {act.icon}
+                      </div>
+                      <div className="ql-activity-text">
+                        <span className="ql-activity-title">{act.title}</span>
+                        <span>— {act.detail}</span>
+                      </div>
+                    </div>
+                    <div className="ql-activity-time">{act.time}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </main>
