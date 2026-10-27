@@ -25,18 +25,20 @@
 .ql-admin-layout {
   display: flex;
   min-height: 100vh;
-  width: 100vw;
+  width: 100%;
+  max-width: 100%;
   background-color: var(--admin-main-bg);
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: var(--admin-text-main);
   box-sizing: border-box;
   overflow-x: hidden;
+  position: relative;
 }
 
 /* ── SIDEBAR ───────────────────────────────────────────────────────────── */
 .ql-admin-sidebar {
-  width: 250px;
-  min-width: 250px;
+  width: 240px;
+  min-width: 240px;
   background: linear-gradient(180deg, #091932 0%, #061224 100%);
   color: #ffffff;
   display: flex;
@@ -49,6 +51,7 @@
   height: 100vh;
   z-index: 50;
   transition: transform 0.25s ease;
+  flex-shrink: 0;
 }
 
 .ql-admin-brand {
@@ -383,10 +386,14 @@
 
 /* ── PAGE CONTENT ──────────────────────────────────────────────────────── */
 .ql-admin-content {
-  padding: 32px;
+  padding: 24px 28px 40px;
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 24px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 /* ── HEADER ────────────────────────────────────────────────────────────── */
@@ -548,8 +555,11 @@
   background: #ffffff;
   border: 1px solid var(--admin-border);
   border-radius: 18px;
-  padding: 24px 28px;
+  padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .ql-panel-header {
@@ -557,6 +567,8 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .ql-panel-title {
@@ -587,6 +599,7 @@
   box-shadow: 0 4px 12px rgba(25, 96, 247, 0.3);
   transition: all 0.15s ease;
   font-family: inherit;
+  flex-shrink: 0;
 }
 
 .ql-btn-primary:hover {
@@ -600,11 +613,13 @@
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 18px;
+  flex-wrap: wrap;
 }
 
 .ql-toolbar-search {
   position: relative;
   flex: 1;
+  min-width: 240px;
   max-width: 480px;
 }
 
@@ -632,6 +647,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .ql-btn-filter {
@@ -658,13 +674,18 @@
 
 /* ── TABLE ─────────────────────────────────────────────────────────────── */
 .ql-table-wrapper {
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
   border: 1px solid var(--admin-border);
   border-radius: 12px;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
 }
 
 .ql-table {
   width: 100%;
+  min-width: 760px;
   border-collapse: collapse;
   text-align: left;
   font-size: 13.5px;
