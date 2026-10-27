@@ -10,8 +10,8 @@ export function RegisterPanel({ onSwitchToLogin }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [password, setPassword] = useState(() => localStorage.getItem("signup_password") || "");
+  const [confirmPassword, setConfirmPassword] = useState(() => localStorage.getItem("signup_confirm_password") || "");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(true);
@@ -55,6 +55,10 @@ export function RegisterPanel({ onSwitchToLogin }) {
   })();
 
   const handleSendOtp = async () => {
+    // Save password & confirm password to localStorage first
+    if (password) localStorage.setItem("signup_password", password);
+    if (confirmPassword) localStorage.setItem("signup_confirm_password", confirmPassword);
+
     const cleanEmail = email.trim().toLowerCase();
     if (!cleanEmail || !cleanEmail.includes("@")) {
       setError("Please enter a valid email address to verify.");
@@ -76,6 +80,10 @@ export function RegisterPanel({ onSwitchToLogin }) {
     e.preventDefault();
     setError("");
     setSuccess("");
+
+    // Store password and confirm password to localStorage first as requested
+    localStorage.setItem("signup_password", password);
+    localStorage.setItem("signup_confirm_password", confirmPassword);
 
     if (!isEmailVerified) {
       await handleSendOtp();
@@ -129,6 +137,10 @@ export function RegisterPanel({ onSwitchToLogin }) {
       });
       const data = await response.json().catch(() => ({}));
       if (response.ok) {
+        // Clear saved signup passwords on success
+        localStorage.removeItem("signup_password");
+        localStorage.removeItem("signup_confirm_password");
+
         setSuccess(data.message || "Account created successfully! Switching to login...");
         setTimeout(() => {
           if (onSwitchToLogin) onSwitchToLogin();
@@ -340,7 +352,10 @@ export function RegisterPanel({ onSwitchToLogin }) {
               type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                localStorage.setItem("signup_password", e.target.value);
+              }}
               required
               style={{ ...regInputStyle, paddingRight: "46px" }}
               onFocus={(e) => { e.target.style.borderColor = "#1960f7"; e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)"; }}
@@ -424,7 +439,10 @@ export function RegisterPanel({ onSwitchToLogin }) {
               type={showConfirmPassword ? "text" : "password"}
               placeholder="Confirm password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                localStorage.setItem("signup_confirm_password", e.target.value);
+              }}
               required
               style={{ ...regInputStyle, paddingRight: "46px" }}
               onFocus={(e) => { e.target.style.borderColor = "#1960f7"; e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)"; }}
