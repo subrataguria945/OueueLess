@@ -110,7 +110,7 @@ export async function syncGoogleUserWithDatabase(googleUser, phone = "") {
     throw new Error(regData.message || regData.detail || "Registration failed.");
   } catch (err) {
     console.error("Backend database sync error:", err);
-    throw new Error(err?.message || "Could not connect to database backend. Please check network connection.");
+    throw new Error(err?.message || "Unable to reach the server. Please check your internet connection.");
   }
 }
 
@@ -223,7 +223,7 @@ export async function triggerGoogleSignIn({ onSuccess, onError, onPhoneRequired,
             localStorage.setItem("token", syncResult.token);
             onSuccess?.(syncResult.user, syncResult.token, syncResult.isNew);
           } catch (err) {
-            onError?.(err.message || "Failed to save Google account to database.");
+            onError?.(err?.message || "Unable to sync your Google account. Please try again.");
           }
         }
       },
@@ -231,6 +231,6 @@ export async function triggerGoogleSignIn({ onSuccess, onError, onPhoneRequired,
 
     client.requestAccessToken({ prompt: "select_account" });
   } catch (err) {
-    onError?.(err.message || "Failed to open Google Sign-In window.");
+    onError?.(err?.message || "Unable to open Google Sign-In popup. Please allow popups for this site.");
   }
 }

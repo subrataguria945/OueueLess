@@ -78,7 +78,14 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
       },
       onError: (err) => {
         setIsGoogleLoading(false);
-        if (err) setLoginError(err);
+        if (err) {
+          const str = String(err).toLowerCase();
+          if (str.includes("cancel") || str.includes("closed")) {
+            // Cancelled cleanly without error alert
+          } else {
+            setLoginError(err || "Unable to sign in with Google. Please try again or use your email and password.");
+          }
+        }
       },
       onCancel: () => {
         setIsGoogleLoading(false);
@@ -110,15 +117,27 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
         }
         if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
       } else {
-        const errorMsg =
+        const rawError =
           (Array.isArray(data.detail) ? data.detail.map((d) => d.msg).join(", ") : data.detail) ||
           data.message ||
           data.error ||
-          "Invalid email or password.";
-        setLoginError(errorMsg);
+          "";
+
+        const lower = String(rawError).toLowerCase();
+        let formattedMessage = "Incorrect credentials. Check your email/password or use 'Forgot password'.";
+
+        if (lower.includes("not found") || lower.includes("doesn't exist") || lower.includes("no user") || lower.includes("unregistered")) {
+          formattedMessage = "No account found with this email. Please sign up first.";
+        } else if (lower.includes("invalid") || lower.includes("incorrect") || lower.includes("password") || lower.includes("credential")) {
+          formattedMessage = "Incorrect credentials. Check your email/password or use 'Forgot password'.";
+        } else if (rawError) {
+          formattedMessage = rawError;
+        }
+
+        setLoginError(formattedMessage);
       }
     } catch {
-      setLoginError("Could not connect to the server.");
+      setLoginError("Unable to connect to the server. Please check your internet connection and try again.");
     } finally {
       setIsLoginLoading(false);
     }
