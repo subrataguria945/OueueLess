@@ -260,22 +260,21 @@ export function AdminDashboard() {
           {/* Brand Header with Stylized Circular 'Q' Badge */}
           <div className="ql-admin-brand">
             <div className="ql-brand-icon-circle">
-              <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
-                <circle cx="18" cy="18" r="16" fill="url(#qgrad)" />
-                <path
-                  d="M18 10C13.58 10 10 13.58 10 18C10 22.42 13.58 26 18 26C19.78 26 21.43 25.42 22.77 24.43L25.35 27L27 25.35L24.43 22.77C25.42 21.43 26 19.78 26 18C26 13.58 22.42 10 18 10ZM18 22.5C15.51 22.5 13.5 20.49 13.5 18C13.5 15.51 15.51 13.5 18 13.5C20.49 13.5 22.5 15.51 22.5 18C22.5 20.49 20.49 22.5 18 22.5Z"
-                  fill="#ffffff"
-                />
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                <circle cx="20" cy="20" r="19" fill="url(#ql-logo-grad)" />
+                {/* Modern Crisp Geometric Q */}
+                <circle cx="19" cy="19" r="8" stroke="#ffffff" strokeWidth="3.6" fill="none" />
+                <path d="M23.5 23.5L29.5 29.5" stroke="#ffffff" strokeWidth="3.8" strokeLinecap="round" />
                 <defs>
-                  <linearGradient id="qgrad" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#00b4d8" />
-                    <stop offset="1" stopColor="#1960f7" />
+                  <linearGradient id="ql-logo-grad" x1="4" y1="4" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#0ea5e9" />
+                    <stop offset="1" stopColor="#1d4ed8" />
                   </linearGradient>
                 </defs>
               </svg>
             </div>
             <div className="ql-brand-text">
-              <h2 className="ql-brand-title">Queueless</h2>
+              <span className="ql-brand-title">Queueless</span>
               <span className="ql-brand-subtitle">Admin Panel</span>
             </div>
           </div>
