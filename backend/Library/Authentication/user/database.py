@@ -1,11 +1,9 @@
-from dns import message
 import psycopg
 from dotenv import load_dotenv
-import os 
-from Library.Security.JWT import generate_jwt_token
-import bcrypt
+import os
 load_dotenv()
 def validate_login_indb(email,password):
+    con = None
     try:
         con = psycopg.connect(
             host=os.getenv("HOST"),
@@ -42,9 +40,13 @@ def validate_login_indb(email,password):
             except Exception as e:
                 print(f"Error in database query: {e}")
                 return {"status" : 404, "error" : "Error While Executing The Query"}
+    finally:
+        if con : 
+            con.close()
 
 
 def insert_user_indb(fullname , email , phone , password , role_id):
+    con = None
     try:
         con = psycopg.connect(
             host=os.getenv("HOST"),
@@ -83,9 +85,12 @@ def insert_user_indb(fullname , email , phone , password , role_id):
             except Exception as e:
                 print(f"Error in database query: {e}")
                 return {"status" : 404, "error" : "Error While Executing The Query"}
-
+    finally:
+        if con :
+            con.close()
             
 def change_password_indb(userid,action,oldpassword,newpassword):
+    con = None
     try:
         con = psycopg.connect(
             host=os.getenv("HOST"),
@@ -123,3 +128,6 @@ def change_password_indb(userid,action,oldpassword,newpassword):
             except Exception as e:
                 print(f"Error in database query: {e}")
                 return {"status" : 404, "error" : "Error While Executing The Query"}
+    finally:
+        if con: 
+            con.close()
