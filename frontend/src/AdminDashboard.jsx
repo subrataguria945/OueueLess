@@ -1,220 +1,288 @@
 import { useState } from "react";
 import "./AdminDashboard.css";
 
-const INITIAL_OWNERS = [
+// ── MOCK DATA MATCHING EXACT UI DESIGN ────────────────────────────────────
+
+const STAT_METRICS = [
+  {
+    id: "owners",
+    label: "Total Owners",
+    value: "128",
+    trend: "↗ 12%",
+    context: "from last month",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    ),
+  },
+  {
+    id: "shops",
+    label: "Total Shops",
+    value: "342",
+    trend: "↗ 18%",
+    context: "from last month",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7" />
+        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+        <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4" />
+        <path d="M2 7h20" />
+      </svg>
+    ),
+  },
+  {
+    id: "users",
+    label: "Total Users",
+    value: "12,480",
+    trend: "↗ 25%",
+    context: "from last month",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+    ),
+  },
+  {
+    id: "revenue",
+    label: "Total Revenue",
+    value: "₹ 2,45,680",
+    trend: "↗ 32%",
+    context: "from last month",
+    icon: (
+      <span style={{ fontSize: "19px", fontWeight: "700", fontFamily: "inherit" }}>₹</span>
+    ),
+  },
+  {
+    id: "subs",
+    label: "Active Subscriptions",
+    value: "96",
+    trend: "↗ 15%",
+    context: "from last month",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" y1="13" x2="8" y2="13" />
+        <line x1="16" y1="17" x2="8" y2="17" />
+        <polyline points="10 9 9 9 8 9" />
+      </svg>
+    ),
+  },
+];
+
+const TOP_SHOPS = [
+  { rank: 1, name: "Coffee Hub", owner: "Ananya Das", users: 128, max: 128 },
+  { rank: 2, name: "Tasty Bites", owner: "Rahul Sen", users: 96, max: 128 },
+  { rank: 3, name: "Quick Care Clinic", owner: "Priya Ghosh", users: 84, max: 128 },
+  { rank: 4, name: "FitLife Gym", owner: "Sujit Paul", users: 72, max: 128 },
+  { rank: 5, name: "Book Nook", owner: "Arjun Roy", users: 68, max: 128 },
+];
+
+const REVENUE_BARS = [
+  { month: "Apr", val: 12, heightPct: 28 },
+  { month: "May", val: 19, heightPct: 44 },
+  { month: "Jun", val: 24, heightPct: 56 },
+  { month: "Jul", val: 28, heightPct: 65 },
+  { month: "Aug", val: 32, heightPct: 74 },
+  { month: "Sep", val: 36, heightPct: 84 },
+  { month: "Oct", val: 42, heightPct: 98 },
+];
+
+const RECENT_OWNERS = [
   {
     id: 1,
     name: "Ananya Das",
-    avatarBg: "#1960f7",
+    initial: "A",
+    avatarBg: "#dbeafe",
+    avatarColor: "#1d4ed8",
     email: "ananya@example.com",
     phone: "+91 98765 43210",
     shops: 3,
-    expiresAt: "18 Nov 2026",
     status: "Active",
+    joinedOn: "12 Jun 2026",
   },
   {
     id: 2,
     name: "Rahul Sen",
-    avatarBg: "#8b5cf6",
+    initial: "R",
+    avatarBg: "#dbeafe",
+    avatarColor: "#1d4ed8",
     email: "rahul@example.com",
     phone: "+91 98765 43211",
     shops: 1,
-    expiresAt: "29 Oct 2026",
     status: "Expiring Soon",
+    joinedOn: "25 Jul 2026",
   },
   {
     id: 3,
     name: "Priya Ghosh",
-    avatarBg: "#0284c7",
+    initial: "P",
+    avatarBg: "#dbeafe",
+    avatarColor: "#1d4ed8",
     email: "priya@example.com",
     phone: "+91 98765 43212",
     shops: 2,
-    expiresAt: "12 Dec 2026",
     status: "Active",
+    joinedOn: "10 Jan 2026",
   },
   {
     id: 4,
     name: "Arjun Roy",
-    avatarBg: "#f59e0b",
+    initial: "A",
+    avatarBg: "#fef3c7",
+    avatarColor: "#b45309",
     email: "arjun@example.com",
     phone: "+91 98765 43213",
     shops: 1,
-    expiresAt: "20 Oct 2026",
     status: "Suspended",
+    joinedOn: "05 Feb 2026",
+  },
+  {
+    id: 5,
+    name: "Sujit Paul",
+    initial: "S",
+    avatarBg: "#f3e8ff",
+    avatarColor: "#7e22ce",
+    email: "sujit@example.com",
+    phone: "+91 98765 43214",
+    shops: 4,
+    status: "Active",
+    joinedOn: "18 Mar 2026",
   },
 ];
 
-const RECENT_ACTIVITIES = [
+const TIMELINE_ACTIVITIES = [
   {
     id: 1,
-    type: "add",
-    icon: "+",
-    color: "green",
-    title: "New owner added",
-    detail: "Ananya Das (ananya@example.com)",
-    time: "10 Oct 2026, 11:24 AM",
+    color: "#10b981",
+    icon: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+      </svg>
+    ),
+    title: "New owner registered",
+    desc: "Ananya Das joined the platform",
+    time: "2 hours ago",
   },
   {
     id: 2,
-    type: "renew",
-    icon: "↻",
-    color: "blue",
-    title: "Subscription renewed",
-    detail: "Rahul Sen (rahul@example.com)",
-    time: "10 Oct 2026, 09:18 AM",
+    color: "#1960f7",
+    icon: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+        <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7" />
+        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+      </svg>
+    ),
+    title: "New shop added",
+    desc: "Coffee Hub (Ananya Das)",
+    time: "4 hours ago",
   },
   {
     id: 3,
-    type: "status",
-    icon: "✎",
-    color: "amber",
-    title: "Owner status updated",
-    detail: "Arjun Roy → Suspended",
-    time: "09 Oct 2026, 06:42 PM",
+    color: "#8b5cf6",
+    icon: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+        <rect width="20" height="14" x="2" y="5" rx="2" />
+        <line x1="2" x2="22" y1="10" y2="10" />
+      </svg>
+    ),
+    title: "Subscription renewed",
+    desc: "Rahul Sen - Pro Plan",
+    time: "6 hours ago",
   },
   {
     id: 4,
-    type: "update",
-    icon: "⚙",
-    color: "gray",
-    title: "Owner details updated",
-    detail: "Priya Ghosh (priya@example.com)",
-    time: "09 Oct 2026, 02:15 PM",
+    color: "#f59e0b",
+    icon: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+        <circle cx="12" cy="7" r="4" />
+        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+      </svg>
+    ),
+    title: "User registered",
+    desc: "New user from Coffee Hub",
+    time: "8 hours ago",
+  },
+  {
+    id: 5,
+    color: "#ef4444",
+    icon: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+        <rect x="2" y="5" width="20" height="14" rx="2" />
+        <line x1="2" y1="10" x2="22" y2="10" />
+      </svg>
+    ),
+    title: "Payment received",
+    desc: "₹ 4,999 from Priya Ghosh",
+    time: "1 day ago",
+  },
+  {
+    id: 6,
+    color: "#8b5cf6",
+    icon: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+        <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7" />
+      </svg>
+    ),
+    title: "Shop status changed",
+    desc: "Tasty Bites → Active",
+    time: "1 day ago",
   },
 ];
 
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [dateRange, setDateRange] = useState("Oct 1, 2026 - Oct 31, 2026");
+  const [dateDropdownOpen, setDateDropdownOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const [owners, setOwners] = useState(INITIAL_OWNERS);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedOwner, setSelectedOwner] = useState(null);
+  // Selected owner for detail view
+  const [detailModalOwner, setDetailModalOwner] = useState(null);
 
-  // Form states for Add / Edit
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    shops: 1,
-    expiresAt: "",
-    status: "Active",
-  });
-
-  /* ── Filtered Owners ────────────────────────────────────────────── */
-  const filteredOwners = owners.filter((owner) => {
-    const matchesSearch =
-      owner.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      owner.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      owner.phone.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesStatus =
-      statusFilter === "All" ||
-      owner.status.toLowerCase() === statusFilter.toLowerCase();
-
-    return matchesSearch && matchesStatus;
-  });
-
-  /* ── Add Owner Handlers ─────────────────────────────────────────── */
-  const handleOpenAddModal = () => {
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      shops: 1,
-      expiresAt: "15 Nov 2026",
-      status: "Active",
-    });
-    setIsAddModalOpen(true);
-  };
-
-  const handleSaveNewOwner = (e) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.phone) return;
-
-    const colors = ["#1960f7", "#8b5cf6", "#0284c7", "#f59e0b", "#10b981"];
-    const newOwner = {
-      id: owners.length + 1,
-      name: formData.name.trim(),
-      avatarBg: colors[Math.floor(Math.random() * colors.length)],
-      email: formData.email.trim(),
-      phone: formData.phone.trim(),
-      shops: Number(formData.shops) || 1,
-      expiresAt: formData.expiresAt || "30 Nov 2026",
-      status: formData.status,
-    };
-
-    setOwners([newOwner, ...owners]);
-    setIsAddModalOpen(false);
-  };
-
-  /* ── Edit Owner Handlers ────────────────────────────────────────── */
-  const handleOpenEditModal = (owner) => {
-    setSelectedOwner(owner);
-    setFormData({
-      name: owner.name,
-      email: owner.email,
-      phone: owner.phone,
-      shops: owner.shops,
-      expiresAt: owner.expiresAt,
-      status: owner.status,
-    });
-    setIsEditModalOpen(true);
-  };
-
-  const handleSaveEditOwner = (e) => {
-    e.preventDefault();
-    if (!selectedOwner) return;
-
-    setOwners((prev) =>
-      prev.map((o) =>
-        o.id === selectedOwner.id
-          ? {
-              ...o,
-              name: formData.name,
-              email: formData.email,
-              phone: formData.phone,
-              shops: Number(formData.shops) || 1,
-              expiresAt: formData.expiresAt,
-              status: formData.status,
-            }
-          : o
-      )
+  const filteredOwners = RECENT_OWNERS.filter((o) => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      o.name.toLowerCase().includes(q) ||
+      o.email.toLowerCase().includes(q) ||
+      o.phone.includes(q) ||
+      o.status.toLowerCase().includes(q)
     );
-    setIsEditModalOpen(false);
-  };
+  });
 
-  /* ── Delete Owner Handler ───────────────────────────────────────── */
-  const handleDeleteOwner = (id) => {
-    if (window.confirm("Are you sure you want to remove this owner?")) {
-      setOwners((prev) => prev.filter((o) => o.id !== id));
-    }
-  };
-
-  /* ── Logout Handler ─────────────────────────────────────────────── */
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    sessionStorage.removeItem("token");
+    localStorage.removeItem("ql_admin_token");
     window.location.href = "/login";
   };
 
   return (
     <div className="ql-admin-layout">
-      {/* ── 1. LEFT SIDEBAR ─────────────────────────────────────── */}
-      <aside className={`ql-admin-sidebar ${mobileMenuOpen ? "mobile-open" : ""}`}>
+      {/* ── 1. SIDEBAR (MATCHES UI MOCKUP EXACTLY) ─────────────── */}
+      <aside className={`ql-admin-sidebar ${mobileMenuOpen ? "open" : ""}`}>
         <div>
-          {/* Brand Logo */}
+          {/* Brand Header */}
           <div className="ql-admin-brand">
             <div className="ql-brand-icon-box">
-              <span className="ql-brand-icon-text">Q</span>
+              <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+                <circle cx="16" cy="16" r="14" stroke="#ffffff" strokeWidth="3" />
+                <path d="M19 19L26 26" stroke="#38bdf8" strokeWidth="3.5" strokeLinecap="round" />
+                <path d="M16 8C11.58 8 8 11.58 8 16C8 20.42 11.58 24 16 24C20.42 24 24 20.42 24 16" stroke="#38bdf8" strokeWidth="2.5" strokeLinecap="round" />
+              </svg>
             </div>
-            <span className="ql-brand-title">Queueless</span>
+            <div>
+              <div className="ql-brand-title">Queueless</div>
+              <div className="ql-brand-subtitle">Admin Panel</div>
+            </div>
           </div>
 
           {/* Navigation Links */}
@@ -224,10 +292,12 @@ export function AdminDashboard() {
               className={`ql-nav-item ${activeTab === "dashboard" ? "active" : ""}`}
               onClick={() => setActiveTab("dashboard")}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                <polyline points="9 22 9 12 15 12 15 22" />
-              </svg>
+              <span className="ql-nav-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+              </span>
               <span>Dashboard</span>
             </button>
 
@@ -236,46 +306,88 @@ export function AdminDashboard() {
               className={`ql-nav-item ${activeTab === "owners" ? "active" : ""}`}
               onClick={() => setActiveTab("owners")}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
+              <span className="ql-nav-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                </svg>
+              </span>
               <span>Owners</span>
-              <span className="ql-nav-badge">{owners.length}</span>
             </button>
 
             <button
               type="button"
-              className={`ql-nav-item ${activeTab === "add-owner" ? "active" : ""}`}
-              onClick={() => {
-                setActiveTab("add-owner");
-                handleOpenAddModal();
-              }}
+              className={`ql-nav-item ${activeTab === "shops" ? "active" : ""}`}
+              onClick={() => setActiveTab("shops")}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <line x1="19" y1="8" x2="19" y2="14" />
-                <line x1="22" y1="11" x2="16" y2="11" />
-              </svg>
-              <span>Add Owner</span>
+              <span className="ql-nav-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7" />
+                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                </svg>
+              </span>
+              <span>Shops</span>
             </button>
 
             <button
               type="button"
-              className={`ql-nav-item ${activeTab === "details" ? "active" : ""}`}
-              onClick={() => setActiveTab("details")}
+              className={`ql-nav-item ${activeTab === "users" ? "active" : ""}`}
+              onClick={() => setActiveTab("users")}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="16" y1="13" x2="8" y2="13" />
-                <line x1="16" y1="17" x2="8" y2="17" />
-                <polyline points="10 9 9 9 8 9" />
-              </svg>
-              <span>Owner Details</span>
+              <span className="ql-nav-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </span>
+              <span>Users</span>
+            </button>
+
+            <button
+              type="button"
+              className={`ql-nav-item ${activeTab === "subscriptions" ? "active" : ""}`}
+              onClick={() => setActiveTab("subscriptions")}
+            >
+              <span className="ql-nav-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="20" height="14" x="2" y="5" rx="2" />
+                  <line x1="2" x2="22" y1="10" y2="10" />
+                </svg>
+              </span>
+              <span>Subscriptions</span>
+            </button>
+
+            <button
+              type="button"
+              className={`ql-nav-item ${activeTab === "payments" ? "active" : ""}`}
+              onClick={() => setActiveTab("payments")}
+            >
+              <span className="ql-nav-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="20" height="14" x="2" y="5" rx="2" />
+                  <line x1="2" x2="22" y1="10" y2="10" />
+                  <line x1="6" x2="8" y1="15" y2="15" />
+                </svg>
+              </span>
+              <span>Payments</span>
+            </button>
+
+            <button
+              type="button"
+              className={`ql-nav-item ${activeTab === "reports" ? "active" : ""}`}
+              onClick={() => setActiveTab("reports")}
+            >
+              <span className="ql-nav-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 3v18h18" />
+                  <path d="M18 17V9" />
+                  <path d="M13 17V5" />
+                  <path d="M8 17v-3" />
+                </svg>
+              </span>
+              <span>Reports</span>
             </button>
 
             <button
@@ -283,27 +395,34 @@ export function AdminDashboard() {
               className={`ql-nav-item ${activeTab === "settings" ? "active" : ""}`}
               onClick={() => setActiveTab("settings")}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="3" />
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-              </svg>
+              <span className="ql-nav-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+              </span>
               <span>Settings</span>
             </button>
           </nav>
         </div>
 
-        {/* Sidebar Footer Tagline */}
+        {/* Sidebar Footer Illustration & Tagline */}
         <div className="ql-sidebar-footer">
-          <div className="ql-sidebar-graphic">
-            <svg width="100" height="40" viewBox="0 0 120 40" fill="none" opacity="0.45">
-              <circle cx="20" cy="15" r="7" fill="#60a5fa" />
-              <circle cx="45" cy="15" r="7" fill="#60a5fa" />
-              <circle cx="70" cy="15" r="7" fill="#60a5fa" />
-              <circle cx="95" cy="15" r="7" fill="#60a5fa" />
-              <path d="M10 35C10 26 30 26 30 35" stroke="#93c5fd" strokeWidth="2" strokeLinecap="round" />
-              <path d="M35 35C35 26 55 26 55 35" stroke="#93c5fd" strokeWidth="2" strokeLinecap="round" />
-              <path d="M60 35C60 26 80 26 80 35" stroke="#93c5fd" strokeWidth="2" strokeLinecap="round" />
-              <path d="M85 35C85 26 105 26 105 35" stroke="#93c5fd" strokeWidth="2" strokeLinecap="round" />
+          <div className="ql-sidebar-illustration">
+            <svg width="160" height="50" viewBox="0 0 160 50" fill="none">
+              <rect x="0" y="44" width="160" height="2" fill="rgba(255,255,255,0.15)" />
+              <rect x="10" y="32" width="140" height="1.5" fill="rgba(255,255,255,0.08)" />
+              {/* Silhouettes */}
+              <circle cx="28" cy="18" r="5" fill="#38bdf8" opacity="0.6" />
+              <path d="M22 38c0-5 3-7 6-7s6 2 6 7" stroke="#38bdf8" strokeWidth="2" opacity="0.6" />
+              <circle cx="52" cy="16" r="5.5" fill="#60a5fa" opacity="0.75" />
+              <path d="M45 38c0-6 3.5-8 7-8s7 2 7 8" stroke="#60a5fa" strokeWidth="2.2" opacity="0.75" />
+              <circle cx="78" cy="17" r="5" fill="#93c5fd" opacity="0.8" />
+              <path d="M72 38c0-5 3-7 6-7s6 2 6 7" stroke="#93c5fd" strokeWidth="2" opacity="0.8" />
+              <circle cx="104" cy="15" r="5.5" fill="#38bdf8" opacity="0.85" />
+              <path d="M97 38c0-6 3.5-8 7-8s7 2 7 8" stroke="#38bdf8" strokeWidth="2.2" opacity="0.85" />
+              <circle cx="130" cy="18" r="5" fill="#60a5fa" opacity="0.6" />
+              <path d="M124 38c0-5 3-7 6-7s6 2 6 7" stroke="#60a5fa" strokeWidth="2" opacity="0.6" />
             </svg>
           </div>
           <p className="ql-sidebar-tagline">
@@ -312,7 +431,7 @@ export function AdminDashboard() {
         </div>
       </aside>
 
-      {/* ── 2. MAIN BODY ────────────────────────────────────────── */}
+      {/* ── 2. MAIN VIEWPORT (HEADER + DASHBOARD CONTENT) ──────── */}
       <div className="ql-admin-main">
         {/* Top Navbar */}
         <header className="ql-admin-topbar">
@@ -321,51 +440,69 @@ export function AdminDashboard() {
               type="button"
               className="ql-mobile-menu-btn"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle Menu"
+              aria-label="Toggle navigation"
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <line x1="3" y1="12" x2="21" y2="12" />
                 <line x1="3" y1="6" x2="21" y2="6" />
                 <line x1="3" y1="18" x2="21" y2="18" />
               </svg>
             </button>
 
-            <div className="ql-breadcrumb">
-              <span className="ql-breadcrumb-link">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                </svg>
-                Admin
-              </span>
-              <span className="ql-breadcrumb-sep">/</span>
-              <span className="ql-breadcrumb-current">Dashboard</span>
-            </div>
-          </div>
-
-          <div className="ql-topbar-right">
-            {/* Search Input */}
+            {/* Global Search Box */}
             <div className="ql-topbar-search">
               <span className="ql-topbar-search-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                   <circle cx="11" cy="11" r="8" />
                   <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
               </span>
               <input
                 type="text"
-                placeholder="Search owners, email, phone..."
+                placeholder="Search owners, shops, users..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+          </div>
 
-            {/* Notification Bell */}
+          <div className="ql-topbar-right">
+            {/* Date Range Picker */}
+            <div style={{ position: "relative" }}>
+              <button
+                type="button"
+                className="ql-date-picker-btn"
+                onClick={() => setDateDropdownOpen(!dateDropdownOpen)}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2">
+                  <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+                  <line x1="16" x2="16" y1="2" y2="6" />
+                  <line x1="8" x2="8" y1="2" y2="6" />
+                  <line x1="3" x2="21" y1="10" y2="10" />
+                </svg>
+                <span>{dateRange}</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+
+              {dateDropdownOpen && (
+                <div className="ql-date-dropdown">
+                  <button type="button" onClick={() => { setDateRange("Today"); setDateDropdownOpen(false); }}>Today</button>
+                  <button type="button" onClick={() => { setDateRange("Last 7 Days"); setDateDropdownOpen(false); }}>Last 7 Days</button>
+                  <button type="button" onClick={() => { setDateRange("Oct 1, 2026 - Oct 31, 2026"); setDateDropdownOpen(false); }}>Oct 1, 2026 - Oct 31, 2026</button>
+                  <button type="button" onClick={() => { setDateRange("Year to Date (2026)"); setDateDropdownOpen(false); }}>Year to Date</button>
+                </div>
+              )}
+            </div>
+
+            {/* Notification Bell with Badge */}
             <div style={{ position: "relative" }}>
               <button
                 type="button"
                 className="ql-notif-btn"
                 onClick={() => setNotifDropdownOpen(!notifDropdownOpen)}
-                aria-label="Notifications"
+                aria-label="View notifications"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -375,26 +512,16 @@ export function AdminDashboard() {
               </button>
 
               {notifDropdownOpen && (
-                <div className="ql-profile-dropdown" style={{ width: "240px", right: 0 }}>
-                  <div style={{ padding: "8px 12px", borderBottom: "1px solid #e2e8f0", fontSize: "13px", fontWeight: "700" }}>
-                    Notifications (3)
-                  </div>
-                  <div style={{ padding: "8px 12px", fontSize: "12.5px", color: "#334155" }}>
-                    🔔 Rahul Sen subscription expires in 2 days.
-                  </div>
-                  <div style={{ padding: "8px 12px", fontSize: "12.5px", color: "#334155" }}>
-                    👤 Ananya Das added 1 new shop queue.
-                  </div>
-                  <div style={{ padding: "8px 12px", fontSize: "12.5px", color: "#334155" }}>
-                    ⚠️ Arjun Roy account status set to Suspended.
-                  </div>
+                <div className="ql-notif-dropdown">
+                  <div className="ql-notif-header">Notifications (3)</div>
+                  <div className="ql-notif-item">🔔 Rahul Sen subscription expires in 2 days</div>
+                  <div className="ql-notif-item">👤 Ananya Das added Coffee Hub shop</div>
+                  <div className="ql-notif-item">💳 Payment ₹ 4,999 received from Priya Ghosh</div>
                 </div>
               )}
             </div>
 
-            <div className="ql-topbar-divider" />
-
-            {/* Profile Menu */}
+            {/* Profile Pill */}
             <div style={{ position: "relative" }}>
               <button
                 type="button"
@@ -403,7 +530,7 @@ export function AdminDashboard() {
               >
                 <div className="ql-avatar-circle">A</div>
                 <span className="ql-profile-name">Admin</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
               </button>
@@ -425,511 +552,465 @@ export function AdminDashboard() {
           </div>
         </header>
 
-        {/* ── 3. DASHBOARD PAGE CONTENT ───────────────────────────── */}
+        {/* ── 3. DASHBOARD MAIN CANVAS ───────────────────────────── */}
         <main className="ql-admin-content">
-          {/* Header Title */}
+          {/* Page Heading */}
           <div className="ql-page-header">
-            <h1 className="ql-page-title">Admin Dashboard</h1>
-            <p className="ql-page-sub">
-              Manage owners, subscriptions, and platform activity.
-            </p>
+            <h1 className="ql-page-title">Dashboard</h1>
+            <p className="ql-page-sub">Welcome to Queueless Admin Panel</p>
           </div>
 
-          {/* 4 Stat Cards */}
-          <div className="ql-stats-grid">
-            {/* Total Owners */}
-            <div className="ql-stat-card blue">
-              <div className="ql-stat-top">
-                <div className="ql-stat-icon-wrap">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                  </svg>
+          {/* ── ROW 1: 5 STAT METRIC CARDS ───────────────────────── */}
+          <section className="ql-stats-grid">
+            {STAT_METRICS.map((item) => (
+              <div key={item.id} className="ql-stat-card">
+                <div className="ql-stat-top">
+                  <div className="ql-stat-icon-wrap">{item.icon}</div>
+                  <div className="ql-stat-body">
+                    <div className="ql-stat-label">{item.label}</div>
+                    <div className="ql-stat-number">{item.value}</div>
+                  </div>
                 </div>
-                <div className="ql-stat-info">
-                  <div className="ql-stat-label">Total Owners</div>
-                  <div className="ql-stat-number">128</div>
-                </div>
-                {/* Mini Bars */}
-                <div className="ql-mini-bars">
-                  <div className="ql-mini-bar" style={{ height: "45%" }} />
-                  <div className="ql-mini-bar" style={{ height: "65%" }} />
-                  <div className="ql-mini-bar" style={{ height: "80%" }} />
-                  <div className="ql-mini-bar" style={{ height: "100%" }} />
+                <div className="ql-stat-bottom">
+                  <span className="ql-stat-trend">{item.trend}</span>
+                  <span className="ql-stat-context">{item.context}</span>
                 </div>
               </div>
-              <div className="ql-stat-bottom">
-                <span className="ql-trend-up">↗ +12%</span>
-                <span className="ql-trend-context">from last month</span>
-              </div>
-            </div>
+            ))}
+          </section>
 
-            {/* Active Owners */}
-            <div className="ql-stat-card green">
-              <div className="ql-stat-top">
-                <div className="ql-stat-icon-wrap">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
+          {/* ── ROW 2: 3 ANALYTICS CARDS (DONUT, SHOPS, REVENUE) ─── */}
+          <section className="ql-analytics-grid">
+            {/* Card 1: Subscription Status Donut Chart */}
+            <div className="ql-card ql-card-donut">
+              <div className="ql-card-head">
+                <div className="ql-card-title-group">
+                  <span className="ql-card-badge-icon blue">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                      <rect width="20" height="14" x="2" y="5" rx="2" />
+                      <line x1="2" x2="22" y1="10" y2="10" />
+                    </svg>
+                  </span>
+                  <span className="ql-card-title">Subscription Status</span>
                 </div>
-                <div className="ql-stat-info">
-                  <div className="ql-stat-label">Active Owners</div>
-                  <div className="ql-stat-number">96</div>
-                </div>
-                <div className="ql-mini-bars">
-                  <div className="ql-mini-bar" style={{ height: "40%" }} />
-                  <div className="ql-mini-bar" style={{ height: "60%" }} />
-                  <div className="ql-mini-bar" style={{ height: "75%" }} />
-                  <div className="ql-mini-bar" style={{ height: "95%" }} />
-                </div>
-              </div>
-              <div className="ql-stat-bottom">
-                <span className="ql-trend-up">↗ +8%</span>
-                <span className="ql-trend-context">from last month</span>
-              </div>
-            </div>
-
-            {/* Expiring Soon */}
-            <div className="ql-stat-card amber">
-              <div className="ql-stat-top">
-                <div className="ql-stat-icon-wrap">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
-                </div>
-                <div className="ql-stat-info">
-                  <div className="ql-stat-label">Expiring Soon</div>
-                  <div className="ql-stat-number">12</div>
-                </div>
-                <div className="ql-mini-bars">
-                  <div className="ql-mini-bar" style={{ height: "30%" }} />
-                  <div className="ql-mini-bar" style={{ height: "50%" }} />
-                  <div className="ql-mini-bar" style={{ height: "70%" }} />
-                  <div className="ql-mini-bar" style={{ height: "90%" }} />
-                </div>
-              </div>
-              <div className="ql-stat-bottom">
-                <span className="ql-trend-up" style={{ color: "#d97706" }}>↗ +3</span>
-                <span className="ql-trend-context">from last month</span>
-              </div>
-            </div>
-
-            {/* Suspended */}
-            <div className="ql-stat-card red">
-              <div className="ql-stat-top">
-                <div className="ql-stat-icon-wrap">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2" />
-                    <line x1="15" y1="9" x2="9" y2="15" />
-                    <line x1="9" y1="9" x2="15" y2="15" />
-                  </svg>
-                </div>
-                <div className="ql-stat-info">
-                  <div className="ql-stat-label">Suspended</div>
-                  <div className="ql-stat-number">8</div>
-                </div>
-                <div className="ql-mini-bars">
-                  <div className="ql-mini-bar" style={{ height: "85%" }} />
-                  <div className="ql-mini-bar" style={{ height: "65%" }} />
-                  <div className="ql-mini-bar" style={{ height: "50%" }} />
-                  <div className="ql-mini-bar" style={{ height: "35%" }} />
-                </div>
-              </div>
-              <div className="ql-stat-bottom">
-                <span className="ql-trend-down">↘ -2</span>
-                <span className="ql-trend-context">from last month</span>
-              </div>
-            </div>
-          </div>
-
-          {/* ── 4. BOTTOM GRID (SIDE-BY-SIDE: TABLE & RECENT ACTIVITY) ─── */}
-          <div className="ql-dashboard-bottom-grid">
-            {/* 4A. OWNER MANAGEMENT TABLE CARD */}
-            <div className="ql-card-panel ql-table-panel">
-              <div className="ql-panel-header">
-                <div>
-                  <h2 className="ql-panel-title">Owner Management</h2>
-                  <p className="ql-panel-sub">
-                    View, add, edit or manage all owners in the platform.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  className="ql-btn-primary"
-                  onClick={handleOpenAddModal}
-                >
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                  </svg>
-                  <span>Add Owner</span>
+                <button type="button" className="ql-card-link" onClick={() => setActiveTab("subscriptions")}>
+                  View All &rarr;
                 </button>
               </div>
 
-              {/* Search & Filter Toolbar */}
-              <div className="ql-table-toolbar">
-                <div className="ql-toolbar-search">
-                  <span className="ql-topbar-search-icon">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="11" cy="11" r="8" />
-                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                    </svg>
-                  </span>
-                  <input
-                    type="text"
-                    placeholder="Search by name, email or phone..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
+              <div className="ql-donut-content">
+                {/* SVG Donut Ring */}
+                <div className="ql-donut-graphic">
+                  <svg width="130" height="130" viewBox="0 0 140 140">
+                    {/* Background track */}
+                    <circle cx="70" cy="70" r="52" fill="none" stroke="#f1f5f9" strokeWidth="18" />
+                    {/* Active: Green ~70% */}
+                    <circle
+                      cx="70"
+                      cy="70"
+                      r="52"
+                      fill="none"
+                      stroke="#10b981"
+                      strokeWidth="18"
+                      strokeDasharray="228 326"
+                      strokeDashoffset="80"
+                      strokeLinecap="round"
+                    />
+                    {/* Expiring Soon: Amber ~14% */}
+                    <circle
+                      cx="70"
+                      cy="70"
+                      r="52"
+                      fill="none"
+                      stroke="#f59e0b"
+                      strokeWidth="18"
+                      strokeDasharray="45 326"
+                      strokeDashoffset="180"
+                      strokeLinecap="round"
+                    />
+                    {/* Expired: Red ~9% */}
+                    <circle
+                      cx="70"
+                      cy="70"
+                      r="52"
+                      fill="none"
+                      stroke="#ef4444"
+                      strokeWidth="18"
+                      strokeDasharray="30 326"
+                      strokeDashoffset="230"
+                      strokeLinecap="round"
+                    />
+                    {/* Suspended: Purple ~7% */}
+                    <circle
+                      cx="70"
+                      cy="70"
+                      r="52"
+                      fill="none"
+                      stroke="#8b5cf6"
+                      strokeWidth="18"
+                      strokeDasharray="23 326"
+                      strokeDashoffset="265"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="ql-donut-center">
+                    <span className="ql-donut-num">96</span>
+                    <span className="ql-donut-lbl">Total</span>
+                  </div>
                 </div>
 
-                <div className="ql-toolbar-filter">
-                  <select
-                    className="ql-btn-filter"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                  >
-                    <option value="All">All Status</option>
-                    <option value="Active">Active</option>
-                    <option value="Expiring Soon">Expiring Soon</option>
-                    <option value="Suspended">Suspended</option>
-                  </select>
+                {/* Donut Legend */}
+                <div className="ql-donut-legend">
+                  <div className="ql-legend-row">
+                    <span className="ql-dot green" />
+                    <span className="ql-legend-name">Active</span>
+                    <span className="ql-legend-val">96</span>
+                  </div>
+                  <div className="ql-legend-row">
+                    <span className="ql-dot amber" />
+                    <span className="ql-legend-name">Expiring Soon</span>
+                    <span className="ql-legend-val">18</span>
+                  </div>
+                  <div className="ql-legend-row">
+                    <span className="ql-dot red" />
+                    <span className="ql-legend-name">Expired</span>
+                    <span className="ql-legend-val">12</span>
+                  </div>
+                  <div className="ql-legend-row">
+                    <span className="ql-dot purple" />
+                    <span className="ql-legend-name">Suspended</span>
+                    <span className="ql-legend-val">8</span>
+                  </div>
                 </div>
               </div>
+            </div>
 
-              {/* Table */}
-              <div className="ql-table-wrapper">
-                <table className="ql-table">
+            {/* Card 2: Top Performing Shops */}
+            <div className="ql-card ql-card-shops">
+              <div className="ql-card-head">
+                <div className="ql-card-title-group">
+                  <span className="ql-card-badge-icon blue">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                      <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                      <path d="M4 22h16" />
+                      <path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34c3.48-.91 6-4.04 6-7.66V3H4v6c0 3.62 2.52 6.75 6 7.66Z" />
+                    </svg>
+                  </span>
+                  <span className="ql-card-title">Top Performing Shops</span>
+                </div>
+                <button type="button" className="ql-card-link" onClick={() => setActiveTab("shops")}>
+                  View All &rarr;
+                </button>
+              </div>
+
+              <div className="ql-top-shops-table">
+                <div className="ql-top-shops-header">
+                  <span className="col-rank">#</span>
+                  <span className="col-shop">Shop Name</span>
+                  <span className="col-owner">Owner</span>
+                  <span className="col-users">Users Today</span>
+                </div>
+                {TOP_SHOPS.map((shop) => (
+                  <div key={shop.rank} className="ql-top-shop-row">
+                    <span className="col-rank">{shop.rank}</span>
+                    <span className="col-shop">{shop.name}</span>
+                    <span className="col-owner">{shop.owner}</span>
+                    <span className="col-users">
+                      <span className="val">{shop.users}</span>
+                      <span className="bar-track">
+                        <span
+                          className="bar-fill"
+                          style={{ width: `${(shop.users / shop.max) * 100}%` }}
+                        />
+                      </span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Card 3: Revenue Overview Bar Chart */}
+            <div className="ql-card ql-card-revenue">
+              <div className="ql-card-head">
+                <div className="ql-card-title-group">
+                  <span className="ql-card-badge-icon blue">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                      <path d="M18 20V10" />
+                      <path d="M12 20V4" />
+                      <path d="M6 20v-6" />
+                    </svg>
+                  </span>
+                  <span className="ql-card-title">Revenue Overview</span>
+                </div>
+                <button type="button" className="ql-card-link" onClick={() => setActiveTab("payments")}>
+                  View Details &rarr;
+                </button>
+              </div>
+
+              <div className="ql-revenue-chart">
+                {/* Y Axis */}
+                <div className="ql-chart-y-axis">
+                  <span>40K</span>
+                  <span>30K</span>
+                  <span>20K</span>
+                  <span>10K</span>
+                  <span>0</span>
+                </div>
+
+                {/* Bars Area with subtle grid lines */}
+                <div className="ql-chart-bars-wrap">
+                  <div className="ql-chart-grid-lines">
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                  <div className="ql-chart-bars">
+                    {REVENUE_BARS.map((bar) => (
+                      <div key={bar.month} className="ql-bar-col" title={`${bar.month}: ₹${bar.val * 1000}`}>
+                        <div className="ql-bar-pill-track">
+                          <div
+                            className="ql-bar-pill"
+                            style={{ height: `${bar.heightPct}%` }}
+                          />
+                        </div>
+                        <span className="ql-bar-lbl">{bar.month}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ── ROW 3: BOTTOM GRID (RECENT OWNERS & RECENT ACTIVITIES) ─ */}
+          <section className="ql-bottom-grid">
+            {/* Left Card: Recent Owners Table */}
+            <div className="ql-card ql-card-owners-table">
+              <div className="ql-card-head">
+                <div className="ql-card-title-group">
+                  <span className="ql-card-badge-icon blue">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                      <circle cx="9" cy="7" r="4" />
+                    </svg>
+                  </span>
+                  <span className="ql-card-title">Recent Owners</span>
+                </div>
+                <button type="button" className="ql-card-link" onClick={() => setActiveTab("owners")}>
+                  View All &rarr;
+                </button>
+              </div>
+
+              <div className="ql-table-container">
+                <table className="ql-owners-table">
                   <thead>
                     <tr>
-                      <th style={{ width: "36px" }}>#</th>
-                      <th>Owner</th>
+                      <th style={{ width: "30px" }}>#</th>
+                      <th>Owner Name</th>
                       <th>Email</th>
                       <th>Phone</th>
-                      <th>Shops</th>
-                      <th>Expires</th>
+                      <th style={{ textAlign: "center" }}>Shops</th>
                       <th>Status</th>
-                      <th style={{ textAlign: "center", width: "100px" }}>Actions</th>
+                      <th>Joined On</th>
+                      <th style={{ textAlign: "center", width: "70px" }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredOwners.length > 0 ? (
-                      filteredOwners.map((owner, idx) => (
-                        <tr key={owner.id}>
-                          <td>{idx + 1}</td>
-                          <td>
-                            <div className="ql-owner-cell">
-                              <div
-                                className="ql-owner-avatar"
-                                style={{ backgroundColor: owner.avatarBg }}
-                              >
-                                {owner.name.charAt(0)}
-                              </div>
-                              <span className="ql-owner-name">{owner.name}</span>
-                            </div>
-                          </td>
-                          <td>{owner.email}</td>
-                          <td>{owner.phone}</td>
-                          <td>{owner.shops}</td>
-                          <td>{owner.expiresAt}</td>
-                          <td>
+                    {filteredOwners.map((owner) => (
+                      <tr key={owner.id}>
+                        <td>{owner.id}</td>
+                        <td>
+                          <div className="ql-owner-info">
                             <span
-                              className={`ql-badge-status ${
-                                owner.status === "Active"
-                                  ? "active"
-                                  : owner.status === "Expiring Soon"
-                                  ? "expiring"
-                                  : "suspended"
-                              }`}
+                              className="ql-owner-avatar"
+                              style={{
+                                backgroundColor: owner.avatarBg,
+                                color: owner.avatarColor,
+                              }}
                             >
-                              <span className="ql-status-dot" />
-                              {owner.status}
+                              {owner.initial}
                             </span>
-                          </td>
-                          <td>
-                            <div className="ql-actions-cell" style={{ justifyContent: "center" }}>
-                              {/* View */}
-                              <button
-                                type="button"
-                                className="ql-action-btn"
-                                title="View details"
-                                onClick={() => alert(`Owner: ${owner.name}\nEmail: ${owner.email}\nPhone: ${owner.phone}\nShops: ${owner.shops}\nExpires: ${owner.expiresAt}\nStatus: ${owner.status}`)}
-                              >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                  <circle cx="12" cy="12" r="3" />
-                                </svg>
-                              </button>
-
-                              {/* Edit */}
-                              <button
-                                type="button"
-                                className="ql-action-btn"
-                                title="Edit owner"
-                                onClick={() => handleOpenEditModal(owner)}
-                              >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                                </svg>
-                              </button>
-
-                              {/* Delete */}
-                              <button
-                                type="button"
-                                className="ql-action-btn delete"
-                                title="Delete owner"
-                                onClick={() => handleDeleteOwner(owner.id)}
-                              >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <polyline points="3 6 5 6 21 6" />
-                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                                </svg>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="8" style={{ textAlign: "center", padding: "20px", color: "#94a3b8" }}>
-                          No owners match your criteria.
+                            <span className="ql-owner-name">{owner.name}</span>
+                          </div>
+                        </td>
+                        <td>{owner.email}</td>
+                        <td>{owner.phone}</td>
+                        <td style={{ textAlign: "center", fontWeight: "600" }}>{owner.shops}</td>
+                        <td>
+                          <span
+                            className={`ql-badge-pill ${
+                              owner.status === "Active"
+                                ? "active"
+                                : owner.status === "Expiring Soon"
+                                ? "expiring"
+                                : "suspended"
+                            }`}
+                          >
+                            <span className="dot" />
+                            {owner.status}
+                          </span>
+                        </td>
+                        <td>{owner.joinedOn}</td>
+                        <td>
+                          <div className="ql-row-actions">
+                            <button
+                              type="button"
+                              className="ql-action-icon"
+                              title="View Owner Details"
+                              onClick={() => setDetailModalOwner(owner)}
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                              </svg>
+                            </button>
+                            <button
+                              type="button"
+                              className="ql-action-icon"
+                              title="More Options"
+                              onClick={() => alert(`Actions for ${owner.name}`)}
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5">
+                                <circle cx="12" cy="12" r="1" />
+                                <circle cx="12" cy="5" r="1" />
+                                <circle cx="12" cy="19" r="1" />
+                              </svg>
+                            </button>
+                          </div>
                         </td>
                       </tr>
-                    )}
+                    ))}
                   </tbody>
                 </table>
               </div>
             </div>
 
-            {/* 4B. RECENT ACTIVITY CARD */}
-            <div className="ql-card-panel ql-activity-panel">
-              <div className="ql-panel-header">
-                <div>
-                  <h2 className="ql-panel-title">Recent Activity</h2>
-                  <p className="ql-panel-sub">
-                    Latest platform events
-                  </p>
+            {/* Right Card: Recent Activities Timeline */}
+            <div className="ql-card ql-card-activities">
+              <div className="ql-card-head">
+                <div className="ql-card-title-group">
+                  <span className="ql-card-badge-icon blue">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                  </span>
+                  <span className="ql-card-title">Recent Activities</span>
                 </div>
-                <button
-                  type="button"
-                  className="ql-btn-secondary"
-                  onClick={() => alert("All activity logs are up to date.")}
-                >
-                  View All
+                <button type="button" className="ql-card-link" onClick={() => alert("All activities are up to date.")}>
+                  View All &rarr;
                 </button>
               </div>
 
-              <div className="ql-activity-list">
-                {RECENT_ACTIVITIES.map((act) => (
-                  <div key={act.id} className="ql-activity-item">
-                    <div className="ql-activity-left">
-                      <div className={`ql-activity-icon ${act.color}`}>
-                        {act.icon}
-                      </div>
-                      <div className="ql-activity-text">
-                        <span className="ql-activity-title">{act.title}</span>
-                        <span>— {act.detail}</span>
-                      </div>
+              <div className="ql-timeline-list">
+                {TIMELINE_ACTIVITIES.map((act, index) => (
+                  <div key={act.id} className="ql-timeline-item">
+                    {/* Indicator Circle & Connecting Line */}
+                    <div className="ql-timeline-marker">
+                      <span
+                        className="ql-timeline-dot"
+                        style={{ borderColor: act.color }}
+                      >
+                        <span className="ql-timeline-inner-dot" style={{ backgroundColor: act.color }} />
+                      </span>
+                      {index < TIMELINE_ACTIVITIES.length - 1 && <span className="ql-timeline-line" />}
                     </div>
-                    <div className="ql-activity-time">{act.time}</div>
+
+                    {/* Content Box */}
+                    <div className="ql-timeline-content">
+                      <div className="ql-timeline-title">{act.title}</div>
+                      <div className="ql-timeline-desc">{act.desc}</div>
+                    </div>
+
+                    {/* Timestamp */}
+                    <div className="ql-timeline-time">{act.time}</div>
                   </div>
                 ))}
               </div>
             </div>
-          </div>
+          </section>
         </main>
       </div>
 
-      {/* ── 6. ADD OWNER MODAL ──────────────────────────────────── */}
-      {isAddModalOpen && (
-        <div className="ql-admin-modal-overlay" onClick={() => setIsAddModalOpen(false)}>
-          <div className="ql-admin-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="ql-modal-head">
-              <h3>Add New Owner</h3>
-              <button type="button" className="ql-modal-close" onClick={() => setIsAddModalOpen(false)}>
+      {/* ── OWNER DETAIL MODAL ─────────────────────────────────── */}
+      {detailModalOwner && (
+        <div className="ql-modal-backdrop" onClick={() => setDetailModalOwner(null)}>
+          <div className="ql-detail-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="ql-modal-header">
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span
+                  className="ql-owner-avatar"
+                  style={{
+                    backgroundColor: detailModalOwner.avatarBg,
+                    color: detailModalOwner.avatarColor,
+                    width: 38,
+                    height: 38,
+                    fontSize: 16,
+                  }}
+                >
+                  {detailModalOwner.initial}
+                </span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: "17px", fontWeight: "700", color: "#0f172a" }}>
+                    {detailModalOwner.name}
+                  </h3>
+                  <span style={{ fontSize: "12px", color: "#64748b" }}>Registered Owner</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="ql-modal-close-btn"
+                onClick={() => setDetailModalOwner(null)}
+              >
                 ✕
               </button>
             </div>
-            <form onSubmit={handleSaveNewOwner}>
-              <div className="ql-form-group">
-                <label>Full Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Ananya Das"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
+
+            <div className="ql-modal-body">
+              <div className="ql-detail-field">
+                <span className="lbl">Email Address:</span>
+                <span className="val">{detailModalOwner.email}</span>
               </div>
-
-              <div className="ql-form-group">
-                <label>Email Address</label>
-                <input
-                  type="email"
-                  required
-                  placeholder="e.g. ananya@example.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                />
+              <div className="ql-detail-field">
+                <span className="lbl">Phone Number:</span>
+                <span className="val">{detailModalOwner.phone}</span>
               </div>
-
-              <div className="ql-form-group">
-                <label>Phone Number</label>
-                <input
-                  type="tel"
-                  required
-                  placeholder="e.g. +91 98765 43210"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                />
+              <div className="ql-detail-field">
+                <span className="lbl">Total Shops:</span>
+                <span className="val">{detailModalOwner.shops} active queues</span>
               </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-                <div className="ql-form-group">
-                  <label>Shops Count</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={formData.shops}
-                    onChange={(e) => setFormData({ ...formData, shops: e.target.value })}
-                  />
-                </div>
-
-                <div className="ql-form-group">
-                  <label>Status</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Expiring Soon">Expiring Soon</option>
-                    <option value="Suspended">Suspended</option>
-                  </select>
-                </div>
+              <div className="ql-detail-field">
+                <span className="lbl">Account Status:</span>
+                <span className="val">
+                  <span className={`ql-badge-pill ${detailModalOwner.status === "Active" ? "active" : detailModalOwner.status === "Expiring Soon" ? "expiring" : "suspended"}`}>
+                    <span className="dot" />
+                    {detailModalOwner.status}
+                  </span>
+                </span>
               </div>
-
-              <div className="ql-form-group">
-                <label>Subscription Expiry Date</label>
-                <input
-                  type="text"
-                  placeholder="e.g. 18 Nov 2026"
-                  value={formData.expiresAt}
-                  onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
-                />
+              <div className="ql-detail-field">
+                <span className="lbl">Joined Date:</span>
+                <span className="val">{detailModalOwner.joinedOn}</span>
               </div>
+            </div>
 
-              <div className="ql-modal-actions">
-                <button
-                  type="button"
-                  className="ql-btn-secondary"
-                  onClick={() => setIsAddModalOpen(false)}
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="ql-btn-primary">
-                  Save Owner
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ── 7. EDIT OWNER MODAL ─────────────────────────────────── */}
-      {isEditModalOpen && (
-        <div className="ql-admin-modal-overlay" onClick={() => setIsEditModalOpen(false)}>
-          <div className="ql-admin-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="ql-modal-head">
-              <h3>Edit Owner</h3>
-              <button type="button" className="ql-modal-close" onClick={() => setIsEditModalOpen(false)}>
-                ✕
+            <div className="ql-modal-footer">
+              <button
+                type="button"
+                className="ql-btn-close"
+                onClick={() => setDetailModalOwner(null)}
+              >
+                Close
               </button>
             </div>
-            <form onSubmit={handleSaveEditOwner}>
-              <div className="ql-form-group">
-                <label>Full Name</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
-              </div>
-
-              <div className="ql-form-group">
-                <label>Email Address</label>
-                <input
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                />
-              </div>
-
-              <div className="ql-form-group">
-                <label>Phone Number</label>
-                <input
-                  type="tel"
-                  required
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                />
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-                <div className="ql-form-group">
-                  <label>Shops Count</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={formData.shops}
-                    onChange={(e) => setFormData({ ...formData, shops: e.target.value })}
-                  />
-                </div>
-
-                <div className="ql-form-group">
-                  <label>Status</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Expiring Soon">Expiring Soon</option>
-                    <option value="Suspended">Suspended</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="ql-form-group">
-                <label>Subscription Expiry Date</label>
-                <input
-                  type="text"
-                  value={formData.expiresAt}
-                  onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
-                />
-              </div>
-
-              <div className="ql-modal-actions">
-                <button
-                  type="button"
-                  className="ql-btn-secondary"
-                  onClick={() => setIsEditModalOpen(false)}
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="ql-btn-primary">
-                  Update Changes
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}
     </div>
   );
 }
+
+export default AdminDashboard;

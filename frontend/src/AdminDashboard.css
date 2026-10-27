@@ -1,6 +1,7 @@
 /* ==========================================================================
    QUEUELESS — MODERN ADMIN DASHBOARD STYLES
-   Pixel-perfect match to the sleek dark sidebar & high-contrast clean cards
+   Exact pixel-perfect match to the sleek dark sidebar & high-contrast cards
+   Single 100vh page layout with zero visible scrollbars
    ========================================================================== */
 
 :root {
@@ -20,8 +21,14 @@
   --admin-amber-light: #fffbeb;
   --admin-red: #ef4444;
   --admin-red-light: #fef2f2;
+  --admin-purple: #8b5cf6;
 }
 
+* {
+  box-sizing: border-box;
+}
+
+/* ── MAIN LAYOUT (STRICT 100VH SINGLE PAGE) ────────────────────────────── */
 .ql-admin-layout {
   display: flex;
   height: 100vh;
@@ -35,79 +42,102 @@
   position: relative;
 }
 
+/* Hide scrollbars globally across dashboard components */
+.ql-admin-layout,
+.ql-admin-main,
+.ql-admin-content,
+.ql-admin-sidebar,
+.ql-table-container,
+.ql-timeline-list,
+.ql-top-shops-table {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.ql-admin-layout::-webkit-scrollbar,
+.ql-admin-main::-webkit-scrollbar,
+.ql-admin-content::-webkit-scrollbar,
+.ql-admin-sidebar::-webkit-scrollbar,
+.ql-table-container::-webkit-scrollbar,
+.ql-timeline-list::-webkit-scrollbar,
+.ql-top-shops-table::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
 /* ── SIDEBAR ───────────────────────────────────────────────────────────── */
 .ql-admin-sidebar {
-  width: 240px;
-  min-width: 240px;
+  width: 220px;
+  min-width: 220px;
   background: linear-gradient(180deg, #091932 0%, #061224 100%);
   color: #ffffff;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 24px 16px;
+  padding: 16px 12px;
   box-sizing: border-box;
-  position: sticky;
-  top: 0;
   height: 100vh;
   z-index: 50;
   transition: transform 0.25s ease;
   flex-shrink: 0;
+  overflow-y: auto;
 }
 
 .ql-admin-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0 10px 24px;
+  gap: 10px;
+  padding: 4px 6px 18px;
 }
 
 .ql-brand-icon-box {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   background: linear-gradient(135deg, #00b4d8 0%, #1960f7 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(25, 96, 247, 0.4);
-}
-
-.ql-brand-icon-text {
-  font-size: 24px;
-  font-weight: 800;
-  color: #ffffff;
-  line-height: 1;
+  box-shadow: 0 4px 10px rgba(25, 96, 247, 0.4);
+  flex-shrink: 0;
 }
 
 .ql-brand-title {
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 17px;
+  font-weight: 800;
   letter-spacing: -0.3px;
   color: #ffffff;
+  line-height: 1.1;
+}
+
+.ql-brand-subtitle {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
 }
 
 .ql-admin-nav {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-top: 8px;
+  gap: 4px;
 }
 
 .ql-nav-item {
   display: flex;
   align-items: center;
-  gap: 13px;
-  padding: 12px 16px;
-  border-radius: 12px;
+  gap: 11px;
+  padding: 9px 12px;
+  border-radius: 9px;
   background: transparent;
   border: none;
   color: #94a3b8;
-  font-size: 14.5px;
+  font-size: 13.5px;
   font-weight: 500;
   cursor: pointer;
   width: 100%;
   text-align: left;
-  transition: all 0.18s ease;
+  transition: all 0.16s ease;
   font-family: inherit;
 }
 
@@ -120,41 +150,44 @@
   background: var(--admin-sidebar-active);
   color: #ffffff;
   font-weight: 600;
-  box-shadow: 0 4px 14px rgba(25, 96, 247, 0.45);
+  box-shadow: 0 4px 12px rgba(25, 96, 247, 0.4);
 }
 
-.ql-nav-badge {
-  margin-left: auto;
-  background: rgba(255, 255, 255, 0.2);
-  font-size: 11px;
-  padding: 2px 7px;
-  border-radius: 10px;
-  color: #ffffff;
+.ql-nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
+/* Sidebar Footer (Silhouette Artwork & Tagline) */
 .ql-sidebar-footer {
   margin-top: auto;
-  padding: 18px 12px 6px;
+  padding: 12px 6px 4px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  position: relative;
+  text-align: center;
 }
 
-.ql-sidebar-graphic {
+.ql-sidebar-illustration {
   display: flex;
   justify-content: center;
-  margin-bottom: 12px;
-  opacity: 0.8;
+  margin-bottom: 8px;
+}
+
+.ql-sidebar-illustration svg {
+  max-width: 140px;
+  height: auto;
 }
 
 .ql-sidebar-tagline {
-  font-size: 11.5px;
+  font-size: 10px;
   color: #64748b;
-  line-height: 1.45;
-  text-align: center;
+  line-height: 1.35;
   margin: 0;
+  font-weight: 500;
 }
 
-/* ── MAIN CONTENT AREA ─────────────────────────────────────────────────── */
+/* ── MAIN CONTENT WRAPPER ──────────────────────────────────────────────── */
 .ql-admin-main {
   flex: 1;
   height: 100vh;
@@ -162,41 +195,28 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  box-sizing: border-box;
   background-color: var(--admin-main-bg);
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
-}
-
-.ql-admin-main::-webkit-scrollbar,
-.ql-admin-layout::-webkit-scrollbar,
-.ql-admin-sidebar::-webkit-scrollbar,
-.ql-table-wrapper::-webkit-scrollbar {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
 }
 
 /* ── TOP NAVBAR ────────────────────────────────────────────────────────── */
 .ql-admin-topbar {
-  height: 54px;
-  min-height: 54px;
+  height: 48px;
+  min-height: 48px;
   background: #ffffff;
   border-bottom: 1px solid var(--admin-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
-  position: sticky;
-  top: 0;
-  z-index: 40;
+  padding: 0 18px;
   box-sizing: border-box;
+  flex-shrink: 0;
+  z-index: 30;
 }
 
 .ql-topbar-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .ql-mobile-menu-btn {
@@ -205,48 +225,17 @@
   border: none;
   color: var(--admin-text-main);
   cursor: pointer;
-  padding: 6px;
-}
-
-.ql-breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13.5px;
-  color: var(--admin-text-muted);
-}
-
-.ql-breadcrumb-link {
-  color: var(--admin-text-muted);
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.ql-breadcrumb-sep {
-  color: #cbd5e1;
-}
-
-.ql-breadcrumb-current {
-  color: var(--admin-text-main);
-  font-weight: 600;
-}
-
-.ql-topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 18px;
+  padding: 4px;
 }
 
 .ql-topbar-search {
   position: relative;
-  width: 320px;
+  width: 280px;
 }
 
 .ql-topbar-search-icon {
   position: absolute;
-  left: 14px;
+  left: 12px;
   top: 50%;
   transform: translateY(-50%);
   color: #94a3b8;
@@ -256,30 +245,91 @@
 
 .ql-topbar-search input {
   width: 100%;
-  height: 40px;
+  height: 32px;
   background: #f8fafc;
   border: 1px solid var(--admin-border);
-  border-radius: 20px;
-  padding: 0 16px 0 40px;
-  font-size: 13.5px;
+  border-radius: 16px;
+  padding: 0 14px 0 34px;
+  font-size: 12px;
   font-family: inherit;
   color: var(--admin-text-main);
   outline: none;
   transition: all 0.15s ease;
-  box-sizing: border-box;
 }
 
 .ql-topbar-search input:focus {
   background: #ffffff;
   border-color: var(--admin-blue);
-  box-shadow: 0 0 0 3px rgba(25, 96, 247, 0.12);
+  box-shadow: 0 0 0 3px rgba(25, 96, 247, 0.1);
 }
 
+.ql-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Date Range Picker Pill */
+.ql-date-picker-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  background: #ffffff;
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.ql-date-picker-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.ql-date-dropdown {
+  position: absolute;
+  top: 38px;
+  right: 0;
+  width: 190px;
+  background: #ffffff;
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  padding: 4px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+
+.ql-date-dropdown button {
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 12px;
+  color: #334155;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.ql-date-dropdown button:hover {
+  background: #f1f5f9;
+  color: var(--admin-blue);
+}
+
+/* Notification Bell */
 .ql-notif-btn {
   position: relative;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   background: #f8fafc;
   border: 1px solid var(--admin-border);
   display: flex;
@@ -292,44 +342,69 @@
 
 .ql-notif-btn:hover {
   background: #f1f5f9;
-  color: var(--admin-text-main);
+  color: var(--admin-blue);
 }
 
 .ql-notif-badge {
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: -3px;
+  right: -3px;
   background: #ef4444;
   color: #ffffff;
-  font-size: 10.5px;
+  font-size: 9.5px;
   font-weight: 700;
-  width: 18px;
-  height: 18px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #ffffff;
+  border: 1.5px solid #ffffff;
 }
 
-.ql-topbar-divider {
-  width: 1px;
-  height: 28px;
-  background: var(--admin-border);
+.ql-notif-dropdown {
+  position: absolute;
+  top: 38px;
+  right: 0;
+  width: 260px;
+  background: #ffffff;
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  padding: 6px;
+  z-index: 100;
 }
 
+.ql-notif-header {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 8px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #0f172a;
+}
+
+.ql-notif-item {
+  font-size: 11px;
+  color: #475569;
+  padding: 8px;
+  border-bottom: 1px solid #f8fafc;
+}
+
+.ql-notif-item:last-child {
+  border-bottom: none;
+}
+
+/* Profile Pill */
 .ql-admin-profile {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: none;
   border: none;
-  padding: 4px 8px;
-  border-radius: 10px;
+  padding: 2px 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-family: inherit;
-  transition: background 0.15s ease;
-  position: relative;
 }
 
 .ql-admin-profile:hover {
@@ -337,54 +412,52 @@
 }
 
 .ql-avatar-circle {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: linear-gradient(135deg, #1960f7 0%, #0d47a1 100%);
   color: #ffffff;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(25, 96, 247, 0.3);
 }
 
 .ql-profile-name {
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--admin-text-main);
 }
 
 .ql-profile-dropdown {
   position: absolute;
-  top: 50px;
+  top: 38px;
   right: 0;
-  width: 180px;
+  width: 170px;
   background: #ffffff;
   border: 1px solid var(--admin-border);
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  padding: 6px;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  padding: 4px;
   z-index: 100;
   display: flex;
   flex-direction: column;
 }
 
 .ql-dropdown-item {
-  padding: 10px 14px;
+  padding: 8px 10px;
   background: none;
   border: none;
   text-align: left;
-  font-size: 13.5px;
+  font-size: 12px;
   color: var(--admin-text-main);
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   font-family: inherit;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: background 0.15s ease;
 }
 
 .ql-dropdown-item:hover {
@@ -395,49 +468,47 @@
   color: #ef4444;
 }
 
-.ql-dropdown-item.danger:hover {
-  background: #fef2f2;
-}
-
-/* ── PAGE CONTENT (COMPACT SINGLE PAGE / 100VH) ────────────────────────── */
+/* ── 3. PAGE MAIN CONTENT CONTAINER (NO SCROLL, EXACT 100VH) ───────────── */
 .ql-admin-content {
-  padding: 12px 20px 14px;
+  padding: 8px 18px 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  min-width: 0;
   flex: 1;
-  height: calc(100vh - 54px);
+  height: calc(100vh - 48px);
   overflow: hidden;
 }
 
-/* ── HEADER ────────────────────────────────────────────────────────────── */
+/* Heading */
 .ql-page-header {
   margin-bottom: 0;
+  flex-shrink: 0;
 }
 
 .ql-page-title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
   color: var(--admin-text-main);
-  margin: 0 0 2px 0;
-  letter-spacing: -0.4px;
+  margin: 0;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
 }
 
 .ql-page-sub {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--admin-text-muted);
   margin: 0;
+  line-height: 1.2;
 }
 
-/* ── STATS CARDS GRID ──────────────────────────────────────────────────── */
+/* ── ROW 1: 5 STAT METRICS GRID ────────────────────────────────────────── */
 .ql-stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
   width: 100%;
   box-sizing: border-box;
   flex-shrink: 0;
@@ -446,35 +517,34 @@
 .ql-stat-card {
   background: #ffffff;
   border: 1px solid var(--admin-border);
-  border-radius: 12px;
-  padding: 10px 14px;
+  border-radius: 10px;
+  padding: 8px 12px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  position: relative;
-  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   min-width: 0;
   box-sizing: border-box;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .ql-stat-card:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
 }
 
 .ql-stat-top {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
 }
 
 .ql-stat-icon-wrap {
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1960f7;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -486,493 +556,624 @@
   height: 18px;
 }
 
-.ql-stat-card.blue .ql-stat-icon-wrap {
-  background: #eff6ff;
-  color: #1960f7;
-}
-
-.ql-stat-card.green .ql-stat-icon-wrap {
-  background: #ecfdf5;
-  color: #10b981;
-}
-
-.ql-stat-card.amber .ql-stat-icon-wrap {
-  background: #fffbeb;
-  color: #f59e0b;
-}
-
-.ql-stat-card.red .ql-stat-icon-wrap {
-  background: #fef2f2;
-  color: #ef4444;
-}
-
-.ql-stat-info {
-  margin-left: 8px;
+.ql-stat-body {
   flex: 1;
   min-width: 0;
 }
 
 .ql-stat-label {
-  font-size: 11.5px;
+  font-size: 10.5px;
   font-weight: 600;
   color: var(--admin-text-muted);
-  margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-bottom: 1px;
 }
 
 .ql-stat-number {
-  font-size: 21px;
+  font-size: 17px;
   font-weight: 800;
   color: var(--admin-text-main);
-  line-height: 1;
-}
-
-/* Mini Bar Chart Mock in Stat Card */
-.ql-mini-bars {
-  display: flex;
-  align-items: flex-end;
-  gap: 2.5px;
-  height: 24px;
-}
-
-.ql-mini-bar {
-  width: 4px;
-  border-radius: 1.5px;
-  transition: height 0.3s ease;
-}
-
-.ql-stat-card.blue .ql-mini-bar {
-  background: #93c5fd;
-}
-.ql-stat-card.green .ql-mini-bar {
-  background: #86efac;
-}
-.ql-stat-card.amber .ql-mini-bar {
-  background: #fde68a;
-}
-.ql-stat-card.red .ql-mini-bar {
-  background: #fca5a5;
+  line-height: 1.1;
+  letter-spacing: -0.3px;
 }
 
 .ql-stat-bottom {
-  margin-top: 6px;
+  margin-top: 4px;
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 11px;
+  gap: 4px;
+  font-size: 10px;
 }
 
-.ql-trend-up {
+.ql-stat-trend {
   color: #10b981;
   font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
 }
 
-.ql-trend-down {
-  color: #10b981;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.ql-trend-context {
+.ql-stat-context {
   color: #94a3b8;
 }
 
-/* ── BOTTOM SIDE-BY-SIDE GRID ──────────────────────────────────────────── */
-.ql-dashboard-bottom-grid {
+/* ── ROW 2: 3 ANALYTICS CARDS (DONUT, TOP SHOPS, REVENUE) ─────────────── */
+.ql-analytics-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr);
-  gap: 12px;
-  width: 100%;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-/* ── TABLE CARD & ACTIVITY CARD PANELS ─────────────────────────────────── */
-.ql-card-panel {
-  background: #ffffff;
-  border: 1px solid var(--admin-border);
-  border-radius: 14px;
-  padding: 12px 16px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  height: 100%;
-  overflow: hidden;
-}
-
-.ql-panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-  flex-wrap: nowrap;
+  grid-template-columns: 1fr 1.35fr 1.25fr;
   gap: 8px;
+  width: 100%;
+  height: 180px;
+  min-height: 180px;
+  box-sizing: border-box;
   flex-shrink: 0;
 }
 
-.ql-panel-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--admin-text-main);
-  margin: 0;
-  line-height: 1.2;
+.ql-card {
+  background: #ffffff;
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  padding: 8px 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
-.ql-panel-sub {
-  font-size: 11.5px;
-  color: var(--admin-text-muted);
-  margin: 0;
+.ql-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.ql-card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ql-card-badge-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  background: #eff6ff;
+  color: #1960f7;
+  flex-shrink: 0;
+}
+
+.ql-card-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--admin-text-main);
+  letter-spacing: -0.2px;
+}
+
+.ql-card-link {
+  background: none;
+  border: none;
+  color: #1960f7;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  transition: opacity 0.15s ease;
+}
+
+.ql-card-link:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+/* ── DONUT CARD CONTENT ────────────────────────────────────────────────── */
+.ql-donut-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex: 1;
+  min-height: 0;
+  gap: 8px;
+}
+
+.ql-donut-graphic {
+  position: relative;
+  width: 118px;
+  height: 118px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ql-donut-graphic svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.ql-donut-center {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.ql-donut-num {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--admin-text-main);
+}
+
+.ql-donut-lbl {
+  font-size: 10px;
+  color: #64748b;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.ql-donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ql-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.ql-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ql-dot.green { background: #10b981; }
+.ql-dot.amber { background: #f59e0b; }
+.ql-dot.red { background: #ef4444; }
+.ql-dot.purple { background: #8b5cf6; }
+
+.ql-legend-name {
+  color: #475569;
+  flex: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.ql-btn-primary {
-  background: linear-gradient(135deg, #1960f7 0%, #0d47a1 100%);
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  box-shadow: 0 2px 8px rgba(25, 96, 247, 0.25);
-  transition: all 0.15s ease;
-  font-family: inherit;
-  flex-shrink: 0;
-}
-
-.ql-btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(25, 96, 247, 0.35);
-}
-
-.ql-table-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 8px;
-  flex-shrink: 0;
-}
-
-.ql-toolbar-search {
-  position: relative;
-  flex: 1;
-  min-width: 180px;
-  max-width: 360px;
-}
-
-.ql-toolbar-search input {
-  width: 100%;
-  height: 32px;
-  background: #ffffff;
-  border: 1.5px solid var(--admin-border);
-  border-radius: 8px;
-  padding: 0 12px 0 34px;
-  font-size: 12px;
-  font-family: inherit;
+.ql-legend-val {
+  font-weight: 700;
   color: var(--admin-text-main);
-  outline: none;
-  transition: all 0.15s ease;
-  box-sizing: border-box;
 }
 
-.ql-toolbar-search input:focus {
-  border-color: var(--admin-blue);
-  box-shadow: 0 0 0 3px rgba(25, 96, 247, 0.1);
-}
-
-.ql-toolbar-filter {
+/* ── TOP SHOPS TABLE ───────────────────────────────────────────────────── */
+.ql-top-shops-table {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  font-size: 11px;
 }
 
-.ql-btn-filter {
-  height: 32px;
-  padding: 0 12px;
-  background: #ffffff;
-  border: 1.5px solid var(--admin-border);
-  border-radius: 8px;
-  font-size: 12px;
+.ql-top-shops-header {
+  display: grid;
+  grid-template-columns: 20px 1.2fr 1fr 1fr;
+  align-items: center;
+  padding: 2px 4px 4px;
+  color: #94a3b8;
   font-weight: 600;
-  color: #475569;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-family: inherit;
-  transition: all 0.15s ease;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 10px;
 }
 
-.ql-btn-filter:hover {
-  border-color: #cbd5e1;
+.ql-top-shop-row {
+  display: grid;
+  grid-template-columns: 20px 1.2fr 1fr 1fr;
+  align-items: center;
+  padding: 4px 4px;
+  border-bottom: 1px solid #f8fafc;
+  color: #334155;
+  transition: background 0.15s ease;
+}
+
+.ql-top-shop-row:last-child {
+  border-bottom: none;
+}
+
+.ql-top-shop-row:hover {
   background: #f8fafc;
 }
 
-/* ── TABLE ─────────────────────────────────────────────────────────────── */
-.ql-table-wrapper {
+.col-rank {
+  font-weight: 600;
+  color: #64748b;
+}
+
+.col-shop {
+  font-weight: 600;
+  color: var(--admin-text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.col-owner {
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.col-users {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.col-users .val {
+  font-weight: 700;
+  color: var(--admin-text-main);
+  min-width: 22px;
+  text-align: right;
+}
+
+.bar-track {
+  flex: 1;
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 3px;
+  overflow: hidden;
+  display: block;
+}
+
+.bar-fill {
+  height: 100%;
+  background: #1960f7;
+  border-radius: 3px;
+  display: block;
+}
+
+/* ── REVENUE BAR CHART ─────────────────────────────────────────────────── */
+.ql-revenue-chart {
+  display: flex;
   flex: 1;
   min-height: 0;
-  width: 100%;
-  max-width: 100%;
-  overflow-y: auto;
-  overflow-x: auto;
-  border: 1px solid var(--admin-border);
-  border-radius: 10px;
-  box-sizing: border-box;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
+  gap: 6px;
+  padding-top: 4px;
 }
 
-.ql-table {
+.ql-chart-y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 9.5px;
+  color: #94a3b8;
+  padding-bottom: 16px;
+  font-weight: 600;
+  text-align: right;
+  min-width: 22px;
+}
+
+.ql-chart-bars-wrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.ql-chart-grid-lines {
+  position: absolute;
+  top: 4px;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.ql-chart-grid-lines span {
+  border-bottom: 1px dashed #f1f5f9;
   width: 100%;
-  min-width: 680px;
+}
+
+.ql-chart-bars {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  flex: 1;
+  z-index: 1;
+  padding-bottom: 16px;
+}
+
+.ql-bar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  position: relative;
+  cursor: pointer;
+  width: 10%;
+}
+
+.ql-bar-pill-track {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.ql-bar-pill {
+  width: 100%;
+  max-width: 16px;
+  background: #1960f7;
+  border-radius: 3px 3px 0 0;
+  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ql-bar-col:hover .ql-bar-pill {
+  background: #0d47a1;
+}
+
+.ql-bar-lbl {
+  position: absolute;
+  bottom: -16px;
+  font-size: 9.5px;
+  color: #64748b;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ── ROW 3: BOTTOM GRID (RECENT OWNERS & RECENT ACTIVITIES) ────────────── */
+.ql-bottom-grid {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr;
+  gap: 8px;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── RECENT OWNERS TABLE ───────────────────────────────────────────────── */
+.ql-card-owners-table {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.ql-table-container {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+}
+
+.ql-owners-table {
+  width: 100%;
   border-collapse: collapse;
+  font-size: 11px;
   text-align: left;
-  font-size: 12.5px;
 }
 
-.ql-table th {
+.ql-owners-table th {
   background: #f8fafc;
   color: #64748b;
   font-weight: 600;
-  font-size: 11.5px;
-  padding: 8px 12px;
+  font-size: 10.5px;
+  padding: 6px 8px;
   border-bottom: 1px solid var(--admin-border);
   white-space: nowrap;
-  position: sticky;
-  top: 0;
-  z-index: 2;
 }
 
-.ql-table td {
-  padding: 8px 12px;
-  border-bottom: 1px solid #f1f5f9;
+.ql-owners-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid #f8fafc;
   color: #334155;
   vertical-align: middle;
 }
 
-.ql-table tbody tr:last-child td {
-  border-bottom: none;
+.ql-owners-table tbody tr:hover td {
+  background: #f8fafc;
 }
 
-.ql-table tbody tr:hover td {
-  background-color: #f8fafc;
-}
-
-.ql-owner-cell {
+.ql-owner-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .ql-owner-avatar {
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 10.5px;
   font-weight: 700;
-  font-size: 11.5px;
-  color: #ffffff;
   flex-shrink: 0;
 }
 
 .ql-owner-name {
   font-weight: 600;
   color: var(--admin-text-main);
-  font-size: 12.5px;
+  white-space: nowrap;
 }
 
-.ql-badge-status {
+/* Status Pill */
+.ql-badge-pill {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 8px;
-  border-radius: 20px;
-  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 12px;
+  font-size: 10px;
   font-weight: 600;
   white-space: nowrap;
 }
 
-.ql-badge-status.active {
-  background: #ecfdf5;
-  color: #059669;
-  border: 1px solid #a7f3d0;
-}
-
-.ql-badge-status.expiring {
-  background: #fffbeb;
-  color: #d97706;
-  border: 1px solid #fde68a;
-}
-
-.ql-badge-status.suspended {
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
-}
-
-.ql-status-dot {
+.ql-badge-pill .dot {
   width: 5px;
   height: 5px;
   border-radius: 50%;
   background: currentColor;
 }
 
-.ql-actions-cell {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.ql-badge-pill.active {
+  background: #ecfdf5;
+  color: #059669;
 }
 
-.ql-action-btn {
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  background: #f8fafc;
-  border: 1px solid var(--admin-border);
+.ql-badge-pill.expiring {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.ql-badge-pill.suspended {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.ql-row-actions {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #64748b;
+  gap: 4px;
+}
+
+.ql-action-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  padding: 0;
   transition: all 0.15s ease;
 }
 
-.ql-action-btn:hover {
-  background: #f1f5f9;
-  color: var(--admin-blue);
-  border-color: var(--admin-blue);
+.ql-action-icon:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
 }
 
-.ql-action-btn.delete:hover {
-  background: #fef2f2;
-  color: #ef4444;
-  border-color: #fca5a5;
-}
-
-/* ── RECENT ACTIVITY ───────────────────────────────────────────────────── */
-.ql-activity-list {
+/* ── RECENT ACTIVITIES TIMELINE ────────────────────────────────────────── */
+.ql-card-activities {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.ql-timeline-list {
+  display: flex;
+  flex-direction: column;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
+  overflow: hidden;
+  gap: 2px;
+  padding: 2px 0;
 }
 
-.ql-activity-item {
+.ql-timeline-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  position: relative;
+  flex: 1;
+}
+
+.ql-timeline-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 14px;
+  flex-shrink: 0;
+  padding-top: 2px;
+  height: 100%;
+}
+
+.ql-timeline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #10b981;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 6px 0;
-  border-bottom: 1px solid #f1f5f9;
-  font-size: 12px;
+  justify-content: center;
+  background: #ffffff;
+  flex-shrink: 0;
+  z-index: 2;
 }
 
-.ql-activity-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
+.ql-timeline-inner-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #10b981;
 }
 
-.ql-activity-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.ql-timeline-line {
+  width: 1.5px;
+  flex: 1;
+  background: #e2e8f0;
+  margin-top: 1px;
+}
+
+.ql-timeline-content {
+  flex: 1;
   min-width: 0;
 }
 
-.ql-activity-icon {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  flex-shrink: 0;
-}
-
-.ql-activity-icon.green {
-  background: #ecfdf5;
-  color: #10b981;
-}
-
-.ql-activity-icon.blue {
-  background: #eff6ff;
-  color: #1960f7;
-}
-
-.ql-activity-icon.amber {
-  background: #fffbeb;
-  color: #f59e0b;
-}
-
-.ql-activity-icon.gray {
-  background: #f1f5f9;
-  color: #64748b;
-}
-
-.ql-activity-text {
-  font-size: 13.5px;
-  color: #334155;
-}
-
-.ql-activity-title {
-  font-weight: 600;
+.ql-timeline-title {
+  font-size: 11px;
+  font-weight: 700;
   color: var(--admin-text-main);
-  margin-right: 6px;
+  line-height: 1.2;
 }
 
-.ql-activity-time {
-  font-size: 12px;
+.ql-timeline-desc {
+  font-size: 10px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.ql-timeline-time {
+  font-size: 9.5px;
   color: #94a3b8;
   white-space: nowrap;
+  font-weight: 500;
 }
 
-.ql-btn-secondary {
-  background: #ffffff;
-  border: 1.5px solid var(--admin-border);
-  color: #475569;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 6px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-family: inherit;
-}
-
-.ql-btn-secondary:hover {
-  background: #f8fafc;
-  color: var(--admin-text-main);
-}
-
-/* ── MODAL DIALOGS ─────────────────────────────────────────────────────── */
-.ql-admin-modal-overlay {
+/* ── OWNER DETAIL MODAL ────────────────────────────────────────────────── */
+.ql-modal-backdrop {
   position: fixed;
   top: 0;
   left: 0;
@@ -987,95 +1188,111 @@
   padding: 16px;
 }
 
-.ql-admin-modal {
+.ql-detail-modal {
   width: 100%;
-  max-width: 500px;
+  max-width: 460px;
   background: #ffffff;
-  border-radius: 18px;
-  padding: 28px;
+  border-radius: 16px;
+  padding: 22px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   border: 1px solid var(--admin-border);
-  animation: qlCardEnter 0.2s ease both;
   box-sizing: border-box;
+  animation: qlModalIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.ql-modal-head {
+@keyframes qlModalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.ql-modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
 }
 
-.ql-modal-head h3 {
-  margin: 0;
-  font-size: 19px;
-  font-weight: 700;
-  color: var(--admin-text-main);
-}
-
-.ql-modal-close {
+.ql-modal-close-btn {
   background: none;
   border: none;
+  font-size: 15px;
   color: #94a3b8;
   cursor: pointer;
   padding: 4px;
-  border-radius: 50%;
-  display: flex;
+  border-radius: 6px;
 }
 
-.ql-modal-close:hover {
-  color: #0f172a;
+.ql-modal-close-btn:hover {
   background: #f1f5f9;
+  color: #0f172a;
 }
 
-.ql-form-group {
-  margin-bottom: 16px;
+.ql-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.ql-form-group label {
-  display: block;
-  font-size: 13px;
-  font-weight: 600;
-  color: #334155;
-  margin-bottom: 6px;
-}
-
-.ql-form-group input,
-.ql-form-group select {
-  width: 100%;
-  height: 42px;
-  border: 1.5px solid var(--admin-border);
-  border-radius: 10px;
-  padding: 0 14px;
-  font-size: 14px;
-  font-family: inherit;
-  color: var(--admin-text-main);
-  outline: none;
-  box-sizing: border-box;
-  transition: all 0.15s ease;
-}
-
-.ql-form-group input:focus,
-.ql-form-group select:focus {
-  border-color: var(--admin-blue);
-  box-shadow: 0 0 0 3px rgba(25, 96, 247, 0.12);
-}
-
-.ql-modal-actions {
+.ql-detail-field {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 6px 0;
+  border-bottom: 1px dashed #f1f5f9;
+}
+
+.ql-detail-field .lbl {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.ql-detail-field .val {
+  color: var(--admin-text-main);
+  font-weight: 600;
+}
+
+.ql-modal-footer {
+  margin-top: 20px;
+  display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
+}
+
+.ql-btn-close {
+  background: #1960f7;
+  color: #ffffff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 /* ── RESPONSIVE DESIGN ─────────────────────────────────────────────────── */
-@media (max-width: 1200px) {
+@media (max-width: 1024px) {
   .ql-stats-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .ql-analytics-grid {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .ql-bottom-grid {
+    grid-template-columns: 1fr;
   }
   .ql-admin-content {
-    padding: 20px 20px 36px;
+    overflow-y: auto;
+    height: auto;
   }
 }
 
@@ -1087,7 +1304,7 @@
     z-index: 999;
   }
 
-  .ql-admin-sidebar.mobile-open {
+  .ql-admin-sidebar.open {
     transform: translateX(0);
   }
 
@@ -1095,15 +1312,11 @@
     display: flex;
   }
 
-  .ql-stats-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .ql-admin-content {
-    padding: 16px;
-  }
-
   .ql-topbar-search {
     display: none;
+  }
+
+  .ql-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
