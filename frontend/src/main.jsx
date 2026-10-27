@@ -11,10 +11,10 @@ import { warmupBackendServer } from './authApi';
 // ⚡ Wake up Render backend immediately on app launch so it's awake before user submits forms
 warmupBackendServer();
 
-// Periodically keep server warm every 5 minutes while user has the tab open
+// Periodically keep server warm every 12 minutes while user has the tab open
 setInterval(() => {
   warmupBackendServer();
-}, 5 * 60 * 1000);
+}, 12 * 60 * 1000);
 
 createRoot(document.getElementById('root')).render(
     <BrowserRouter>

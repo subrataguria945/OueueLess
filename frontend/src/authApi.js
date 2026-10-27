@@ -38,7 +38,7 @@ export function warmupBackendServer() {
  * @param {number} [payload.user_role=2] - 2: Customer/User, 3: Shop Owner
  * @returns {Promise<{ status: string, message: string, signup_token: string }>}
  */
-export async function initiateSignup({ fullname, email, phone, user_role = 2 }) {
+export async function initiateSignup({ fullname, email, phone, user_role = 3 }) {
   const cleanFullname = (fullname || "").trim();
   const cleanEmail = (email || "").trim().toLowerCase();
   const cleanPhone = (phone || "").trim().replace(/\D/g, "");
