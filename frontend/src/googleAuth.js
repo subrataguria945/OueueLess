@@ -121,7 +121,7 @@ export async function syncGoogleUserWithDatabase(googleUser, phone = "") {
  * @param {Function} options.onError - Callback with (errorMessage)
  * @param {Function} [options.onPhoneRequired] - Callback when a new user needs to provide mobile number
  */
-export async function triggerGoogleSignIn({ onSuccess, onError, onPhoneRequired }) {
+export async function triggerGoogleSignIn({ onSuccess, onError, onPhoneRequired, onCancel }) {
   const clientId = getGoogleClientId();
 
   if (!clientId) {
@@ -139,13 +139,30 @@ export async function triggerGoogleSignIn({ onSuccess, onError, onPhoneRequired 
       client_id: clientId,
       scope: "email profile openid",
       prompt: "select_account",
+      error_callback: (err) => {
+        if (err?.type === "popup_closed" || err?.type === "popup_closed_by_user") {
+          if (onCancel) {
+            onCancel();
+          } else {
+            onError?.(null);
+          }
+        } else {
+          onError?.(err?.message || "Google Sign-In was closed or interrupted.");
+        }
+      },
       callback: async (tokenResponse) => {
         if (tokenResponse.error) {
-          if (tokenResponse.error !== "popup_closed_by_user") {
+          if (tokenResponse.error === "popup_closed_by_user" || tokenResponse.error === "user_closed_popup") {
+            if (onCancel) {
+              onCancel();
+            } else {
+              onError?.(null);
+            }
+          } else {
             onError?.(
               tokenResponse.error_description ||
-                tokenResponse.error ||
-                "Google Sign-In was cancelled."
+              tokenResponse.error ||
+              "Google Sign-In was cancelled."
             );
           }
           return;

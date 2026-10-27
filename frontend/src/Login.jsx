@@ -80,6 +80,9 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
         setIsGoogleLoading(false);
         if (err) setLoginError(err);
       },
+      onCancel: () => {
+        setIsGoogleLoading(false);
+      },
       onPhoneRequired: (pendingAuth) => {
         setIsGoogleLoading(false);
         setPendingGoogleAuth(pendingAuth);
