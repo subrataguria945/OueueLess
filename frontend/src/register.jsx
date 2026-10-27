@@ -1,30 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import "./register.css";
+import { initiateSignup, verifySignupOtp } from "./authApi";
 import { EmailOtpModal } from "./EmailOtpModal";
-
-const BACKEND_BASE_URL =
-  import.meta.env.VITE_BACKEND_URL ||
-  "https://queueless-backend-b2qh.onrender.com";
-
-const REGISTER_INITIATE_URL = `${BACKEND_BASE_URL}/user/register/initiate`;
-const REGISTER_VERIFY_URL = `${BACKEND_BASE_URL}/user/register/verify`;
 
 /* ── Register Panel Component (Modular & Reusable) ────────── */
 export function RegisterPanel({ onSwitchToLogin }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState(() => localStorage.getItem("signup_password") || "");
-  const [confirmPassword, setConfirmPassword] = useState(() => localStorage.getItem("signup_confirm_password") || "");
-  const [signupToken, setSignupToken] = useState(() => localStorage.getItem("signup_token") || "");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const [signupToken, setSignupToken] = useState("");
 
   const hasMinLength = password.length >= 8;
   const hasUppercase = /[A-Z]/.test(password);
@@ -40,169 +33,116 @@ export function RegisterPanel({ onSwitchToLogin }) {
     return { label: "Strong", color: "#10b981" };
   })();
 
-  /* ── 1. STEP 1: INITIATE REGISTRATION & SEND OTP ────────────── */
-  const handleInitiateRegister = async () => {
+  /* ── 1. STEP 1: FORM SUBMIT & INITIATE OTP ────────────────── */
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setError("");
     setSuccess("");
 
-    if (!name.trim()) {
-      setError("Please enter your full name.");
-      return false;
-    }
-
+    const cleanName = name.trim();
     const cleanEmail = email.trim().toLowerCase();
-    if (!cleanEmail || !cleanEmail.includes("@")) {
+    const cleanPhone = phone.trim().replace(/\D/g, "");
+
+    if (!cleanName) {
+      setError("Please enter your full name.");
+      return;
+    }
+
+    if (!cleanEmail || !cleanEmail.includes("@") || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
       setError("Please enter a valid email address.");
-      return false;
+      return;
     }
 
-    const cleanPhone = phone.trim();
-    if (!cleanPhone) {
-      setError("Phone number is required.");
-      return false;
-    }
-
-    if (cleanPhone.length !== 10) {
+    if (!cleanPhone || cleanPhone.length !== 10) {
       setError("Please enter a valid 10-digit phone number.");
-      return false;
+      return;
     }
 
     if (password.length < 8) {
       setError("Password must be at least 8 characters long.");
-      return false;
+      return;
     }
 
     if (!hasUppercase || !hasNumber || !hasSpecial) {
       setError("Password must include at least one uppercase letter, one number, and one symbol.");
-      return false;
+      return;
     }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match!");
-      return false;
+      return;
     }
 
     if (!agreeTerms) {
       setError("Please accept the Terms of Service & Privacy Policy.");
-      return false;
+      return;
     }
-
-    // Store password and confirm password in localStorage first as requested
-    localStorage.setItem("signup_password", password);
-    localStorage.setItem("signup_confirm_password", confirmPassword);
 
     setIsLoading(true);
     try {
-      const response = await fetch(REGISTER_INITIATE_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullname: name.trim(),
-          email: cleanEmail,
-          phone: cleanPhone,
-          user_role: 2,
-        }),
+      // Calls POST /user/register/initiate to send real OTP to Gmail
+      const result = await initiateSignup({
+        fullname: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone,
+        user_role: 2,
       });
-      const data = await response.json().catch(() => ({}));
 
-      if (!response.ok || data.status === "failed" || data.status === "error") {
-        const errorMsg =
-          data.message ||
-          (Array.isArray(data.detail) ? data.detail.map((d) => d.msg).join(", ") : data.detail) ||
-          data.error ||
-          "Registration failed. Please check your details and try again.";
-        setError(errorMsg);
-        return false;
-      }
-
-      const receivedToken = data.token || data.signup_token;
-      if (receivedToken) {
-        setSignupToken(receivedToken);
-        localStorage.setItem("signup_token", receivedToken);
-      }
-
-      setSuccess(data.message || "OTP sent to your email. Please verify within 5 minutes.");
+      setSignupToken(result.signup_token);
       setIsOtpModalOpen(true);
-      return true;
-    } catch {
-      setError("Unable to connect to the server. Please check your internet connection.");
-      return false;
+    } catch (err) {
+      setError(err?.message || "Failed to initiate registration. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    await handleInitiateRegister();
-  };
-
-  /* ── 2. STEP 2: VERIFY OTP & SAVE TO DATABASE ───────────────── */
+  /* ── 2. STEP 2: VERIFY OTP & COMPLETE REGISTRATION ────────── */
   const handleVerifyOtp = async (otpCode) => {
-    const tokenToUse = signupToken || localStorage.getItem("signup_token");
-    const passToUse = password || localStorage.getItem("signup_password");
-
-    if (!tokenToUse) {
-      throw new Error("Registration session expired. Please click Create Account again.");
+    if (!signupToken) {
+      throw new Error("Registration session expired. Please fill out the form again.");
     }
 
-    const response = await fetch(REGISTER_VERIFY_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        signup_token: tokenToUse,
-        otp: otpCode.trim(),
-        password: passToUse,
-      }),
+    // Calls POST /user/register/verify to verify OTP & create account in database
+    await verifySignupOtp({
+      signup_token: signupToken,
+      otp: otpCode,
+      password,
     });
-    const data = await response.json().catch(() => ({}));
 
-    if (!response.ok || data.status === "failed" || data.status === "error") {
-      const errorMsg =
-        data.message ||
-        (Array.isArray(data.detail) ? data.detail.map((d) => d.msg).join(", ") : data.detail) ||
-        "Invalid or expired OTP. Please try again.";
-      throw new Error(errorMsg);
-    }
-
-    // Success: Account saved in database!
-    localStorage.removeItem("signup_password");
-    localStorage.removeItem("signup_confirm_password");
-    localStorage.removeItem("signup_token");
-
+    // Close modal & notify user
     setIsOtpModalOpen(false);
-    setIsEmailVerified(true);
-    setSuccess(data.message || "Account created successfully! Switching to login...");
+    setSuccess("Account created successfully! Switching to login...");
 
+    // Clear state
+    setName("");
+    setEmail("");
+    setPhone("");
+    setPassword("");
+    setConfirmPassword("");
+    setSignupToken("");
+
+    // Redirect to login
     setTimeout(() => {
       if (onSwitchToLogin) onSwitchToLogin();
       else window.location.href = "/login";
-    }, 1500);
+    }, 1400);
   };
 
-  /* ── 3. RESEND OTP ───────────────────────────────────────────── */
+  /* ── 3. RESEND OTP ────────────────────────────────────────── */
   const handleResendOtp = async () => {
-    const response = await fetch(REGISTER_INITIATE_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        fullname: name.trim(),
-        email: email.trim().toLowerCase(),
-        phone: phone.trim(),
-        user_role: 2,
-      }),
+    const cleanName = name.trim();
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPhone = phone.trim().replace(/\D/g, "");
+
+    const result = await initiateSignup({
+      fullname: cleanName,
+      email: cleanEmail,
+      phone: cleanPhone,
+      user_role: 2,
     });
-    const data = await response.json().catch(() => ({}));
 
-    if (!response.ok || data.status === "failed" || data.status === "error") {
-      throw new Error(data.message || "Failed to resend verification OTP.");
-    }
-
-    const receivedToken = data.token || data.signup_token;
-    if (receivedToken) {
-      setSignupToken(receivedToken);
-      localStorage.setItem("signup_token", receivedToken);
-    }
+    setSignupToken(result.signup_token);
   };
 
   const regInputStyle = {
@@ -281,7 +221,7 @@ export function RegisterPanel({ onSwitchToLogin }) {
           </div>
 
           {/* Email */}
-          <div className="ql-field" style={{ position: "relative" }}>
+          <div className="ql-field">
             <span className="ql-field-icon">
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
@@ -292,76 +232,12 @@ export function RegisterPanel({ onSwitchToLogin }) {
               type="email"
               placeholder="Email address"
               value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (isEmailVerified) setIsEmailVerified(false);
-              }}
+              onChange={(e) => setEmail(e.target.value)}
               required
-              style={{
-                ...regInputStyle,
-                paddingRight: isEmailVerified ? "95px" : (email.includes("@") ? "75px" : "42px"),
-                borderColor: isEmailVerified ? "#10b981" : undefined,
-                backgroundColor: isEmailVerified ? "#f0fdf4" : "#ffffff",
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = isEmailVerified ? "#10b981" : "#1960f7";
-                e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = isEmailVerified ? "#10b981" : "#dde4f0";
-                e.target.style.boxShadow = "none";
-              }}
+              style={regInputStyle}
+              onFocus={(e) => { e.target.style.borderColor = "#1960f7"; e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)"; }}
+              onBlur={(e) => { e.target.style.borderColor = "#dde4f0"; e.target.style.boxShadow = "none"; }}
             />
-            {isEmailVerified ? (
-              <span
-                style={{
-                  position: "absolute",
-                  right: "10px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  fontSize: "11px",
-                  fontWeight: "700",
-                  color: "#15803d",
-                  background: "#dcfce7",
-                  border: "1px solid #bbf7d0",
-                  padding: "3px 8px",
-                  borderRadius: "6px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "3px",
-                  pointerEvents: "none",
-                }}
-              >
-                <span>✓</span>
-                <span>Verified</span>
-              </span>
-            ) : (
-              email.includes("@") && (
-                <button
-                  type="button"
-                  onClick={handleInitiateRegister}
-                  disabled={isLoading}
-                  style={{
-                    position: "absolute",
-                    right: "8px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    background: "linear-gradient(135deg, #1960f7 0%, #0d47a1 100%)",
-                    color: "#ffffff",
-                    border: "none",
-                    borderRadius: "6px",
-                    fontSize: "11px",
-                    fontWeight: "600",
-                    padding: "5px 9px",
-                    cursor: isLoading ? "not-allowed" : "pointer",
-                    boxShadow: "0 2px 6px rgba(25, 96, 247, 0.25)",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  {isLoading ? "Sending..." : "Verify"}
-                </button>
-              )
-            )}
           </div>
 
           {/* Phone number (mandatory) */}
@@ -397,10 +273,7 @@ export function RegisterPanel({ onSwitchToLogin }) {
               type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                localStorage.setItem("signup_password", e.target.value);
-              }}
+              onChange={(e) => setPassword(e.target.value)}
               required
               style={{ ...regInputStyle, paddingRight: "46px" }}
               onFocus={(e) => { e.target.style.borderColor = "#1960f7"; e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)"; }}
@@ -484,10 +357,7 @@ export function RegisterPanel({ onSwitchToLogin }) {
               type={showConfirmPassword ? "text" : "password"}
               placeholder="Confirm password"
               value={confirmPassword}
-              onChange={(e) => {
-                setConfirmPassword(e.target.value);
-                localStorage.setItem("signup_confirm_password", e.target.value);
-              }}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               required
               style={{ ...regInputStyle, paddingRight: "46px" }}
               onFocus={(e) => { e.target.style.borderColor = "#1960f7"; e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)"; }}
@@ -523,25 +393,26 @@ export function RegisterPanel({ onSwitchToLogin }) {
               }}
             >
               {agreeTerms && (
-                <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
                   <polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               )}
             </span>
-            <span>
-              I agree to the{" "}
-              <a href="#terms" className="ql-terms-link" onClick={(e) => e.preventDefault()}>Terms of Service</a>
-              {" "}and{" "}
-              <a href="#privacy" className="ql-terms-link" onClick={(e) => e.preventDefault()}>Privacy Policy</a>
+            <span className="ql-terms-text">
+              I agree to the <a href="/terms" onClick={(e) => e.preventDefault()}>Terms of Service</a> &amp; <a href="/privacy" onClick={(e) => e.preventDefault()}>Privacy Policy</a>
             </span>
           </label>
 
-          {/* Submit */}
+          {/* Submit Button */}
           <button type="submit" className="ql-submit" disabled={isLoading}>
             {isLoading ? (
-              <><span className="ql-spin"></span>Creating account...</>
+              <>
+                <span className="ql-spin"></span>
+                Sending verification code...
+              </>
             ) : (
-              <>Create Account&nbsp;
+              <>
+                Create Account&nbsp;
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
                 </svg>
@@ -549,8 +420,6 @@ export function RegisterPanel({ onSwitchToLogin }) {
             )}
           </button>
         </form>
-
-
 
         {/* Footer switch to Login */}
         <p className="ql-footer">
@@ -567,12 +436,6 @@ export function RegisterPanel({ onSwitchToLogin }) {
         email={email}
         onVerifyOtp={handleVerifyOtp}
         onResendOtp={handleResendOtp}
-        onVerified={() => {
-          setIsEmailVerified(true);
-          setIsOtpModalOpen(false);
-          setSuccess("Account created successfully! Switching to login...");
-          setError("");
-        }}
         onCancel={() => setIsOtpModalOpen(false)}
       />
     </div>
