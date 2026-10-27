@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 
 /**
  * Masks email address for privacy (e.g. sujitkar2005@gmail.com -> su***05@gmail.com)
@@ -131,7 +132,7 @@ export function EmailOtpModal({
 
   const isOtpComplete = digits.join("").length === 6;
 
-  return (
+  const modalContent = (
     <div
       style={{
         position: "fixed",
@@ -408,6 +409,10 @@ export function EmailOtpModal({
       </div>
     </div>
   );
+
+  return typeof document !== "undefined"
+    ? createPortal(modalContent, document.body)
+    : modalContent;
 }
 
 export default EmailOtpModal;

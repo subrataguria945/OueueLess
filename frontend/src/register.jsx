@@ -14,6 +14,8 @@ export function RegisterPanel({ onSwitchToLogin }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitiatingOtp, setIsInitiatingOtp] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
@@ -33,7 +35,52 @@ export function RegisterPanel({ onSwitchToLogin }) {
     return { label: "Strong", color: "#10b981" };
   })();
 
-  /* ── 1. STEP 1: FORM SUBMIT & INITIATE OTP ────────────────── */
+  /* ── 1. SEND OTP / OPEN VERIFICATION MODAL ────────────────── */
+  const handleStartOtpVerification = async () => {
+    setError("");
+    setSuccess("");
+
+    const cleanName = name.trim();
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPhone = phone.trim().replace(/\D/g, "");
+
+    if (!cleanName) {
+      setError("Please enter your Full Name first to send verification code.");
+      return false;
+    }
+
+    if (!cleanEmail || !cleanEmail.includes("@") || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      setError("Please enter a valid Gmail address.");
+      return false;
+    }
+
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      setError("Please enter your 10-digit phone number first.");
+      return false;
+    }
+
+    setIsInitiatingOtp(true);
+    try {
+      // Calls POST /user/register/initiate to send real OTP to Gmail
+      const result = await initiateSignup({
+        fullname: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone,
+        user_role: 2,
+      });
+
+      setSignupToken(result.signup_token);
+      setIsOtpModalOpen(true);
+      return true;
+    } catch (err) {
+      setError(err?.message || "Failed to send verification code. Please check your details.");
+      return false;
+    } finally {
+      setIsInitiatingOtp(false);
+    }
+  };
+
+  /* ── 2. FORM SUBMIT HANDLER ───────────────────────────────── */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -58,13 +105,8 @@ export function RegisterPanel({ onSwitchToLogin }) {
       return;
     }
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters long.");
-      return;
-    }
-
-    if (!hasUppercase || !hasNumber || !hasSpecial) {
-      setError("Password must include at least one uppercase letter, one number, and one symbol.");
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long.");
       return;
     }
 
@@ -78,29 +120,32 @@ export function RegisterPanel({ onSwitchToLogin }) {
       return;
     }
 
-    setIsLoading(true);
-    try {
-      // Calls POST /user/register/initiate to send real OTP to Gmail
-      const result = await initiateSignup({
-        fullname: cleanName,
-        email: cleanEmail,
-        phone: cleanPhone,
-        user_role: 2,
-      });
-
-      setSignupToken(result.signup_token);
+    // If OTP modal is needed, initiate and open it
+    if (!signupToken) {
+      setIsLoading(true);
+      try {
+        const started = await handleStartOtpVerification();
+        if (!started) return;
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
       setIsOtpModalOpen(true);
-    } catch (err) {
-      setError(err?.message || "Failed to initiate registration. Please try again.");
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  /* ── 2. STEP 2: VERIFY OTP & COMPLETE REGISTRATION ────────── */
+  /* ── 3. VERIFY OTP & COMPLETE REGISTRATION ────────────────── */
   const handleVerifyOtp = async (otpCode) => {
     if (!signupToken) {
-      throw new Error("Registration session expired. Please fill out the form again.");
+      throw new Error("Registration session expired. Please submit the form again.");
+    }
+
+    // If user clicked Verify before entering password, mark email verified
+    if (!password) {
+      setIsEmailVerified(true);
+      setIsOtpModalOpen(false);
+      setSuccess("Email verified! Now enter password and click Create Account to finish.");
+      return;
     }
 
     // Calls POST /user/register/verify to verify OTP & create account in database
@@ -111,6 +156,7 @@ export function RegisterPanel({ onSwitchToLogin }) {
     });
 
     // Close modal & notify user
+    setIsEmailVerified(true);
     setIsOtpModalOpen(false);
     setSuccess("Account created successfully! Switching to login...");
 
@@ -129,7 +175,7 @@ export function RegisterPanel({ onSwitchToLogin }) {
     }, 1400);
   };
 
-  /* ── 3. RESEND OTP ────────────────────────────────────────── */
+  /* ── 4. RESEND OTP ────────────────────────────────────────── */
   const handleResendOtp = async () => {
     const cleanName = name.trim();
     const cleanEmail = email.trim().toLowerCase();
@@ -221,7 +267,7 @@ export function RegisterPanel({ onSwitchToLogin }) {
           </div>
 
           {/* Email */}
-          <div className="ql-field">
+          <div className="ql-field" style={{ position: "relative" }}>
             <span className="ql-field-icon">
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
@@ -232,12 +278,67 @@ export function RegisterPanel({ onSwitchToLogin }) {
               type="email"
               placeholder="Email address"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (isEmailVerified) setIsEmailVerified(false);
+              }}
               required
-              style={regInputStyle}
+              style={{
+                ...regInputStyle,
+                paddingRight: isEmailVerified || (email && email.includes("@")) ? "88px" : "42px",
+              }}
               onFocus={(e) => { e.target.style.borderColor = "#1960f7"; e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)"; }}
               onBlur={(e) => { e.target.style.borderColor = "#dde4f0"; e.target.style.boxShadow = "none"; }}
             />
+            {isEmailVerified ? (
+              <span
+                style={{
+                  position: "absolute",
+                  right: "10px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "#dcfce7",
+                  color: "#15803d",
+                  fontSize: "11px",
+                  fontWeight: "700",
+                  padding: "4px 8px",
+                  borderRadius: "6px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  pointerEvents: "none",
+                }}
+              >
+                ✓ Verified
+              </span>
+            ) : (
+              email &&
+              email.includes("@") && (
+                <button
+                  type="button"
+                  onClick={handleStartOtpVerification}
+                  disabled={isInitiatingOtp || isLoading}
+                  style={{
+                    position: "absolute",
+                    right: "8px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "#1960f7",
+                    color: "#ffffff",
+                    border: "none",
+                    borderRadius: "7px",
+                    fontSize: "11px",
+                    fontWeight: "600",
+                    padding: "5px 10px",
+                    cursor: isInitiatingOtp || isLoading ? "not-allowed" : "pointer",
+                    boxShadow: "0 2px 6px rgba(25, 96, 247, 0.25)",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  {isInitiatingOtp ? "Sending..." : "Verify OTP"}
+                </button>
+              )
+            )}
           </div>
 
           {/* Phone number (mandatory) */}
