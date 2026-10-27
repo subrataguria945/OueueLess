@@ -11,7 +11,7 @@ const STAT_METRICS = [
     trend: "↗ 12%",
     context: "from last month",
     icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1960f7" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
         <circle cx="9" cy="7" r="4" />
         <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
@@ -26,7 +26,7 @@ const STAT_METRICS = [
     trend: "↗ 18%",
     context: "from last month",
     icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1960f7" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
         <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7" />
         <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
         <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4" />
@@ -41,7 +41,7 @@ const STAT_METRICS = [
     trend: "↗ 25%",
     context: "from last month",
     icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1960f7" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
         <circle cx="12" cy="7" r="4" />
       </svg>
@@ -54,7 +54,7 @@ const STAT_METRICS = [
     trend: "↗ 32%",
     context: "from last month",
     icon: (
-      <span style={{ fontSize: "19px", fontWeight: "700", fontFamily: "inherit" }}>₹</span>
+      <div className="ql-rupee-circle-icon">₹</div>
     ),
   },
   {
@@ -64,7 +64,7 @@ const STAT_METRICS = [
     trend: "↗ 15%",
     context: "from last month",
     icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1960f7" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
         <polyline points="14 2 14 8 20 8" />
         <line x1="16" y1="13" x2="8" y2="13" />
@@ -84,12 +84,12 @@ const TOP_SHOPS = [
 ];
 
 const REVENUE_BARS = [
-  { month: "Apr", val: 12, heightPct: 28 },
-  { month: "May", val: 19, heightPct: 44 },
-  { month: "Jun", val: 24, heightPct: 56 },
-  { month: "Jul", val: 28, heightPct: 65 },
-  { month: "Aug", val: 32, heightPct: 74 },
-  { month: "Sep", val: 36, heightPct: 84 },
+  { month: "Apr", val: 12, heightPct: 32 },
+  { month: "May", val: 19, heightPct: 48 },
+  { month: "Jun", val: 24, heightPct: 60 },
+  { month: "Jul", val: 28, heightPct: 70 },
+  { month: "Aug", val: 32, heightPct: 79 },
+  { month: "Sep", val: 36, heightPct: 88 },
   { month: "Oct", val: 42, heightPct: 98 },
 ];
 
@@ -122,8 +122,8 @@ const RECENT_OWNERS = [
     id: 3,
     name: "Priya Ghosh",
     initial: "P",
-    avatarBg: "#dbeafe",
-    avatarColor: "#1d4ed8",
+    avatarBg: "#e0e7ff",
+    avatarColor: "#4338ca",
     email: "priya@example.com",
     phone: "+91 98765 43212",
     shops: 2,
@@ -134,8 +134,8 @@ const RECENT_OWNERS = [
     id: 4,
     name: "Arjun Roy",
     initial: "A",
-    avatarBg: "#fef3c7",
-    avatarColor: "#b45309",
+    avatarBg: "#ffedd5",
+    avatarColor: "#c2410c",
     email: "arjun@example.com",
     phone: "+91 98765 43213",
     shops: 1,
@@ -161,7 +161,7 @@ const TIMELINE_ACTIVITIES = [
     id: 1,
     color: "#10b981",
     icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.5">
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
         <circle cx="9" cy="7" r="4" />
       </svg>
@@ -174,7 +174,7 @@ const TIMELINE_ACTIVITIES = [
     id: 2,
     color: "#1960f7",
     icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.5">
         <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7" />
         <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
       </svg>
@@ -187,9 +187,9 @@ const TIMELINE_ACTIVITIES = [
     id: 3,
     color: "#8b5cf6",
     icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-        <rect width="20" height="14" x="2" y="5" rx="2" />
-        <line x1="2" x2="22" y1="10" y2="10" />
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.5">
+        <rect x="2" y="5" width="20" height="14" rx="2" />
+        <line x1="2" y1="10" x2="22" y2="10" />
       </svg>
     ),
     title: "Subscription renewed",
@@ -200,7 +200,7 @@ const TIMELINE_ACTIVITIES = [
     id: 4,
     color: "#f59e0b",
     icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.5">
         <circle cx="12" cy="7" r="4" />
         <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
       </svg>
@@ -213,7 +213,7 @@ const TIMELINE_ACTIVITIES = [
     id: 5,
     color: "#ef4444",
     icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.5">
         <rect x="2" y="5" width="20" height="14" rx="2" />
         <line x1="2" y1="10" x2="22" y2="10" />
       </svg>
@@ -226,7 +226,7 @@ const TIMELINE_ACTIVITIES = [
     id: 6,
     color: "#8b5cf6",
     icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.5">
         <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
         <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7" />
       </svg>
@@ -270,18 +270,26 @@ export function AdminDashboard() {
       {/* ── 1. SIDEBAR (MATCHES UI MOCKUP EXACTLY) ─────────────── */}
       <aside className={`ql-admin-sidebar ${mobileMenuOpen ? "open" : ""}`}>
         <div>
-          {/* Brand Header */}
+          {/* Brand Header with Stylized Circular 'Q' Badge */}
           <div className="ql-admin-brand">
-            <div className="ql-brand-icon-box">
-              <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
-                <circle cx="16" cy="16" r="14" stroke="#ffffff" strokeWidth="3" />
-                <path d="M19 19L26 26" stroke="#38bdf8" strokeWidth="3.5" strokeLinecap="round" />
-                <path d="M16 8C11.58 8 8 11.58 8 16C8 20.42 11.58 24 16 24C20.42 24 24 20.42 24 16" stroke="#38bdf8" strokeWidth="2.5" strokeLinecap="round" />
+            <div className="ql-brand-icon-circle">
+              <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
+                <circle cx="18" cy="18" r="16" fill="url(#qgrad)" />
+                <path
+                  d="M18 10C13.58 10 10 13.58 10 18C10 22.42 13.58 26 18 26C19.78 26 21.43 25.42 22.77 24.43L25.35 27L27 25.35L24.43 22.77C25.42 21.43 26 19.78 26 18C26 13.58 22.42 10 18 10ZM18 22.5C15.51 22.5 13.5 20.49 13.5 18C13.5 15.51 15.51 13.5 18 13.5C20.49 13.5 22.5 15.51 22.5 18C22.5 20.49 20.49 22.5 18 22.5Z"
+                  fill="#ffffff"
+                />
+                <defs>
+                  <linearGradient id="qgrad" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#00b4d8" />
+                    <stop offset="1" stopColor="#1960f7" />
+                  </linearGradient>
+                </defs>
               </svg>
             </div>
-            <div>
-              <div className="ql-brand-title">Queueless</div>
-              <div className="ql-brand-subtitle">Admin Panel</div>
+            <div className="ql-brand-text">
+              <h2 className="ql-brand-title">Queueless</h2>
+              <span className="ql-brand-subtitle">Admin Panel</span>
             </div>
           </div>
 
@@ -293,7 +301,7 @@ export function AdminDashboard() {
               onClick={() => setActiveTab("dashboard")}
             >
               <span className="ql-nav-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                   <polyline points="9 22 9 12 15 12 15 22" />
                 </svg>
@@ -307,7 +315,7 @@ export function AdminDashboard() {
               onClick={() => setActiveTab("owners")}
             >
               <span className="ql-nav-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                   <circle cx="9" cy="7" r="4" />
                 </svg>
@@ -321,7 +329,7 @@ export function AdminDashboard() {
               onClick={() => setActiveTab("shops")}
             >
               <span className="ql-nav-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7" />
                   <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
                 </svg>
@@ -335,11 +343,9 @@ export function AdminDashboard() {
               onClick={() => setActiveTab("users")}
             >
               <span className="ql-nav-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
                 </svg>
               </span>
               <span>Users</span>
@@ -351,7 +357,7 @@ export function AdminDashboard() {
               onClick={() => setActiveTab("subscriptions")}
             >
               <span className="ql-nav-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <rect width="20" height="14" x="2" y="5" rx="2" />
                   <line x1="2" x2="22" y1="10" y2="10" />
                 </svg>
@@ -365,7 +371,7 @@ export function AdminDashboard() {
               onClick={() => setActiveTab("payments")}
             >
               <span className="ql-nav-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <rect width="20" height="14" x="2" y="5" rx="2" />
                   <line x1="2" x2="22" y1="10" y2="10" />
                   <line x1="6" x2="8" y1="15" y2="15" />
@@ -380,7 +386,7 @@ export function AdminDashboard() {
               onClick={() => setActiveTab("reports")}
             >
               <span className="ql-nav-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 3v18h18" />
                   <path d="M18 17V9" />
                   <path d="M13 17V5" />
@@ -396,7 +402,7 @@ export function AdminDashboard() {
               onClick={() => setActiveTab("settings")}
             >
               <span className="ql-nav-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="3" />
                   <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
                 </svg>
@@ -406,32 +412,31 @@ export function AdminDashboard() {
           </nav>
         </div>
 
-        {/* Sidebar Footer Illustration & Tagline */}
+        {/* Sidebar Footer Artwork & Tagline */}
         <div className="ql-sidebar-footer">
-          <div className="ql-sidebar-illustration">
-            <svg width="160" height="50" viewBox="0 0 160 50" fill="none">
-              <rect x="0" y="44" width="160" height="2" fill="rgba(255,255,255,0.15)" />
-              <rect x="10" y="32" width="140" height="1.5" fill="rgba(255,255,255,0.08)" />
-              {/* Silhouettes */}
-              <circle cx="28" cy="18" r="5" fill="#38bdf8" opacity="0.6" />
-              <path d="M22 38c0-5 3-7 6-7s6 2 6 7" stroke="#38bdf8" strokeWidth="2" opacity="0.6" />
-              <circle cx="52" cy="16" r="5.5" fill="#60a5fa" opacity="0.75" />
-              <path d="M45 38c0-6 3.5-8 7-8s7 2 7 8" stroke="#60a5fa" strokeWidth="2.2" opacity="0.75" />
-              <circle cx="78" cy="17" r="5" fill="#93c5fd" opacity="0.8" />
-              <path d="M72 38c0-5 3-7 6-7s6 2 6 7" stroke="#93c5fd" strokeWidth="2" opacity="0.8" />
-              <circle cx="104" cy="15" r="5.5" fill="#38bdf8" opacity="0.85" />
-              <path d="M97 38c0-6 3.5-8 7-8s7 2 7 8" stroke="#38bdf8" strokeWidth="2.2" opacity="0.85" />
-              <circle cx="130" cy="18" r="5" fill="#60a5fa" opacity="0.6" />
-              <path d="M124 38c0-5 3-7 6-7s6 2 6 7" stroke="#60a5fa" strokeWidth="2" opacity="0.6" />
+          <div className="ql-sidebar-illustration-card">
+            <svg width="150" height="48" viewBox="0 0 150 48" fill="none">
+              <rect x="0" y="44" width="150" height="2" fill="rgba(255,255,255,0.15)" />
+              <rect x="10" y="32" width="130" height="1.5" fill="rgba(255,255,255,0.08)" />
+              <circle cx="25" cy="18" r="4.5" fill="#38bdf8" opacity="0.6" />
+              <path d="M19 36c0-5 2.5-7 6-7s6 2 6 7" stroke="#38bdf8" strokeWidth="2" opacity="0.6" />
+              <circle cx="48" cy="16" r="5" fill="#60a5fa" opacity="0.75" />
+              <path d="M41 36c0-6 3-8 7-8s7 2 7 8" stroke="#60a5fa" strokeWidth="2" opacity="0.75" />
+              <circle cx="74" cy="17" r="4.5" fill="#93c5fd" opacity="0.8" />
+              <path d="M68 36c0-5 2.5-7 6-7s6 2 6 7" stroke="#93c5fd" strokeWidth="2" opacity="0.8" />
+              <circle cx="100" cy="15" r="5" fill="#38bdf8" opacity="0.85" />
+              <path d="M93 36c0-6 3-8 7-8s7 2 7 8" stroke="#38bdf8" strokeWidth="2" opacity="0.85" />
+              <circle cx="125" cy="18" r="4.5" fill="#60a5fa" opacity="0.6" />
+              <path d="M119 36c0-5 2.5-7 6-7s6 2 6 7" stroke="#60a5fa" strokeWidth="2" opacity="0.6" />
             </svg>
           </div>
           <p className="ql-sidebar-tagline">
-            Smart Queue Management<br />for a Smoother Tomorrow
+            Smart Queue<br />Management<br />for a Smoother<br />Tomorrow
           </p>
         </div>
       </aside>
 
-      {/* ── 2. MAIN VIEWPORT (HEADER + DASHBOARD CONTENT) ──────── */}
+      {/* ── 2. MAIN VIEWPORT (HEADER + DASHBOARD CANVAS) ───────── */}
       <div className="ql-admin-main">
         {/* Top Navbar */}
         <header className="ql-admin-topbar">
@@ -449,10 +454,10 @@ export function AdminDashboard() {
               </svg>
             </button>
 
-            {/* Global Search Box */}
+            {/* Global Search Pill Input */}
             <div className="ql-topbar-search">
               <span className="ql-topbar-search-icon">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.2">
                   <circle cx="11" cy="11" r="8" />
                   <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
@@ -467,21 +472,21 @@ export function AdminDashboard() {
           </div>
 
           <div className="ql-topbar-right">
-            {/* Date Range Picker */}
+            {/* Date Range Picker Pill */}
             <div style={{ position: "relative" }}>
               <button
                 type="button"
                 className="ql-date-picker-btn"
                 onClick={() => setDateDropdownOpen(!dateDropdownOpen)}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1960f7" strokeWidth="2">
                   <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
                   <line x1="16" x2="16" y1="2" y2="6" />
                   <line x1="8" x2="8" y1="2" y2="6" />
                   <line x1="3" x2="21" y1="10" y2="10" />
                 </svg>
                 <span>{dateRange}</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.2">
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
               </button>
@@ -496,7 +501,7 @@ export function AdminDashboard() {
               )}
             </div>
 
-            {/* Notification Bell with Badge */}
+            {/* Notification Bell with Red Badge */}
             <div style={{ position: "relative" }}>
               <button
                 type="button"
@@ -504,7 +509,7 @@ export function AdminDashboard() {
                 onClick={() => setNotifDropdownOpen(!notifDropdownOpen)}
                 aria-label="View notifications"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2">
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                   <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                 </svg>
@@ -521,7 +526,7 @@ export function AdminDashboard() {
               )}
             </div>
 
-            {/* Profile Pill */}
+            {/* Admin Profile Pill */}
             <div style={{ position: "relative" }}>
               <button
                 type="button"
@@ -530,7 +535,7 @@ export function AdminDashboard() {
               >
                 <div className="ql-avatar-circle">A</div>
                 <span className="ql-profile-name">Admin</span>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.2">
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
               </button>
@@ -552,7 +557,7 @@ export function AdminDashboard() {
           </div>
         </header>
 
-        {/* ── 3. DASHBOARD MAIN CANVAS ───────────────────────────── */}
+        {/* ── 3. DASHBOARD MAIN CANVAS (100VH COMPACT) ───────────── */}
         <main className="ql-admin-content">
           {/* Page Heading */}
           <div className="ql-page-header">
@@ -586,7 +591,7 @@ export function AdminDashboard() {
               <div className="ql-card-head">
                 <div className="ql-card-title-group">
                   <span className="ql-card-badge-icon blue">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                       <rect width="20" height="14" x="2" y="5" rx="2" />
                       <line x1="2" x2="22" y1="10" y2="10" />
                     </svg>
@@ -599,58 +604,65 @@ export function AdminDashboard() {
               </div>
 
               <div className="ql-donut-content">
-                {/* SVG Donut Ring */}
+                {/* SVG Multi-segment Donut Ring Matching Mockup */}
                 <div className="ql-donut-graphic">
                   <svg width="130" height="130" viewBox="0 0 140 140">
-                    {/* Background track */}
-                    <circle cx="70" cy="70" r="52" fill="none" stroke="#f1f5f9" strokeWidth="18" />
-                    {/* Active: Green ~70% */}
+                    {/* Background light ring */}
+                    <circle cx="70" cy="70" r="50" fill="none" stroke="#f1f5f9" strokeWidth="18" />
+                    {/* Blue segment: 38% */}
                     <circle
                       cx="70"
                       cy="70"
-                      r="52"
+                      r="50"
                       fill="none"
-                      stroke="#10b981"
+                      stroke="#1960f7"
                       strokeWidth="18"
-                      strokeDasharray="228 326"
-                      strokeDashoffset="80"
-                      strokeLinecap="round"
+                      strokeDasharray="120 314"
+                      strokeDashoffset="0"
                     />
-                    {/* Expiring Soon: Amber ~14% */}
+                    {/* Green segment: 28% */}
                     <circle
                       cx="70"
                       cy="70"
-                      r="52"
+                      r="50"
+                      fill="none"
+                      stroke="#00c853"
+                      strokeWidth="18"
+                      strokeDasharray="88 314"
+                      strokeDashoffset="-120"
+                    />
+                    {/* Amber segment: 18% */}
+                    <circle
+                      cx="70"
+                      cy="70"
+                      r="50"
                       fill="none"
                       stroke="#f59e0b"
                       strokeWidth="18"
-                      strokeDasharray="45 326"
-                      strokeDashoffset="180"
-                      strokeLinecap="round"
+                      strokeDasharray="54 314"
+                      strokeDashoffset="-208"
                     />
-                    {/* Expired: Red ~9% */}
+                    {/* Red segment: 10% */}
                     <circle
                       cx="70"
                       cy="70"
-                      r="52"
+                      r="50"
                       fill="none"
                       stroke="#ef4444"
                       strokeWidth="18"
-                      strokeDasharray="30 326"
-                      strokeDashoffset="230"
-                      strokeLinecap="round"
+                      strokeDasharray="32 314"
+                      strokeDashoffset="-262"
                     />
-                    {/* Suspended: Purple ~7% */}
+                    {/* Purple segment: 6% */}
                     <circle
                       cx="70"
                       cy="70"
-                      r="52"
+                      r="50"
                       fill="none"
                       stroke="#8b5cf6"
                       strokeWidth="18"
-                      strokeDasharray="23 326"
-                      strokeDashoffset="265"
-                      strokeLinecap="round"
+                      strokeDasharray="20 314"
+                      strokeDashoffset="-294"
                     />
                   </svg>
                   <div className="ql-donut-center">
@@ -690,7 +702,7 @@ export function AdminDashboard() {
               <div className="ql-card-head">
                 <div className="ql-card-title-group">
                   <span className="ql-card-badge-icon blue">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
                       <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
                       <path d="M4 22h16" />
@@ -735,7 +747,7 @@ export function AdminDashboard() {
               <div className="ql-card-head">
                 <div className="ql-card-title-group">
                   <span className="ql-card-badge-icon blue">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                       <path d="M18 20V10" />
                       <path d="M12 20V4" />
                       <path d="M6 20v-6" />
@@ -792,7 +804,7 @@ export function AdminDashboard() {
               <div className="ql-card-head">
                 <div className="ql-card-title-group">
                   <span className="ql-card-badge-icon blue">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                       <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                       <circle cx="9" cy="7" r="4" />
                     </svg>
@@ -808,11 +820,11 @@ export function AdminDashboard() {
                 <table className="ql-owners-table">
                   <thead>
                     <tr>
-                      <th style={{ width: "30px" }}>#</th>
+                      <th style={{ width: "24px" }}>#</th>
                       <th>Owner Name</th>
                       <th>Email</th>
                       <th>Phone</th>
-                      <th style={{ textAlign: "center" }}>Shops</th>
+                      <th style={{ textAlign: "center", width: "50px" }}>Shops</th>
                       <th>Status</th>
                       <th>Joined On</th>
                       <th style={{ textAlign: "center", width: "70px" }}>Actions</th>
@@ -858,11 +870,11 @@ export function AdminDashboard() {
                           <div className="ql-row-actions">
                             <button
                               type="button"
-                              className="ql-action-icon"
+                              className="ql-action-icon blue"
                               title="View Owner Details"
                               onClick={() => setDetailModalOwner(owner)}
                             >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1960f7" strokeWidth="2.2">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                                 <circle cx="12" cy="12" r="3" />
                               </svg>
@@ -873,10 +885,10 @@ export function AdminDashboard() {
                               title="More Options"
                               onClick={() => alert(`Actions for ${owner.name}`)}
                             >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5">
-                                <circle cx="12" cy="12" r="1" />
-                                <circle cx="12" cy="5" r="1" />
-                                <circle cx="12" cy="19" r="1" />
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5">
+                                <circle cx="12" cy="12" r="1.2" />
+                                <circle cx="12" cy="5" r="1.2" />
+                                <circle cx="12" cy="19" r="1.2" />
                               </svg>
                             </button>
                           </div>
@@ -893,7 +905,7 @@ export function AdminDashboard() {
               <div className="ql-card-head">
                 <div className="ql-card-title-group">
                   <span className="ql-card-badge-icon blue">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                       <circle cx="12" cy="12" r="10" />
                       <polyline points="12 6 12 12 16 14" />
                     </svg>
@@ -908,13 +920,13 @@ export function AdminDashboard() {
               <div className="ql-timeline-list">
                 {TIMELINE_ACTIVITIES.map((act, index) => (
                   <div key={act.id} className="ql-timeline-item">
-                    {/* Indicator Circle & Connecting Line */}
+                    {/* Circle badge with icon inside + connecting vertical line */}
                     <div className="ql-timeline-marker">
                       <span
-                        className="ql-timeline-dot"
-                        style={{ borderColor: act.color }}
+                        className="ql-timeline-circle-badge"
+                        style={{ backgroundColor: act.color }}
                       >
-                        <span className="ql-timeline-inner-dot" style={{ backgroundColor: act.color }} />
+                        {act.icon}
                       </span>
                       {index < TIMELINE_ACTIVITIES.length - 1 && <span className="ql-timeline-line" />}
                     </div>
@@ -954,10 +966,10 @@ export function AdminDashboard() {
                   {detailModalOwner.initial}
                 </span>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: "17px", fontWeight: "700", color: "#0f172a" }}>
+                  <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "700", color: "#0f172a" }}>
                     {detailModalOwner.name}
                   </h3>
-                  <span style={{ fontSize: "12px", color: "#64748b" }}>Registered Owner</span>
+                  <span style={{ fontSize: "11px", color: "#64748b" }}>Registered Owner</span>
                 </div>
               </div>
               <button

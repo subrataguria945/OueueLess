@@ -15,7 +15,7 @@
   --admin-border: #e2e8f0;
   --admin-blue: #1960f7;
   --admin-blue-light: #eff6ff;
-  --admin-green: #10b981;
+  --admin-green: #00c853;
   --admin-green-light: #ecfdf5;
   --admin-amber: #f59e0b;
   --admin-amber-light: #fffbeb;
@@ -35,7 +35,7 @@
   width: 100%;
   max-width: 100%;
   background-color: var(--admin-main-bg);
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: var(--admin-text-main);
   box-sizing: border-box;
   overflow: hidden;
@@ -81,40 +81,45 @@
   z-index: 50;
   transition: transform 0.25s ease;
   flex-shrink: 0;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .ql-admin-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 4px 6px 18px;
+  gap: 12px;
+  padding: 6px 8px 18px;
 }
 
-.ql-brand-icon-box {
+.ql-brand-icon-circle {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #00b4d8 0%, #1960f7 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 10px rgba(25, 96, 247, 0.4);
   flex-shrink: 0;
+  filter: drop-shadow(0 4px 8px rgba(25, 96, 247, 0.45));
+}
+
+.ql-brand-text {
+  display: flex;
+  flex-direction: column;
 }
 
 .ql-brand-title {
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 800;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.4px;
   color: #ffffff;
+  margin: 0;
   line-height: 1.1;
 }
 
 .ql-brand-subtitle {
   font-size: 11px;
-  color: #94a3b8;
+  color: #8ea3bf;
   font-weight: 500;
+  margin-top: 1px;
 }
 
 .ql-admin-nav {
@@ -126,8 +131,8 @@
 .ql-nav-item {
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 9px 12px;
+  gap: 12px;
+  padding: 9.5px 14px;
   border-radius: 9px;
   background: transparent;
   border: none;
@@ -147,10 +152,10 @@
 }
 
 .ql-nav-item.active {
-  background: var(--admin-sidebar-active);
+  background: #1960f7;
   color: #ffffff;
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(25, 96, 247, 0.4);
+  box-shadow: 0 4px 14px rgba(25, 96, 247, 0.45);
 }
 
 .ql-nav-icon {
@@ -160,7 +165,7 @@
   flex-shrink: 0;
 }
 
-/* Sidebar Footer (Silhouette Artwork & Tagline) */
+/* Sidebar Footer (Silhouette Artwork Card & Tagline) */
 .ql-sidebar-footer {
   margin-top: auto;
   padding: 12px 6px 4px;
@@ -168,23 +173,27 @@
   text-align: center;
 }
 
-.ql-sidebar-illustration {
+.ql-sidebar-illustration-card {
   display: flex;
   justify-content: center;
   margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 6px;
+  border-radius: 8px;
 }
 
-.ql-sidebar-illustration svg {
+.ql-sidebar-illustration-card svg {
   max-width: 140px;
   height: auto;
 }
 
 .ql-sidebar-tagline {
-  font-size: 10px;
+  font-size: 10.5px;
   color: #64748b;
   line-height: 1.35;
   margin: 0;
   font-weight: 500;
+  text-align: center;
 }
 
 /* ── MAIN CONTENT WRAPPER ──────────────────────────────────────────────── */
@@ -200,14 +209,14 @@
 
 /* ── TOP NAVBAR ────────────────────────────────────────────────────────── */
 .ql-admin-topbar {
-  height: 48px;
-  min-height: 48px;
+  height: 50px;
+  min-height: 50px;
   background: #ffffff;
   border-bottom: 1px solid var(--admin-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 18px;
+  padding: 0 20px;
   box-sizing: border-box;
   flex-shrink: 0;
   z-index: 30;
@@ -216,7 +225,7 @@
 .ql-topbar-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .ql-mobile-menu-btn {
@@ -230,7 +239,7 @@
 
 .ql-topbar-search {
   position: relative;
-  width: 280px;
+  width: 290px;
 }
 
 .ql-topbar-search-icon {
@@ -245,10 +254,10 @@
 
 .ql-topbar-search input {
   width: 100%;
-  height: 32px;
+  height: 34px;
   background: #f8fafc;
   border: 1px solid var(--admin-border);
-  border-radius: 16px;
+  border-radius: 17px;
   padding: 0 14px 0 34px;
   font-size: 12px;
   font-family: inherit;
@@ -266,19 +275,19 @@
 .ql-topbar-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 /* Date Range Picker Pill */
 .ql-date-picker-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 32px;
-  padding: 0 12px;
+  gap: 7px;
+  height: 33px;
+  padding: 0 13px;
   background: #ffffff;
   border: 1px solid var(--admin-border);
-  border-radius: 16px;
+  border-radius: 17px;
   font-size: 11.5px;
   font-weight: 600;
   color: #334155;
@@ -294,7 +303,7 @@
 
 .ql-date-dropdown {
   position: absolute;
-  top: 38px;
+  top: 40px;
   right: 0;
   width: 190px;
   background: #ffffff;
@@ -324,11 +333,11 @@
   color: var(--admin-blue);
 }
 
-/* Notification Bell */
+/* Notification Bell with Badge */
 .ql-notif-btn {
   position: relative;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border-radius: 8px;
   background: #f8fafc;
   border: 1px solid var(--admin-border);
@@ -353,18 +362,18 @@
   color: #ffffff;
   font-size: 9.5px;
   font-weight: 700;
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid #ffffff;
+  border: 2px solid #ffffff;
 }
 
 .ql-notif-dropdown {
   position: absolute;
-  top: 38px;
+  top: 40px;
   right: 0;
   width: 260px;
   background: #ffffff;
@@ -401,7 +410,7 @@
   gap: 8px;
   background: none;
   border: none;
-  padding: 2px 6px;
+  padding: 3px 6px;
   border-radius: 8px;
   cursor: pointer;
   font-family: inherit;
@@ -412,27 +421,27 @@
 }
 
 .ql-avatar-circle {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: linear-gradient(135deg, #1960f7 0%, #0d47a1 100%);
   color: #ffffff;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 12.5px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .ql-profile-name {
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--admin-text-main);
 }
 
 .ql-profile-dropdown {
   position: absolute;
-  top: 38px;
+  top: 40px;
   right: 0;
   width: 170px;
   background: #ffffff;
@@ -470,7 +479,7 @@
 
 /* ── 3. PAGE MAIN CONTENT CONTAINER (NO SCROLL, EXACT 100VH) ───────────── */
 .ql-admin-content {
-  padding: 8px 18px 10px;
+  padding: 8px 20px 10px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -478,7 +487,7 @@
   max-width: 100%;
   box-sizing: border-box;
   flex: 1;
-  height: calc(100vh - 48px);
+  height: calc(100vh - 50px);
   overflow: hidden;
 }
 
@@ -489,16 +498,16 @@
 }
 
 .ql-page-title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 800;
   color: var(--admin-text-main);
   margin: 0;
   letter-spacing: -0.3px;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .ql-page-sub {
-  font-size: 11px;
+  font-size: 11.5px;
   color: var(--admin-text-muted);
   margin: 0;
   line-height: 1.2;
@@ -517,7 +526,7 @@
 .ql-stat-card {
   background: #ffffff;
   border: 1px solid var(--admin-border);
-  border-radius: 10px;
+  border-radius: 11px;
   padding: 8px 12px;
   display: flex;
   flex-direction: column;
@@ -540,9 +549,9 @@
 }
 
 .ql-stat-icon-wrap {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
   background: #eff6ff;
   color: #1960f7;
   display: flex;
@@ -551,9 +560,18 @@
   flex-shrink: 0;
 }
 
-.ql-stat-icon-wrap svg {
-  width: 18px;
-  height: 18px;
+.ql-rupee-circle-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #1960f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+  color: #1960f7;
+  line-height: 1;
 }
 
 .ql-stat-body {
@@ -562,17 +580,17 @@
 }
 
 .ql-stat-label {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--admin-text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 1px;
+  margin-bottom: 2px;
 }
 
 .ql-stat-number {
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 800;
   color: var(--admin-text-main);
   line-height: 1.1;
@@ -602,8 +620,8 @@
   grid-template-columns: 1fr 1.35fr 1.25fr;
   gap: 8px;
   width: 100%;
-  height: 180px;
-  min-height: 180px;
+  height: 184px;
+  min-height: 184px;
   box-sizing: border-box;
   flex-shrink: 0;
 }
@@ -611,7 +629,7 @@
 .ql-card {
   background: #ffffff;
   border: 1px solid var(--admin-border);
-  border-radius: 10px;
+  border-radius: 11px;
   padding: 8px 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   display: flex;
@@ -683,8 +701,8 @@
 
 .ql-donut-graphic {
   position: relative;
-  width: 118px;
-  height: 118px;
+  width: 120px;
+  height: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -707,7 +725,7 @@
 }
 
 .ql-donut-num {
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 800;
   color: var(--admin-text-main);
 }
@@ -741,7 +759,7 @@
   flex-shrink: 0;
 }
 
-.ql-dot.green { background: #10b981; }
+.ql-dot.green { background: #00c853; }
 .ql-dot.amber { background: #f59e0b; }
 .ql-dot.red { background: #ef4444; }
 .ql-dot.purple { background: #8b5cf6; }
@@ -834,7 +852,7 @@
 .bar-track {
   flex: 1;
   height: 6px;
-  background: #f1f5f9;
+  background: #eff6ff;
   border-radius: 3px;
   overflow: hidden;
   display: block;
@@ -1000,7 +1018,7 @@
 .ql-owner-info {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .ql-owner-avatar {
@@ -1059,14 +1077,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 5px;
 }
 
 .ql-action-icon {
-  width: 22px;
-  height: 22px;
-  border-radius: 4px;
-  background: #f8fafc;
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  background: #ffffff;
   border: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
@@ -1076,8 +1094,13 @@
   transition: all 0.15s ease;
 }
 
-.ql-action-icon:hover {
+.ql-action-icon.blue {
+  border-color: #bfdbfe;
   background: #eff6ff;
+}
+
+.ql-action-icon:hover {
+  background: #f1f5f9;
   border-color: #93c5fd;
 }
 
@@ -1102,7 +1125,7 @@
 .ql-timeline-item {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: 10px;
   position: relative;
   flex: 1;
 }
@@ -1111,37 +1134,30 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 14px;
+  width: 18px;
   flex-shrink: 0;
   padding-top: 2px;
   height: 100%;
 }
 
-.ql-timeline-dot {
-  width: 10px;
-  height: 10px;
+.ql-timeline-circle-badge {
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  border: 2px solid #10b981;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
   flex-shrink: 0;
   z-index: 2;
-}
-
-.ql-timeline-inner-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #10b981;
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 .ql-timeline-line {
   width: 1.5px;
   flex: 1;
   background: #e2e8f0;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 .ql-timeline-content {
