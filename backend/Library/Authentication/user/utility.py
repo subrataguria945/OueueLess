@@ -1,4 +1,4 @@
-from Library.Authentication.user.database import validate_login_indb , insert_user_indb , change_password_indb
+from Library.Authentication.user.database import user_exists_indb, validate_login_indb , insert_user_indb , change_password_indb
 from Library.Security.JWT import generate_access_token , generate_signup_token , decode_token
 import secrets
 import hashlib
@@ -19,7 +19,7 @@ def login_user(input : dict ):
             "message": response.get("message"),
             "access_token": token,
             "token_type" : "bearer" ,
-            
+
         }
     else:
         return {
@@ -28,31 +28,41 @@ def login_user(input : dict ):
         }
 
 
-def register_user(input : dict ):
-    fullname = input.get("fullname")
-    email = input.get("email")
-    phone = input.get("phone")
-    password = input.get("password")
-    confirm_password = input.get("confirm_password")
-    if password != confirm_password:
-        return {
-            "status" : "Registration Failed",
-            "message" : "Password and Confirm Password are not same"
-        }
-    role_id = input.get("user_role")
-    response = insert_user_indb(fullname,email,phone,password,role_id)
+def register_google_user(input : dict ):
+    response = user_exists_indb(input.get("email"))
     if response.get("status") == 200:
-        return {
-            "status" : 200,
-            "user_id": response.get("user_id"),
-            "message": response.get("message")
-        }
+        return login_user(input)
+
     else:
-        return {
-            "status" : "Registration Failed",
-            "message" : response.get("error")
-        }
-  
+        fullname = input.get("fullname")
+        email = input.get("email")
+        password = input.get("password")
+        confirm_password = input.get("confirm_password")
+        if password != confirm_password:
+            return {
+                "status" : "Registration Failed",
+                "message" : "Password and Confirm Password are not same"
+            }
+        role_id = input.get("user_role")
+        phone = None
+        response = insert_user_indb(fullname,email,phone,password,role_id)
+        if response.get("status") == 200:
+            token = generate_access_token(response.get("user_id"),email)
+            return {
+                "status" : "success",
+                "user_id": response.get("user_id"),
+                "user_role": role_id,
+                "email": email,
+                "message": response.get("message"),
+                "access_token": token,
+                "token_type" : "bearer"
+            }
+        else:
+            return {
+                "status" : "Registration Failed",
+                "message" : response.get("error")
+            }
+    
 def change_password(input : dict):
     userid = input.get("userid")
     action = input.get("action")

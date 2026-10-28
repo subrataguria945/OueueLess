@@ -1,12 +1,17 @@
 from fastapi import APIRouter
-from .models import UserLogin , UserRegister , ChangeOrResetPassword , VerifyRegistrationOTP , InitiateUserRegister
-from Library.Authentication.user.utility import login_user as login , change_password , initiate_register , veriy_and_register_user
+from .models import UserLogin , ChangePassword , ResetPassword , VerifyRegistrationOTP , InitiateUserRegister , UserRegisterGoogle
+from Library.Authentication.user.utility import login_user as login , change_password , initiate_register , veriy_and_register_user , register_google_user
 
 router = APIRouter()
 
 @router.post("/login")
 def login_user(data : UserLogin):
     response = login(data.model_dump())
+    return response
+
+@router.post("/register/google")
+def register_google(data : UserRegisterGoogle):
+    response = register_google_user(data.model_dump())
     return response
 
 @router.post("/register/initiate")
@@ -20,7 +25,7 @@ def register_verify(data : VerifyRegistrationOTP):
     return response
 
 @router.post("/password")
-def change_or_reset_password(data : ChangeOrResetPassword):
+def change_or_reset_password(data : ChangePassword | ResetPassword):
     data = data.model_dump()
     if data["action"].upper() == "CHANGE":
         response = change_password(data)
