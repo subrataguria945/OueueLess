@@ -5,13 +5,13 @@ class UserLogin(BaseModel):
     email : EmailStr
     password : str  
 
-class UserRegister(BaseModel):
+class UserRegisterGoogle(BaseModel):
     fullname : str
     email : EmailStr
-    phone : str
     password : str 
     confirm_password : str
     user_role: Literal[2, 3]
+    
 
 
 class VerifyRegistrationOTP(BaseModel):
@@ -26,8 +26,9 @@ class InitiateUserRegister(BaseModel):
     user_role: Literal[2, 3]
 
   
-class ChangeOrResetPassword(BaseModel):
+class ChangePassword(BaseModel):
     userid : int
+    email : EmailStr
     action : Literal["CHANGE", "RESET"]
     oldpassword : str
     newpassword : str
@@ -38,3 +39,7 @@ class ChangeOrResetPassword(BaseModel):
             return v.upper()
         return v
 
+class ResetPassword(BaseModel):
+    email : EmailStr
+    action : Literal["RESET"]
+    

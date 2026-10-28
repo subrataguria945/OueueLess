@@ -131,3 +131,33 @@ def change_password_indb(userid,action,oldpassword,newpassword):
     finally:
         if con: 
             con.close()
+
+def user_exists_indb(email):
+    con = None
+    try:
+        con = psycopg.connect(
+            host=os.getenv("HOST"),
+            dbname=os.getenv("DATABASE"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            port=os.getenv("DB_PORT")
+        )
+        print("Database connection established successfully.")
+    except Exception as e:
+         print(f"Error in database connection: {e}")
+         return {"status" : 404 , "error" : "Error While Connecting DB"}
+    else:
+        with con.cursor() as cur:
+            try:
+                cur.execute("SELECT userid FROM public.users WHERE email = %s;",(email,))
+                result = cur.fetchone()
+                if result:
+                    return {"status": 200 , "user_id" : result[0]}
+                else:
+                    return {"status" : 404, "error" : "No Response From DB"}
+            except Exception as e:
+                print(f"Error in database query: {e}")
+                return {"status" : 404, "error" : "Error While Executing The Query"}
+    finally:
+        if con: 
+            con.close()
