@@ -1,9 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useRef } from "react";
 import "./register.css";
-import { sendEmailOtp } from "./emailVerification";
+import { initiateSignup, verifySignupOtp } from "./authApi";
 import { EmailOtpModal } from "./EmailOtpModal";
-
-const REGISTER_API_URL = import.meta.env.VITE_REGISTER_API_URL || import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com/user/register";
 
 /* ── Register Panel Component (Modular & Reusable) ────────── */
 export function RegisterPanel({ onSwitchToLogin }) {
@@ -15,30 +13,13 @@ export function RegisterPanel({ onSwitchToLogin }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
-  const [isSendingOtp, setIsSendingOtp] = useState(false);
-
-  // Auto-verify if user clicked the confirmation link in their Gmail
-  useEffect(() => {
-    const hash = window.location.hash || "";
-    const search = window.location.search || "";
-    if (
-      hash.includes("access_token") ||
-      hash.includes("type=signup") ||
-      hash.includes("type=email") ||
-      search.includes("code=")
-    ) {
-      setIsEmailVerified(true);
-      setIsOtpModalOpen(false);
-      setSuccess("Gmail verified successfully via confirmation link! You can now create your account.");
-      setError("");
-      window.history.replaceState(null, "", window.location.pathname);
-    }
-  }, []);
+  const [signupToken, setSignupToken] = useState("");
+  const [isSendingCode, setIsSendingCode] = useState(false);
+  const [sendingError, setSendingError] = useState("");
+  const pendingInitiateRef = useRef(null);
 
   const hasMinLength = password.length >= 8;
   const hasUppercase = /[A-Z]/.test(password);
@@ -54,41 +35,34 @@ export function RegisterPanel({ onSwitchToLogin }) {
     return { label: "Strong", color: "#10b981" };
   })();
 
-  const handleSendOtp = async () => {
-    const cleanEmail = email.trim().toLowerCase();
-    if (!cleanEmail || !cleanEmail.includes("@")) {
-      setError("Please enter a valid email address to verify.");
-      return;
-    }
-    setIsSendingOtp(true);
-    setError("");
-    try {
-      await sendEmailOtp(cleanEmail);
-      setIsSendingOtp(false);
-      setIsOtpModalOpen(true);
-    } catch (err) {
-      setIsSendingOtp(false);
-      setError(err?.message || "Failed to send verification code to your email. Please try again.");
-    }
-  };
-
-  const handleSubmit = async (e) => {
+  /* ── 1. CLICK 'CREATE ACCOUNT' -> INSTANTLY OPEN OTP MODAL ── */
+  const handleSubmit = (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
+    setSendingError("");
 
-    if (!isEmailVerified) {
-      await handleSendOtp();
+    const cleanName = name.trim();
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPhone = phone.trim().replace(/\D/g, "");
+
+    if (!cleanName) {
+      setError("Please enter your full name.");
       return;
     }
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters long.");
+    if (!cleanEmail || !cleanEmail.includes("@")) {
+      setError("Please enter a valid email address.");
       return;
     }
 
-    if (!hasUppercase || !hasNumber || !hasSpecial) {
-      setError("Password must include at least one uppercase letter, one number, and one symbol.");
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      setError("Please enter a valid 10-digit phone number.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long.");
       return;
     }
 
@@ -102,38 +76,94 @@ export function RegisterPanel({ onSwitchToLogin }) {
       return;
     }
 
-    setIsLoading(true);
-    try {
-      const response = await fetch(REGISTER_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullname: name.trim(),
-          email: email.trim(),
-          phone: phone.trim(),
-          password,
-          confirm_password: confirmPassword,
-          user_role: 1,
-        }),
+    // Instantly open the OTP modal so user sees it right away!
+    setIsOtpModalOpen(true);
+    setIsSendingCode(true);
+    setSendingError("");
+
+    // Initiate API in the background
+    const initiatePromise = initiateSignup({
+      fullname: cleanName,
+      email: cleanEmail,
+      phone: cleanPhone,
+      user_role: 3,
+    })
+      .then((result) => {
+        setSignupToken(result.signup_token);
+        setIsSendingCode(false);
+        return result.signup_token;
+      })
+      .catch((err) => {
+        const msg = err?.message || "Failed to send verification code. Please check your details.";
+        setSendingError(msg);
+        setIsSendingCode(false);
+        throw err;
       });
-      const data = await response.json().catch(() => ({}));
-      if (response.ok) {
-        setSuccess(data.message || "Account created successfully! Switching to login...");
-        setTimeout(() => {
-          if (onSwitchToLogin) onSwitchToLogin();
-        }, 1400);
-      } else {
-        const errorMsg =
-          (Array.isArray(data.detail) ? data.detail.map((d) => d.msg).join(", ") : data.detail) ||
-          data.message ||
-          data.error ||
-          "Failed to create account.";
-        setError(errorMsg);
-      }
-    } catch {
-      setError("Could not connect to server. Check connection or API URL.");
+
+    pendingInitiateRef.current = initiatePromise;
+  };
+
+  /* ── 2. SUBMIT OTP IN MODAL -> VERIFY & REGISTER IN DB ────── */
+  const handleVerifyOtp = async (otpCode) => {
+    let tokenToUse = signupToken;
+    if (!tokenToUse && pendingInitiateRef.current) {
+      tokenToUse = await pendingInitiateRef.current.catch(() => null);
+    }
+
+    if (!tokenToUse) {
+      throw new Error(sendingError || "Sending code failed. Please click Resend Code.");
+    }
+
+    // Calls POST /user/register/verify to verify OTP and register user in database
+    await verifySignupOtp({
+      signup_token: tokenToUse,
+      otp: otpCode,
+      password,
+    });
+
+    // Verification and database account creation succeeded!
+    setIsOtpModalOpen(false);
+    setSuccess("Account created successfully! Switching to login...");
+
+    // Clear form
+    setName("");
+    setEmail("");
+    setPhone("");
+    setPassword("");
+    setConfirmPassword("");
+    setSignupToken("");
+    pendingInitiateRef.current = null;
+
+    // Redirect to login page
+    setTimeout(() => {
+      if (onSwitchToLogin) onSwitchToLogin();
+      else window.location.href = "/login";
+    }, 1400);
+  };
+
+  /* ── 3. RESEND OTP ────────────────────────────────────────── */
+  const handleResendOtp = async () => {
+    setSendingError("");
+    setIsSendingCode(true);
+    const cleanName = name.trim();
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPhone = phone.trim().replace(/\D/g, "");
+
+    try {
+      const result = await initiateSignup({
+        fullname: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone,
+        user_role: 3,
+      });
+
+      setSignupToken(result.signup_token);
+      return result;
+    } catch (err) {
+      setSendingError(err?.message || "Failed to resend verification code.");
+      throw err;
     } finally {
-      setIsLoading(false);
+      setIsSendingCode(false);
     }
   };
 
@@ -213,7 +243,7 @@ export function RegisterPanel({ onSwitchToLogin }) {
           </div>
 
           {/* Email */}
-          <div className="ql-field" style={{ position: "relative" }}>
+          <div className="ql-field">
             <span className="ql-field-icon">
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
@@ -224,79 +254,15 @@ export function RegisterPanel({ onSwitchToLogin }) {
               type="email"
               placeholder="Email address"
               value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (isEmailVerified) setIsEmailVerified(false);
-              }}
+              onChange={(e) => setEmail(e.target.value)}
               required
-              style={{
-                ...regInputStyle,
-                paddingRight: isEmailVerified ? "95px" : (email.includes("@") ? "75px" : "42px"),
-                borderColor: isEmailVerified ? "#10b981" : undefined,
-                backgroundColor: isEmailVerified ? "#f0fdf4" : "#ffffff",
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = isEmailVerified ? "#10b981" : "#1960f7";
-                e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = isEmailVerified ? "#10b981" : "#dde4f0";
-                e.target.style.boxShadow = "none";
-              }}
+              style={regInputStyle}
+              onFocus={(e) => { e.target.style.borderColor = "#1960f7"; e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)"; }}
+              onBlur={(e) => { e.target.style.borderColor = "#dde4f0"; e.target.style.boxShadow = "none"; }}
             />
-            {isEmailVerified ? (
-              <span
-                style={{
-                  position: "absolute",
-                  right: "10px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  fontSize: "11px",
-                  fontWeight: "700",
-                  color: "#15803d",
-                  background: "#dcfce7",
-                  border: "1px solid #bbf7d0",
-                  padding: "3px 8px",
-                  borderRadius: "6px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "3px",
-                  pointerEvents: "none",
-                }}
-              >
-                <span>✓</span>
-                <span>Verified</span>
-              </span>
-            ) : (
-              email.includes("@") && (
-                <button
-                  type="button"
-                  onClick={handleSendOtp}
-                  disabled={isSendingOtp}
-                  style={{
-                    position: "absolute",
-                    right: "8px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    background: "linear-gradient(135deg, #1960f7 0%, #0d47a1 100%)",
-                    color: "#ffffff",
-                    border: "none",
-                    borderRadius: "6px",
-                    fontSize: "11px",
-                    fontWeight: "600",
-                    padding: "5px 9px",
-                    cursor: isSendingOtp ? "not-allowed" : "pointer",
-                    boxShadow: "0 2px 6px rgba(25, 96, 247, 0.25)",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  {isSendingOtp ? "Sending..." : "Verify"}
-                </button>
-              )
-            )}
           </div>
 
-          {/* Phone number (optional) */}
+          {/* Phone number (mandatory) */}
           <div className="ql-field">
             <span className="ql-field-icon">
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -306,9 +272,11 @@ export function RegisterPanel({ onSwitchToLogin }) {
             <input
               id="ql-reg-phone"
               type="tel"
-              placeholder="Phone number (optional)"
+              placeholder="Phone number"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+              required
+              maxLength={10}
               style={regInputStyle}
               onFocus={(e) => { e.target.style.borderColor = "#1960f7"; e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)"; }}
               onBlur={(e) => { e.target.style.borderColor = "#dde4f0"; e.target.style.boxShadow = "none"; }}
@@ -447,34 +415,24 @@ export function RegisterPanel({ onSwitchToLogin }) {
               }}
             >
               {agreeTerms && (
-                <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
                   <polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               )}
             </span>
-            <span>
-              I agree to the{" "}
-              <a href="#terms" className="ql-terms-link" onClick={(e) => e.preventDefault()}>Terms of Service</a>
-              {" "}and{" "}
-              <a href="#privacy" className="ql-terms-link" onClick={(e) => e.preventDefault()}>Privacy Policy</a>
+            <span className="ql-terms-text">
+              I agree to the <a href="/terms" onClick={(e) => e.preventDefault()}>Terms of Service</a> &amp; <a href="/privacy" onClick={(e) => e.preventDefault()}>Privacy Policy</a>
             </span>
           </label>
 
-          {/* Submit */}
-          <button type="submit" className="ql-submit" disabled={isLoading}>
-            {isLoading ? (
-              <><span className="ql-spin"></span>Creating account...</>
-            ) : (
-              <>Create Account&nbsp;
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
-                </svg>
-              </>
-            )}
+          {/* Submit Button */}
+          <button type="submit" className="ql-submit">
+            Create Account&nbsp;
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+            </svg>
           </button>
         </form>
-
-
 
         {/* Footer switch to Login */}
         <p className="ql-footer">
@@ -489,12 +447,10 @@ export function RegisterPanel({ onSwitchToLogin }) {
       <EmailOtpModal
         isOpen={isOtpModalOpen}
         email={email}
-        onVerified={() => {
-          setIsEmailVerified(true);
-          setIsOtpModalOpen(false);
-          setSuccess("Gmail verified successfully! Click Create Account to finish.");
-          setError("");
-        }}
+        isSendingCode={isSendingCode}
+        sendingError={sendingError}
+        onVerifyOtp={handleVerifyOtp}
+        onResendOtp={handleResendOtp}
         onCancel={() => setIsOtpModalOpen(false)}
       />
     </div>
