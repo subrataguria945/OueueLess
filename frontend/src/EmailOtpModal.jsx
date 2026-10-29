@@ -264,7 +264,7 @@ export function EmailOtpModal({
             style={{
               display: "flex",
               justifyContent: "center",
-              gap: "8px",
+              gap: "clamp(4px, 1.8vw, 8px)",
               margin: "20px 0 16px",
             }}
             onPaste={handlePaste}
@@ -280,10 +280,10 @@ export function EmailOtpModal({
                 onChange={(e) => handleDigitChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
                 style={{
-                  width: "46px",
-                  height: "52px",
+                  width: "clamp(38px, 11.5vw, 46px)",
+                  height: "clamp(46px, 13vw, 52px)",
                   textAlign: "center",
-                  fontSize: "22px",
+                  fontSize: "clamp(18px, 5vw, 22px)",
                   fontWeight: "700",
                   color: "#0f172a",
                   background: "#ffffff",

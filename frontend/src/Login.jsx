@@ -3,7 +3,6 @@ import "./Login.css";
 import { RegisterPanel } from "./register";
 import { ForgotPasswordPanel } from "./ForgotPassword";
 import { triggerGoogleSignIn } from "./googleAuth";
-import { GooglePhoneModal } from "./GooglePhoneModal";
 
 const LOGIN_API_URL =
   import.meta.env.VITE_LOGIN_API_URL ||
@@ -55,11 +54,10 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
   const [loginError, setLoginError] = useState("");
   const [loginSuccess, setLoginSuccess] = useState("");
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [pendingGoogleAuth, setPendingGoogleAuth] = useState(null);
 
-
-  const handleGoogleSuccess = (user, token) => {
-    setLoginSuccess("Login successful!");
+  const handleGoogleSuccess = (user, token, isNew, message) => {
+    const successMsg = message || (isNew ? "Registered and logged in with Google!" : "Login successful!");
+    setLoginSuccess(successMsg);
     setLoginError("");
     if (token) {
       rememberMe ? localStorage.setItem("token", token) : sessionStorage.setItem("token", token);
@@ -72,9 +70,9 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
     setLoginSuccess("");
     setIsGoogleLoading(true);
     triggerGoogleSignIn({
-      onSuccess: (user, token) => {
+      onSuccess: (user, token, isNew, message) => {
         setIsGoogleLoading(false);
-        handleGoogleSuccess(user, token);
+        handleGoogleSuccess(user, token, isNew, message);
       },
       onError: (err) => {
         setIsGoogleLoading(false);
@@ -89,10 +87,6 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
       },
       onCancel: () => {
         setIsGoogleLoading(false);
-      },
-      onPhoneRequired: (pendingAuth) => {
-        setIsGoogleLoading(false);
-        setPendingGoogleAuth(pendingAuth);
       },
     });
   };
@@ -128,29 +122,33 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
       } else {
         const rawError =
           data.message ||
-          (Array.isArray(data.detail) ? data.detail.map((d) => d.msg).join(", ") : data.detail) ||
+          (Array.isArray(data.detail) ? data.detail.map((d) => d.msg || d).join(", ") : data.detail) ||
           data.error ||
           "";
 
-        const lower = String(rawError).toLowerCase();
-        let formattedMessage = "Incorrect credentials. Check your email/password or use 'Forgot password'.";
+        const lower = String(rawError).toLowerCase().trim();
+        let formattedMessage = "Incorrect email or password. Please try again or use 'Forgot password'.";
 
         if (
           lower.includes("not_found") ||
           lower.includes("not found") ||
           lower.includes("doesn't exist") ||
           lower.includes("no user") ||
-          lower.includes("unregistered")
+          lower.includes("unregistered") ||
+          lower.includes("user_not_found")
         ) {
           formattedMessage = "No account found with this email. Please sign up first.";
         } else if (
+          lower.includes("invalid_credentials") ||
           lower.includes("invalid") ||
           lower.includes("incorrect") ||
           lower.includes("credential") ||
           lower.includes("password")
         ) {
-          formattedMessage = "Incorrect credentials. Check your email/password or use 'Forgot password'.";
-        } else if (rawError) {
+          formattedMessage = "Incorrect email or password. Please try again or use 'Forgot password'.";
+        } else if (lower.includes("network") || lower.includes("failed to fetch") || lower.includes("connect")) {
+          formattedMessage = "Unable to connect to the server. Please check your internet connection.";
+        } else if (rawError && !rawError.startsWith("ERR_")) {
           formattedMessage = rawError;
         }
 
@@ -166,13 +164,13 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
   /* ── Reusable Input Styles (Scoped & Collision-Proof) ─ */
   const loginInputStyle = {
     width: "100%",
-    height: "46px",
+    height: "48px",
     backgroundColor: "#ffffff",
     background: "#ffffff",
     border: "1.5px solid #dde4f0",
-    borderRadius: "11px",
+    borderRadius: "12px",
     padding: "0 44px 0 44px",
-    fontSize: "14px",
+    fontSize: "14.5px",
     fontFamily: "inherit",
     fontWeight: "450",
     color: "#0d1b35",
@@ -206,23 +204,23 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
           <div className="ql-card">
             <div className="ql-card-head">
               <h2 className="ql-card-title">Welcome Back</h2>
-              <p className="ql-card-sub">Login to continue to Queelless</p>
+              <p className="ql-card-sub">Login to continue to QueueLess</p>
             </div>
 
             {loginError && (
-              <div className="ql-alert ql-alert-error">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <div className="ql-alert ql-alert-error" role="alert">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                   <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
-                {loginError}
+                <span>{loginError}</span>
               </div>
             )}
             {loginSuccess && (
-              <div className="ql-alert ql-alert-success">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <div className="ql-alert ql-alert-success" role="status">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                   <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
                 </svg>
-                {loginSuccess}
+                <span>{loginSuccess}</span>
               </div>
             )}
 
@@ -367,21 +365,20 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
               </button>
             </p>
           </div>
-
         </div>
       </div>
 
-      {/* ── 2. REGISTER FORM PANEL (RIGHT) ────────────────── */}
-      <div className="ql-panel ql-panel-register">
-        <RegisterPanel onSwitchToLogin={handleSwitchToLogin} />
-      </div>
+        {/* ── 2. REGISTER FORM PANEL (RIGHT) ────────────────── */}
+        <div className="ql-panel ql-panel-register">
+          <RegisterPanel onSwitchToLogin={handleSwitchToLogin} />
+        </div>
 
-      {/* ── 3. FORGOT PASSWORD FORM PANEL ────────────────── */}
-      <div className="ql-panel ql-panel-forgot">
-        <ForgotPasswordPanel onSwitchToLogin={handleSwitchToLogin} />
-      </div>
+        {/* ── 3. FORGOT PASSWORD FORM PANEL ────────────────── */}
+        <div className="ql-panel ql-panel-forgot">
+          <ForgotPasswordPanel onSwitchToLogin={handleSwitchToLogin} />
+        </div>
 
-    </div>
+      </div>
 
       {/* ── 4. SLIDING HERO OVERLAY (RIGHT <-> LEFT) ────── */}
       <div className="ql-hero-overlay">
@@ -399,24 +396,6 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
           className="ql-hero-img ql-hero-register"
         />
       </div>
-
-      {/* Google Phone Number Modal for New Users */}
-      <GooglePhoneModal
-        isOpen={Boolean(pendingGoogleAuth)}
-        googleUser={pendingGoogleAuth?.googleUser}
-        onSubmit={async (phone) => {
-          if (pendingGoogleAuth?.onComplete) {
-            await pendingGoogleAuth.onComplete(phone);
-            setPendingGoogleAuth(null);
-          }
-        }}
-        onCancel={() => {
-          if (pendingGoogleAuth?.onCancel) {
-            pendingGoogleAuth.onCancel();
-          }
-          setPendingGoogleAuth(null);
-        }}
-      />
     </div>
   );
 }

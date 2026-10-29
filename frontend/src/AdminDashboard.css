@@ -6,16 +6,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-  --admin-sidebar-bg: #091932;
+  --admin-sidebar-bg: linear-gradient(180deg, #091932 0%, #061224 100%);
   --admin-sidebar-hover: rgba(255, 255, 255, 0.1);
   --admin-sidebar-active: #1960f7;
   --admin-main-bg: #f3f6fa;
   --admin-card-bg: #ffffff;
+  --admin-topbar-bg: #ffffff;
   --admin-text-main: #091222;       /* Deep rich crisp ink */
   --admin-text-sub: #334155;        /* High-contrast dark slate for primary body */
-  --admin-text-muted: #52637a;      /* Legible slate (never washed out or faint) */
+  --admin-text-muted: #52637a;      /* Legible slate */
   --admin-border: #cbd5e1;          /* Defined clean border */
   --admin-border-subtle: #e2e8f0;
+  --admin-input-bg: #f1f5f9;
+  --admin-input-border: #e2e8f0;
+  --admin-hover-bg: #f8fafc;
+  --admin-dropdown-bg: #ffffff;
+  --admin-card-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
   --admin-blue: #1960f7;
   --admin-blue-light: #eff6ff;
   --admin-green: #059669;
@@ -25,6 +31,42 @@
   --admin-red: #dc2626;
   --admin-red-light: #fef2f2;
   --admin-purple: #7c3aed;
+  --admin-table-th-bg: #f8fafc;
+  --admin-table-row-hover: #f8fafc;
+  --admin-table-border: #f1f5f9;
+  --admin-modal-bg: #ffffff;
+}
+
+.ql-admin-dashboard.dark {
+  --admin-sidebar-bg: linear-gradient(180deg, #060e1d 0%, #030710 100%);
+  --admin-sidebar-hover: rgba(255, 255, 255, 0.08);
+  --admin-sidebar-active: #2563eb;
+  --admin-main-bg: #090e17;
+  --admin-card-bg: #121c2d;
+  --admin-topbar-bg: #0e1624;
+  --admin-text-main: #f8fafc;
+  --admin-text-sub: #cbd5e1;
+  --admin-text-muted: #94a3b8;
+  --admin-border: #233249;
+  --admin-border-subtle: #1a2538;
+  --admin-input-bg: #090f1a;
+  --admin-input-border: #233249;
+  --admin-hover-bg: #182438;
+  --admin-dropdown-bg: #121c2d;
+  --admin-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  --admin-blue: #3b82f6;
+  --admin-blue-light: rgba(59, 130, 246, 0.16);
+  --admin-green: #10b981;
+  --admin-green-light: rgba(16, 185, 129, 0.16);
+  --admin-amber: #f59e0b;
+  --admin-amber-light: rgba(245, 158, 11, 0.16);
+  --admin-red: #ef4444;
+  --admin-red-light: rgba(239, 68, 68, 0.16);
+  --admin-purple: #a855f7;
+  --admin-table-th-bg: #0e1624;
+  --admin-table-row-hover: #182438;
+  --admin-table-border: #1a2538;
+  --admin-modal-bg: #121c2d;
 }
 
 * {
@@ -47,28 +89,31 @@
   position: relative;
 }
 
-/* Hide scrollbars globally across dashboard components */
+/* ── HIDE SCROLLBAR GLOBALLY (INVISIBLE BUT FULLY SCROLLABLE) ────────── */
+.ql-admin-content,
+.ql-tab-view,
+.ql-table-container,
 .ql-admin-layout,
 .ql-admin-main,
-.ql-admin-content,
-.ql-admin-sidebar,
-.ql-table-container,
 .ql-timeline-list,
-.ql-top-shops-table {
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
+body,
+html {
+  scrollbar-width: none !important;      /* Firefox */
+  -ms-overflow-style: none !important;   /* IE and Edge */
 }
 
+.ql-admin-content::-webkit-scrollbar,
+.ql-tab-view::-webkit-scrollbar,
+.ql-table-container::-webkit-scrollbar,
 .ql-admin-layout::-webkit-scrollbar,
 .ql-admin-main::-webkit-scrollbar,
-.ql-admin-content::-webkit-scrollbar,
-.ql-admin-sidebar::-webkit-scrollbar,
-.ql-table-container::-webkit-scrollbar,
 .ql-timeline-list::-webkit-scrollbar,
-.ql-top-shops-table::-webkit-scrollbar {
-  display: none !important;
+body::-webkit-scrollbar,
+html::-webkit-scrollbar {
+  display: none !important;              /* Chrome, Safari, Opera */
   width: 0 !important;
   height: 0 !important;
+  background: transparent !important;
 }
 
 /* ── SIDEBAR ───────────────────────────────────────────────────────────── */
@@ -84,15 +129,65 @@
   box-sizing: border-box;
   height: 100vh;
   z-index: 50;
-  transition: margin-left 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.25s ease, padding 0.25s ease;
   flex-shrink: 0;
   overflow: hidden;
 }
 
+/* ── MINI COLLAPSED SIDEBAR (ICONS ONLY) ───────────────────────────────── */
 .ql-admin-sidebar.collapsed {
-  margin-left: -224px;
-  opacity: 0;
-  pointer-events: none;
+  width: 66px !important;
+  min-width: 66px !important;
+  max-width: 66px !important;
+  padding: 16px 8px !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  margin-left: 0 !important;
+}
+
+.ql-admin-sidebar.collapsed .ql-brand-text,
+.ql-admin-sidebar.collapsed .ql-sidebar-close-btn,
+.ql-admin-sidebar.collapsed .ql-nav-label,
+.ql-admin-sidebar.collapsed .ql-sidebar-footer {
+  display: none !important;
+}
+
+.ql-admin-sidebar.collapsed .ql-admin-brand {
+  justify-content: center;
+  padding: 6px 0 18px;
+}
+
+.ql-admin-sidebar.collapsed .ql-brand-left {
+  justify-content: center;
+  width: 100%;
+}
+
+.ql-admin-sidebar.collapsed .ql-brand-icon-box {
+  width: 38px;
+  height: 38px;
+  cursor: pointer;
+}
+
+.ql-admin-sidebar.collapsed .ql-admin-nav {
+  align-items: center;
+  gap: 8px;
+}
+
+.ql-admin-sidebar.collapsed .ql-nav-item {
+  width: 46px;
+  height: 44px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+.ql-admin-sidebar.collapsed .ql-nav-icon {
+  margin: 0;
+}
+
+.ql-admin-sidebar.collapsed .ql-nav-icon svg {
+  width: 20px;
+  height: 20px;
 }
 
 .ql-admin-brand {
@@ -109,26 +204,26 @@
 }
 
 .ql-sidebar-close-btn {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: #94a3b8;
-  border-radius: 6px;
-  width: 26px;
-  height: 26px;
+  border-radius: 7px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0;
   flex-shrink: 0;
 }
 
 .ql-sidebar-close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.35);
-  transform: translateX(-1px);
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.35);
+  transform: scale(1.05);
 }
 
 .ql-brand-icon-box {
@@ -272,7 +367,7 @@
 .ql-admin-topbar {
   height: 52px;
   min-height: 52px;
-  background: #ffffff;
+  background: var(--admin-topbar-bg);
   border-bottom: 1px solid var(--admin-border-subtle);
   display: flex;
   align-items: center;
@@ -296,7 +391,7 @@
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  background: #f1f5f9;
+  background: var(--admin-input-bg);
   border: 1px solid var(--admin-border-subtle);
   color: var(--admin-text-main);
   cursor: pointer;
@@ -327,7 +422,7 @@
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: #64748b;
+  color: var(--admin-text-muted);
   pointer-events: none;
   display: flex;
 }
@@ -335,8 +430,8 @@
 .ql-topbar-search input {
   width: 100%;
   height: 36px;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
+  background: var(--admin-input-bg);
+  border: 1px solid var(--admin-input-border);
   border-radius: 18px;
   padding: 0 16px 0 38px;
   font-size: 13px;
@@ -348,12 +443,12 @@
 }
 
 .ql-topbar-search input::placeholder {
-  color: #64748b;
+  color: var(--admin-text-muted);
   font-weight: 500;
 }
 
 .ql-topbar-search input:focus {
-  background: #ffffff;
+  background: var(--admin-card-bg);
   border-color: var(--admin-blue);
   box-shadow: 0 0 0 3px rgba(25, 96, 247, 0.15);
 }
@@ -361,7 +456,42 @@
 .ql-topbar-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+}
+
+/* Theme Toggle Button (Light / Dark) */
+.ql-theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 14px;
+  background: var(--admin-card-bg);
+  border: 1.5px solid var(--admin-border-subtle);
+  border-radius: 18px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--admin-text-main);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.ql-theme-toggle-btn:hover {
+  background: var(--admin-hover-bg);
+  border-color: var(--admin-blue);
+  color: var(--admin-blue);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(25, 96, 247, 0.15);
+}
+
+.ql-theme-toggle-btn svg {
+  transition: transform 0.3s ease;
+}
+
+.ql-theme-toggle-btn:hover svg {
+  transform: rotate(20deg) scale(1.1);
 }
 
 /* Date Range Picker Pill */
@@ -371,7 +501,7 @@
   gap: 8px;
   height: 36px;
   padding: 0 14px;
-  background: #ffffff;
+  background: var(--admin-card-bg);
   border: 1.5px solid var(--admin-border-subtle);
   border-radius: 18px;
   font-size: 12.5px;
@@ -384,8 +514,8 @@
 }
 
 .ql-date-picker-btn:hover {
-  background: #f8fafc;
-  border-color: #94a3b8;
+  background: var(--admin-hover-bg);
+  border-color: var(--admin-border);
 }
 
 .ql-date-dropdown {
@@ -393,10 +523,10 @@
   top: 42px;
   right: 0;
   width: 200px;
-  background: #ffffff;
+  background: var(--admin-dropdown-bg);
   border: 1px solid var(--admin-border);
   border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
   padding: 6px;
   z-index: 100;
   display: flex;
@@ -410,14 +540,13 @@
   text-align: left;
   font-size: 13px;
   font-weight: 600;
-  color: #334155;
+  color: var(--admin-text-sub);
   border-radius: 6px;
   cursor: pointer;
   font-family: inherit;
 }
-
 .ql-date-dropdown button:hover {
-  background: #eff6ff;
+  background: var(--admin-blue-light);
   color: var(--admin-blue);
 }
 
@@ -427,20 +556,20 @@
   width: 36px;
   height: 36px;
   border-radius: 9px;
-  background: #ffffff;
+  background: var(--admin-card-bg);
   border: 1.5px solid var(--admin-border-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #334155;
+  color: var(--admin-text-sub);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .ql-notif-btn:hover {
-  background: #f1f5f9;
+  background: var(--admin-hover-bg);
   color: var(--admin-blue);
-  border-color: #94a3b8;
+  border-color: var(--admin-border);
 }
 
 .ql-notif-badge {
@@ -457,7 +586,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #ffffff;
+  border: 2px solid var(--admin-card-bg);
   box-shadow: 0 2px 4px rgba(239, 68, 68, 0.4);
 }
 
@@ -466,10 +595,10 @@
   top: 42px;
   right: 0;
   width: 280px;
-  background: #ffffff;
+  background: var(--admin-dropdown-bg);
   border: 1px solid var(--admin-border);
   border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
   padding: 8px;
   z-index: 100;
 }
@@ -478,15 +607,15 @@
   font-size: 13px;
   font-weight: 700;
   padding: 6px 8px;
-  border-bottom: 1px solid #f1f5f9;
-  color: #0f172a;
+  border-bottom: 1px solid var(--admin-border-subtle);
+  color: var(--admin-text-main);
 }
 
 .ql-notif-item {
   font-size: 12px;
-  color: #334155;
+  color: var(--admin-text-sub);
   padding: 8px;
-  border-bottom: 1px solid #f8fafc;
+  border-bottom: 1px solid var(--admin-table-border);
   line-height: 1.35;
 }
 
@@ -509,7 +638,7 @@
 }
 
 .ql-admin-profile:hover {
-  background: #f1f5f9;
+  background: var(--admin-hover-bg);
 }
 
 .ql-avatar-circle {
@@ -536,23 +665,66 @@
   position: absolute;
   top: 42px;
   right: 0;
-  width: 180px;
-  background: #ffffff;
+  width: 220px;
+  background: var(--admin-dropdown-bg);
   border: 1px solid var(--admin-border);
-  border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  padding: 6px;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+  padding: 8px;
   z-index: 100;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
+}
+
+.ql-dropdown-user-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px 10px;
+}
+
+.ql-avatar-circle.sm {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  font-size: 13px;
+}
+
+.ql-user-header-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ql-dropdown-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--admin-text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ql-dropdown-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--admin-blue);
+  white-space: nowrap;
+}
+
+.ql-dropdown-divider {
+  height: 1px;
+  background: var(--admin-border-subtle);
+  margin: 4px 0;
 }
 
 .ql-dropdown-item {
-  padding: 9px 12px;
+  padding: 8px 10px;
   background: none;
   border: none;
   text-align: left;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--admin-text-main);
   border-radius: 6px;
@@ -561,28 +733,30 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  transition: all 0.15s ease;
 }
 
 .ql-dropdown-item:hover {
-  background: #f1f5f9;
+  background: var(--admin-hover-bg);
 }
 
 .ql-dropdown-item.danger {
-  color: #dc2626;
+  color: var(--admin-red);
 }
 
-/* ── 3. PAGE MAIN CONTENT CONTAINER (NO SCROLL, EXACT 100VH) ───────────── */
+/* ── 3. PAGE MAIN CONTENT CONTAINER (SCROLLABLE & SPACIOUS) ───────────── */
 .ql-admin-content {
-  padding: 8px 18px 8px;
+  padding: 12px 20px 32px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 14px;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
   flex: 1;
   height: calc(100vh - 52px);
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Heading */
@@ -619,14 +793,14 @@
 }
 
 .ql-stat-card {
-  background: #ffffff;
+  background: var(--admin-card-bg);
   border: 1px solid var(--admin-border-subtle);
   border-radius: 10px;
   padding: 6px 12px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+  box-shadow: var(--admin-card-shadow);
   min-width: 0;
   box-sizing: border-box;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -670,6 +844,16 @@
   line-height: 1;
 }
 
+.ql-admin-dashboard.dark .ql-stat-icon-wrap {
+  background: rgba(59, 130, 246, 0.16);
+  color: #60a5fa;
+}
+
+.ql-admin-dashboard.dark .ql-rupee-circle-icon {
+  border-color: #60a5fa;
+  color: #60a5fa;
+}
+
 .ql-stat-body {
   flex: 1;
   min-width: 0;
@@ -683,6 +867,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   margin-bottom: 1px;
+}
+
+.ql-admin-dashboard.dark .ql-stat-label {
+  color: #94a3b8;
 }
 
 .ql-stat-number {
@@ -711,77 +899,98 @@
   font-weight: 600;
 }
 
+.ql-admin-dashboard.dark .ql-stat-context {
+  color: #64748b;
+}
+
 /* ── ROW 2: 3 ANALYTICS CARDS (DONUT, TOP SHOPS, REVENUE) ─────────────── */
 .ql-analytics-grid {
   display: grid;
   grid-template-columns: 1fr 1.35fr 1.25fr;
-  gap: 8px;
+  gap: 12px;
   width: 100%;
-  height: 165px;
-  min-height: 165px;
+  min-height: 240px;
   box-sizing: border-box;
   flex-shrink: 0;
 }
 
-.ql-card {
-  background: #ffffff;
+.ql-admin-dashboard .ql-card {
+  background: var(--admin-card-bg);
   border: 1px solid var(--admin-border-subtle);
-  border-radius: 10px;
-  padding: 7px 12px;
-  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: var(--admin-card-shadow);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   box-sizing: border-box;
 }
 
-.ql-card-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 5px;
+.ql-admin-dashboard .ql-card-head {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 8px !important;
   flex-shrink: 0;
+  width: 100% !important;
 }
 
-.ql-card-title-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.ql-admin-dashboard .ql-card-title-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
 }
 
-.ql-card-badge-icon {
-  width: 24px;
-  height: 24px;
+.ql-admin-dashboard .ql-card-badge-icon {
+  width: 26px;
+  height: 26px;
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 13px;
   background: #eff6ff;
   color: #1960f7;
   flex-shrink: 0;
 }
 
-.ql-card-title {
-  font-size: 14.5px;
-  font-weight: 800;
-  color: var(--admin-text-main);
-  letter-spacing: -0.2px;
+.ql-admin-dashboard.dark .ql-card-badge-icon {
+  background: rgba(59, 130, 246, 0.18) !important;
+  color: #60a5fa !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
 }
 
-.ql-card-link {
+.ql-admin-dashboard .ql-card-title {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: var(--admin-text-main) !important;
+  letter-spacing: -0.2px;
+  margin: 0 !important;
+  line-height: 1.2 !important;
+}
+
+.ql-admin-dashboard.dark .ql-card-title {
+  color: #f1f5f9 !important;
+}
+
+.ql-admin-dashboard .ql-card-link {
   background: none;
   border: none;
-  color: #1960f7;
+  color: #1960f7 !important;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   padding: 0;
   font-family: inherit;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
 }
 
-.ql-card-link:hover {
+.ql-admin-dashboard.dark .ql-card-link {
+  color: #60a5fa !important;
+}
+
+.ql-admin-dashboard .ql-card-link:hover {
   text-decoration: underline;
   opacity: 0.85;
 }
@@ -829,7 +1038,7 @@
 
 .ql-donut-lbl {
   font-size: 10.5px;
-  color: #475569;
+  color: var(--admin-text-muted);
   font-weight: 700;
   margin-top: 1px;
 }
@@ -837,7 +1046,7 @@
 .ql-donut-legend {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   flex: 1;
   min-width: 0;
 }
@@ -862,7 +1071,7 @@
 .ql-dot.purple { background: #8b5cf6; }
 
 .ql-legend-name {
-  color: #1e293b;
+  color: var(--admin-text-sub);
   font-weight: 600;
   flex: 1;
   white-space: nowrap;
@@ -879,31 +1088,31 @@
 .ql-top-shops-table {
   display: flex;
   flex-direction: column;
+  gap: 3px;
   flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  justify-content: space-between;
+  padding-top: 4px;
 }
 
 .ql-top-shops-header {
   display: grid;
-  grid-template-columns: 18px 1.25fr 1fr 1fr;
+  grid-template-columns: 20px 1.3fr 1fr 1.1fr;
   align-items: center;
-  padding: 1px 4px 3px;
-  color: #475569;
+  padding: 3px 6px;
+  color: var(--admin-text-muted);
   font-weight: 800;
-  border-bottom: 1px solid #f1f5f9;
-  font-size: 10.5px;
+  border-bottom: 1px solid var(--admin-border-subtle);
+  font-size: 11px;
 }
 
 .ql-top-shop-row {
   display: grid;
-  grid-template-columns: 18px 1.25fr 1fr 1fr;
+  grid-template-columns: 20px 1.3fr 1fr 1.1fr;
   align-items: center;
-  padding: 2.5px 4px;
-  border-bottom: 1px solid #f8fafc;
+  padding: 5px 6px;
+  border-bottom: 1px solid var(--admin-table-border);
   color: var(--admin-text-main);
-  font-size: 11.5px;
+  font-size: 12px;
+  border-radius: 6px;
   transition: background 0.15s ease;
 }
 
@@ -971,9 +1180,9 @@
 .ql-revenue-chart {
   display: flex;
   flex: 1;
-  min-height: 0;
-  gap: 6px;
-  padding-top: 2px;
+  min-height: 155px;
+  gap: 8px;
+  padding-top: 4px;
 }
 
 .ql-chart-y-axis {
@@ -981,8 +1190,8 @@
   flex-direction: column;
   justify-content: space-between;
   font-size: 10px;
-  color: #64748b;
-  padding-bottom: 16px;
+  color: var(--admin-text-muted);
+  padding-bottom: 20px;
   font-weight: 700;
   text-align: right;
   min-width: 24px;
@@ -998,7 +1207,7 @@
 .ql-chart-grid-lines {
   position: absolute;
   top: 2px;
-  bottom: 18px;
+  bottom: 22px;
   left: 0;
   right: 0;
   display: flex;
@@ -1008,7 +1217,7 @@
 }
 
 .ql-chart-grid-lines span {
-  border-bottom: 1px dashed #e2e8f0;
+  border-bottom: 1px dashed var(--admin-border-subtle);
   width: 100%;
 }
 
@@ -1062,59 +1271,62 @@
   white-space: nowrap;
 }
 
+.ql-admin-dashboard.dark .ql-bar-lbl {
+  color: #94a3b8;
+}
+
 /* ── ROW 3: BOTTOM GRID (RECENT OWNERS & RECENT ACTIVITIES) ────────────── */
 .ql-bottom-grid {
   display: grid;
   grid-template-columns: 1.8fr 1fr;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
+  flex-shrink: 0;
+  min-height: 290px;
 }
 
 /* ── RECENT OWNERS TABLE ───────────────────────────────────────────────── */
 .ql-card-owners-table {
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
 }
 
 .ql-table-container {
   flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--admin-border-subtle);
   border-radius: 9px;
   display: flex;
   flex-direction: column;
+  overflow-x: auto;
 }
 
 .ql-owners-table {
   width: 100%;
-  height: 100%;
   border-collapse: collapse;
   font-size: 12.5px;
   text-align: left;
 }
 
 .ql-owners-table th {
-  background: #f8fafc;
-  color: #334155;               /* High contrast header */
+  background: var(--admin-table-th-bg);
+  color: var(--admin-text-sub);               /* High contrast header */
   font-weight: 800;
   font-size: 11px;
-  padding: 5px 8px;
+  padding: 8px 10px;
   border-bottom: 1.5px solid var(--admin-border);
   white-space: nowrap;
-  height: 26px;
 }
 
 .ql-owners-table td {
-  padding: 3px 8px;
-  border-bottom: 1px solid #f1f5f9;
-  color: #1e293b;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--admin-table-border);
+  color: var(--admin-text-sub);
   vertical-align: middle;
+  white-space: nowrap;
+}
+
+.col-show-mobile {
+  display: none !important;
 }
 
 .ql-owners-table tbody tr:last-child td {
@@ -1122,7 +1334,7 @@
 }
 
 .ql-owners-table tbody tr:hover td {
-  background: #f8fafc;
+  background: var(--admin-table-row-hover);
 }
 
 .ql-owner-info {
@@ -1214,23 +1426,25 @@
   width: 23px;
   height: 23px;
   border-radius: 5px;
-  background: #ffffff;
-  border: 1.5px solid #cbd5e1;
+  background: var(--admin-card-bg);
+  border: 1.5px solid var(--admin-border);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   padding: 0;
   transition: all 0.15s ease;
+  color: var(--admin-text-sub);
 }
 
 .ql-action-icon.blue {
-  border-color: #93c5fd;
-  background: #eff6ff;
+  border-color: var(--admin-blue);
+  background: var(--admin-blue-light);
+  color: var(--admin-blue);
 }
 
 .ql-action-icon:hover {
-  background: #f1f5f9;
+  background: var(--admin-hover-bg);
   border-color: var(--admin-blue);
 }
 
@@ -1296,6 +1510,10 @@
   z-index: 1;
 }
 
+.ql-admin-dashboard.dark .ql-timeline-line {
+  background: #233249;
+}
+
 .ql-timeline-content {
   flex: 1;
   min-width: 0;
@@ -1321,6 +1539,10 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.ql-admin-dashboard.dark .ql-timeline-desc {
+  color: #94a3b8;
 }
 
 .ql-timeline-time {
@@ -1501,5 +1723,1018 @@
 
   .ql-stats-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ── TAB VIEWS CONTAINER & COMPONENTS ─────────────────────────────────── */
+.ql-tab-view {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 14px;
+}
+
+/* Quick Stats Bar in Tab Pages */
+.ql-tab-stats-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.ql-tab-stat-pill {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border-subtle);
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--admin-card-shadow);
+}
+
+.ql-tab-stat-pill .lbl {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--admin-text-muted);
+}
+
+.ql-tab-stat-pill .val {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--admin-text-main);
+}
+
+/* Filter Controls Bar */
+.ql-tab-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border-subtle);
+  border-radius: 12px;
+  padding: 8px 14px;
+  box-shadow: var(--admin-card-shadow);
+  flex-shrink: 0;
+}
+
+.ql-tab-filter-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.ql-filter-pill-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ql-filter-pill-btn {
+  background: var(--admin-input-bg);
+  border: 1px solid var(--admin-border-subtle);
+  color: var(--admin-text-sub);
+  border-radius: 16px;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.ql-filter-pill-btn:hover {
+  background: var(--admin-hover-bg);
+  color: var(--admin-text-main);
+}
+
+.ql-filter-pill-btn.active {
+  background: var(--admin-blue);
+  color: #ffffff;
+  border-color: var(--admin-blue);
+  box-shadow: 0 2px 6px rgba(25, 96, 247, 0.35);
+}
+
+.ql-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--admin-blue);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 7px 14px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 6px rgba(25, 96, 247, 0.3);
+}
+
+.ql-btn-primary:hover {
+  background: #104ec9;
+  transform: translateY(-1px);
+}
+
+/* Shops Cards Grid */
+.ql-shops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.ql-shop-card {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border-subtle);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: var(--admin-card-shadow);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ql-shop-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  border-color: var(--admin-border);
+}
+
+.ql-shop-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ql-shop-card-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--admin-text-main);
+  margin: 0;
+}
+
+.ql-shop-card-cat {
+  font-size: 11.5px;
+  color: var(--admin-text-muted);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.ql-shop-metrics-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  background: var(--admin-input-bg);
+  border-radius: 8px;
+  padding: 8px;
+  text-align: center;
+}
+
+.ql-shop-metric-item .val {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--admin-text-main);
+}
+
+.ql-shop-metric-item .lbl {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--admin-text-muted);
+}
+
+/* Subscription Plans Grid */
+.ql-plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 14px;
+}
+
+.ql-plan-card {
+  background: var(--admin-card-bg);
+  border: 1.5px solid var(--admin-border-subtle);
+  border-radius: 14px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  box-shadow: var(--admin-card-shadow);
+}
+
+.ql-plan-card.popular {
+  border-color: var(--admin-blue);
+  box-shadow: 0 8px 24px rgba(25, 96, 247, 0.15);
+}
+
+.ql-plan-popular-badge {
+  position: absolute;
+  top: -10px;
+  right: 18px;
+  background: var(--admin-blue);
+  color: #ffffff;
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 12px;
+  letter-spacing: 0.3px;
+}
+
+.ql-plan-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--admin-text-main);
+  margin: 0;
+}
+
+.ql-plan-price {
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--admin-text-main);
+  margin: 8px 0;
+}
+
+.ql-plan-price span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--admin-text-muted);
+}
+
+.ql-plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--admin-text-sub);
+}
+
+.ql-plan-features li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Settings Panels Grid */
+.ql-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 14px;
+}
+
+.ql-settings-card {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border-subtle);
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: var(--admin-card-shadow);
+}
+
+.ql-settings-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--admin-text-main);
+  margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Theme Option Cards in Settings */
+.ql-theme-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.ql-theme-option-box {
+  border: 2px solid var(--admin-border-subtle);
+  border-radius: 12px;
+  padding: 14px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: var(--admin-input-bg);
+  transition: all 0.2s ease;
+}
+
+.ql-theme-option-box:hover {
+  border-color: var(--admin-border);
+}
+
+.ql-theme-option-box.selected {
+  border-color: var(--admin-blue);
+  background: var(--admin-blue-light);
+  box-shadow: 0 0 0 2px rgba(25, 96, 247, 0.2);
+}
+
+.ql-theme-option-preview {
+  width: 60px;
+  height: 38px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  border: 1px solid var(--admin-border);
+}
+
+.ql-theme-option-preview.light-preview {
+  background: #ffffff;
+  color: #091222;
+}
+
+.ql-theme-option-preview.dark-preview {
+  background: #090e17;
+  color: #f8fafc;
+}
+
+.ql-theme-option-lbl {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--admin-text-main);
+}
+
+/* ── ADMINISTRATOR PROFILE HERO & SETTINGS FORM ────────────────────────── */
+.ql-admin-profile-settings-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ql-admin-profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  background: var(--admin-hover-bg);
+  border: 1px solid var(--admin-border-subtle);
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.ql-avatar-fill-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+.ql-admin-hero-avatar-wrap {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+}
+
+.ql-avatar-upload-badge {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  width: 24px;
+  height: 24px;
+  background: var(--admin-blue);
+  color: #ffffff;
+  border: 2px solid var(--admin-card-bg);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: all 0.15s ease;
+  z-index: 3;
+}
+
+.ql-avatar-upload-badge:hover {
+  transform: scale(1.15);
+  background: #104ddc;
+}
+
+.ql-avatar-btn-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.ql-photo-action-btn {
+  background: var(--admin-blue-light);
+  color: var(--admin-blue);
+  border: 1px solid rgba(25, 96, 247, 0.25);
+  padding: 6px 13px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ql-photo-action-btn:hover {
+  background: var(--admin-blue);
+  color: #ffffff;
+}
+
+.ql-photo-remove-btn {
+  background: var(--admin-red-light);
+  color: var(--admin-red);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  padding: 6px 11px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.ql-photo-remove-btn:hover {
+  background: var(--admin-red);
+  color: #ffffff;
+}
+
+.ql-photo-edit-modal-btn {
+  background: var(--admin-blue);
+  color: #ffffff;
+  border: 1px solid var(--admin-blue);
+  padding: 6px 13px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ql-photo-edit-modal-btn:hover {
+  background: #104ddc;
+  border-color: #104ddc;
+}
+
+.ql-admin-hero-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: 900;
+  box-shadow: 0 4px 14px rgba(25, 96, 247, 0.35);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.ql-admin-hero-details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.ql-admin-hero-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--admin-text-main);
+}
+
+.ql-admin-hero-role {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ql-admin-role-badge {
+  font-size: 11px;
+  font-weight: 800;
+  color: #ffffff;
+  background: var(--admin-blue);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.ql-admin-dept-text {
+  font-size: 12px;
+  color: var(--admin-text-muted);
+  font-weight: 600;
+}
+
+.ql-admin-hero-meta {
+  font-size: 11.5px;
+  color: var(--admin-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+/* 📋 Administrator Profile Overview Details Grid */
+.ql-admin-info-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 4px;
+}
+
+@media (max-width: 640px) {
+  .ql-admin-info-overview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ql-admin-info-item {
+  background: var(--admin-hover-bg);
+  border: 1px solid var(--admin-border-subtle);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color 0.15s ease;
+}
+
+.ql-admin-info-item:hover {
+  border-color: var(--admin-border);
+}
+
+.ql-admin-info-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--admin-text-muted);
+}
+
+.ql-admin-info-value {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--admin-text-main);
+  word-break: break-word;
+}
+
+.ql-admin-profile-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.ql-form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--admin-text-sub);
+  margin-bottom: 5px;
+}
+
+.ql-form-input {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--admin-border);
+  background: var(--admin-input-bg);
+  color: var(--admin-text-main);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ql-form-input:focus {
+  border-color: var(--admin-blue);
+  box-shadow: 0 0 0 2px rgba(25, 96, 247, 0.2);
+}
+
+/* Edit Photo Box in Edit Modal */
+.ql-edit-photo-box {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 14px;
+  background: var(--admin-hover-bg);
+  border: 1px solid var(--admin-border-subtle);
+  border-radius: 10px;
+}
+
+.ql-edit-avatar-preview {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: 900;
+  box-shadow: 0 4px 14px rgba(25, 96, 247, 0.3);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.ql-edit-photo-controls {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Admin Profile Modals */
+.ql-admin-profile-modal {
+  max-width: 480px !important;
+}
+
+.ql-admin-edit-modal {
+  max-width: 520px !important;
+}
+
+.ql-admin-modal-banner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--admin-border-subtle);
+}
+
+.ql-admin-modal-tag {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--admin-blue-light);
+  color: var(--admin-blue);
+  border: 1px solid rgba(25, 96, 247, 0.2);
+}
+
+/* ==========================================================================
+   QUEUELESS ADMIN DASHBOARD — COMPREHENSIVE RESPONSIVE SYSTEM
+   Flawless layouts across Ultra-wide, Desktop, Tablet, and Mobile
+   ========================================================================== */
+
+.ql-sidebar-backdrop {
+  display: none;
+}
+
+/* ── 1. LARGE SCREENS & COMPACT LAPTOPS (<= 1366px) ──────────────────────── */
+@media (max-width: 1366px) {
+  .ql-analytics-grid {
+    grid-template-columns: 1fr 1.25fr 1.15fr;
+  }
+
+  .ql-stat-card {
+    padding: 8px 10px;
+  }
+
+  .ql-stat-number {
+    font-size: 18px;
+  }
+}
+
+/* ── 2. MEDIUM SCREENS & TABLETS LANDSCAPE (<= 1100px) ────────────────────── */
+@media (max-width: 1100px) {
+  .ql-stats-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 10px;
+  }
+
+  .ql-analytics-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px;
+  }
+
+  .ql-card-revenue {
+    grid-column: span 2 !important;
+  }
+
+  .ql-bottom-grid {
+    grid-template-columns: 1.4fr 1fr;
+    gap: 12px;
+  }
+
+  .ql-topbar-search {
+    max-width: 240px;
+  }
+}
+
+/* ── 3. TABLETS PORTRAIT & SMALL NETBOOKS (<= 920px) ─────────────────────── */
+@media (max-width: 920px) {
+  .ql-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .ql-analytics-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ql-card-revenue {
+    grid-column: span 1 !important;
+  }
+
+  .ql-bottom-grid {
+    grid-template-columns: 1fr !important;
+    min-height: auto;
+  }
+
+  .ql-topbar-search {
+    max-width: 190px;
+  }
+}
+
+/* ── 4. MOBILE SCREENS & SMALL TABLETS (<= 768px) ────────────────────────── */
+@media (max-width: 768px) {
+  .ql-sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    z-index: 998;
+  }
+
+  /* Sidebar transforms into a smooth sliding overlay drawer */
+  .ql-admin-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    z-index: 999 !important;
+    width: 250px !important;
+    min-width: 250px !important;
+    max-width: 250px !important;
+    padding: 16px 14px !important;
+    transform: translateX(0);
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 6px 0 30px rgba(0, 0, 0, 0.45) !important;
+  }
+
+  .ql-admin-sidebar.collapsed {
+    transform: translateX(-100%) !important;
+    width: 250px !important;
+    min-width: 250px !important;
+    max-width: 250px !important;
+    pointer-events: none !important;
+  }
+
+  .ql-admin-sidebar.collapsed .ql-brand-text,
+  .ql-admin-sidebar.collapsed .ql-nav-label,
+  .ql-admin-sidebar.collapsed .ql-sidebar-footer {
+    display: block !important;
+  }
+
+  .ql-admin-sidebar.collapsed .ql-admin-nav {
+    align-items: stretch !important;
+  }
+
+  .ql-admin-sidebar.collapsed .ql-nav-item {
+    width: 100% !important;
+    padding: 10px 14px !important;
+    justify-content: flex-start !important;
+  }
+
+  /* Main layout fills full width smoothly */
+  .ql-admin-layout {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  .ql-admin-main {
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  .ql-admin-content {
+    padding: 12px 12px 30px;
+    gap: 12px;
+    height: calc(100vh - 52px);
+  }
+
+  .ql-admin-topbar {
+    padding: 0 10px;
+    gap: 6px;
+  }
+
+  .ql-topbar-left {
+    gap: 6px;
+  }
+
+  .ql-topbar-search {
+    max-width: 160px;
+    font-size: 12px;
+    padding: 6px 10px 6px 30px;
+  }
+
+  .ql-topbar-search-icon {
+    left: 9px;
+  }
+
+  .ql-date-picker-text {
+    display: none !important;
+  }
+
+  .ql-date-picker-btn {
+    padding: 6px 8px !important;
+  }
+
+  .ql-profile-name {
+    display: none !important;
+  }
+
+  .ql-admin-profile {
+    padding: 4px 6px !important;
+    gap: 4px !important;
+  }
+
+  .ql-page-title {
+    font-size: 19px !important;
+  }
+
+  .ql-page-sub {
+    font-size: 11px !important;
+  }
+
+  .ql-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .ql-stat-card {
+    padding: 8px 10px;
+  }
+
+  .ql-stat-number {
+    font-size: 18px;
+  }
+
+  .ql-donut-content {
+    flex-direction: column;
+    gap: 14px;
+    padding: 8px 0;
+  }
+
+  .ql-table-container {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+
+  /* Dashboard Recent Owners table fits 100% on mobile without clipping */
+  .ql-card-owners-table .ql-owners-table {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .ql-tab-view .ql-owners-table {
+    min-width: 600px !important;
+  }
+
+  .col-hide-mobile {
+    display: none !important;
+  }
+
+  .col-show-mobile {
+    display: block !important;
+  }
+
+  .ql-owner-phone-mobile {
+    font-size: 10.5px;
+    color: var(--admin-text-muted);
+    font-weight: 500;
+    line-height: 1.15;
+    margin-top: 1px;
+    white-space: nowrap;
+  }
+
+  .ql-owners-table th,
+  .ql-owners-table td {
+    padding: 7px 6px !important;
+    font-size: 11.5px !important;
+  }
+
+  .ql-owners-table th {
+    font-size: 10.5px !important;
+  }
+
+  .ql-owner-info {
+    gap: 6px !important;
+  }
+
+  .ql-owner-avatar {
+    width: 25px !important;
+    height: 25px !important;
+    font-size: 10px !important;
+  }
+
+  .ql-owner-name {
+    font-size: 12px !important;
+  }
+
+  .ql-badge-pill {
+    padding: 2px 6px !important;
+    font-size: 10px !important;
+  }
+
+  .ql-action-icon {
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  .ql-tab-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .ql-tab-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .ql-settings-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ql-admin-profile-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ql-admin-profile-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .ql-plans-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ql-modal-box {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    max-height: 90vh !important;
+    padding: 16px !important;
+    overflow-y: auto !important;
+  }
+}
+
+/* ── 5. EXTRA SMALL MOBILE PHONES (<= 480px) ─────────────────────────────── */
+@media (max-width: 480px) {
+  .ql-stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .ql-topbar-search {
+    max-width: 120px;
+    font-size: 11px;
+  }
+
+  .ql-date-picker-btn {
+    display: none !important;
+  }
+
+  .ql-theme-btn span:last-child {
+    display: none;
+  }
+
+  .ql-admin-dashboard .ql-card {
+    padding: 12px 12px !important;
+  }
+
+  .ql-page-title {
+    font-size: 17px !important;
+  }
+
+  .ql-admin-content {
+    padding: 10px 8px 26px;
   }
 }

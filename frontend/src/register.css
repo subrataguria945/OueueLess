@@ -10,7 +10,8 @@
 }
 
 .ql-panel-register .ql-brand-img {
-  width: 235px;
+  width: 290px;
+  max-width: 88%;
 }
 
 .ql-panel-register .ql-card {
@@ -24,12 +25,12 @@
 
 .ql-panel-register .ql-card-title {
   font-size: 23px;
-  white-space: nowrap;
+  line-height: 1.25;
 }
 
 .ql-panel-register .ql-card-sub {
   font-size: 13px;
-  margin: 2px 0 0;
+  margin: 3px 0 0;
 }
 
 .ql-panel-register .ql-form {

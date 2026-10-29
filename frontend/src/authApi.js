@@ -35,7 +35,7 @@ export function warmupBackendServer() {
  * @param {string} payload.fullname
  * @param {string} payload.email
  * @param {string} payload.phone
- * @param {number} [payload.user_role=2] - 2: Customer/User, 3: Shop Owner
+ * @param {number} [payload.user_role=3] - 2: Customer/User, 3: Shop Owner
  * @returns {Promise<{ status: string, message: string, signup_token: string }>}
  */
 export async function initiateSignup({ fullname, email, phone, user_role = 3 }) {
@@ -55,7 +55,7 @@ export async function initiateSignup({ fullname, email, phone, user_role = 3 }) 
         fullname: cleanFullname,
         email: cleanEmail,
         phone: cleanPhone,
-        user_role: Number(user_role) || 2,
+        user_role: Number(user_role) || 3,
       }),
     });
 
