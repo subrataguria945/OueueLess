@@ -56,13 +56,23 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const handleGoogleSuccess = (user, token, isNew, message) => {
-    const successMsg = message || (isNew ? "Registered and logged in with Google!" : "Login successful!");
-    setLoginSuccess(successMsg);
     setLoginError("");
+    setLoginSuccess("");
     if (token) {
       rememberMe ? localStorage.setItem("token", token) : sessionStorage.setItem("token", token);
     }
     if (user) localStorage.setItem("user", JSON.stringify(user));
+
+    const rawRole = user?.role ?? user?.user_role;
+    const isAdmin = Number(rawRole) === 1 || String(rawRole).trim() === "1" || String(rawRole).toLowerCase() === "admin" || String(rawRole).toLowerCase() === "super admin";
+
+    if (isAdmin) {
+      localStorage.setItem("ql_admin_token", token || "admin_session");
+      localStorage.setItem("role", "admin");
+      window.location.href = "/admin";
+    } else {
+      window.location.href = "/";
+    }
   };
 
   const handleGoogleClick = () => {
@@ -96,11 +106,14 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
     setIsLoginLoading(true);
     setLoginError("");
     setLoginSuccess("");
+
+    const trimmedEmail = loginEmail.trim().toLowerCase();
+
     try {
       const response = await fetch(LOGIN_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: loginEmail.trim(), password: loginPassword }),
+        body: JSON.stringify({ email: trimmedEmail, password: loginPassword }),
       });
       const data = await response.json().catch(() => ({}));
 
@@ -110,15 +123,46 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
         data.status === "Login Failed" ||
         data.status === "error" ||
         data.status === "failed" ||
-        (!data.token && !data.accessToken && !data.access_token);
+        (!data.token && !data.accessToken && !data.access_token && !data.data?.token);
 
       if (!isFailed) {
-        setLoginSuccess(data.message || "Login successful! Redirecting...");
-        const token = data.token || data.accessToken || data.access_token;
+        const token =
+          data.token ||
+          data.accessToken ||
+          data.access_token ||
+          data.data?.token ||
+          data.data?.accessToken;
+
         if (token) {
           rememberMe ? localStorage.setItem("token", token) : sessionStorage.setItem("token", token);
         }
-        if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
+
+        const userObj = data.user || data.data?.user || (data.email ? data : {});
+        if (userObj && Object.keys(userObj).length > 0) {
+          localStorage.setItem("user", JSON.stringify(userObj));
+        }
+
+        // Backend response role: role 1 means admin
+        const rawRole =
+          userObj.role ??
+          userObj.user_role ??
+          data.role ??
+          data.user_role ??
+          data.data?.role ??
+          data.data?.user_role;
+
+        const isAdmin =
+          Number(rawRole) === 1 ||
+          String(rawRole).trim() === "1" ||
+          String(rawRole).toLowerCase() === "admin";
+
+        if (isAdmin) {
+          localStorage.setItem("ql_admin_token", token || "ql_admin_session");
+          localStorage.setItem("role", "admin");
+          window.location.href = "/admin";
+        } else {
+          window.location.href = "/";
+        }
       } else {
         const rawError =
           data.message ||
