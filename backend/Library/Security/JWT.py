@@ -42,3 +42,27 @@ def decode_token(token : str):
         return {"error": "Token has expired. Please try again."}
     except jwt.InvalidTokenError:
         return {"error": "Invalid token."}
+
+def generate_forget_password_token(email : str , user_id : int):
+    payload = {
+        "email" : email,
+        "user_id" : user_id,
+        "exp" : datetime.now(timezone.utc) + timedelta(minutes=5),
+        "iat" : datetime.now(timezone.utc)
+    }
+    token = jwt.encode(payload , 
+                        key= os.getenv("FORGET_PASSWORD_SECRET_KEY"),
+                        algorithm="HS256"
+                        )
+    return token
+
+
+def decode_forget_password_token(token : str):
+    if not token:
+        return {"error": "Token is required."}
+    try:
+        return jwt.decode(token, key=os.getenv("FORGET_PASSWORD_SECRET_KEY"), algorithms=["HS256"])
+    except jwt.ExpiredSignatureError:
+        return {"error": "Token has expired. Please try again."}
+    except jwt.InvalidTokenError:
+        return {"error": "Invalid token."}
