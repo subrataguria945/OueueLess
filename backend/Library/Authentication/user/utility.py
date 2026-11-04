@@ -1,8 +1,8 @@
 from Library.Authentication.user.database import user_exists_indb, validate_login_indb , insert_user_indb , change_password_indb
-from Library.Security.JWT import generate_access_token , generate_signup_token , decode_token
+from Library.Security.JWT import generate_access_token , generate_forget_password_token, generate_signup_token , decode_token , decode_forget_password_token
 import secrets
 import hashlib
-from Library.Notification.email import send_otp_email
+from Library.Notification.email import send_otp_email , send_reset_password_email
 from dotenv import load_dotenv
 load_dotenv() 
 def login_user(input : dict ):
@@ -65,7 +65,6 @@ def register_google_user(input : dict ):
     
 def change_password(input : dict):
     userid = input.get("userid")
-    action = input.get("action")
     oldpassword = input.get("oldpassword")
     newpassword = input.get("newpassword")
     if oldpassword == newpassword:
@@ -74,7 +73,7 @@ def change_password(input : dict):
             "message" : "Old Password and New Password are not same"
         }
     else:
-        response = change_password_indb(userid,action,oldpassword,newpassword)
+        response = change_password_indb(userid,"CHANGE",oldpassword,newpassword)
         if response.get("status") == 200:
             return {
                 "status" : "success",
@@ -108,6 +107,7 @@ def initiate_register(input: dict):
 
 # Signup token - userdata , otphash , exp , iat
 def veriy_and_register_user(input : dict ):
+
     signup_token = input.get("signup_token")
     otp = input.get("otp")
     password = input.get("password")
@@ -143,3 +143,50 @@ def veriy_and_register_user(input : dict ):
             "status" : "Registration Failed",
             "message" : response.get("error")
         }   
+
+def check_and_send_forget_password_link(input : dict):
+    email = input.get("email")
+    response = user_exists_indb(email)
+    if response.get("status") == 200:
+        forget_password_token = generate_forget_password_token(email , response.get("user_id"))
+        if send_reset_password_email(email,forget_password_token):
+            return {
+                "status" : "success",
+                "message" : "Reset password link sent to your email"
+            }
+        else:
+            return {
+                "status" : "failed",
+                "message" : "Failed to send reset password link"
+            }
+    else:
+        return {
+            "status" : "failed",
+            "message" : "User does not exist"
+        }
+    
+
+def reset_password(input : dict):
+    reset_token = input.get("reset_token")
+    newpassword = input.get("newpassword")
+    confirm_password = input.get("confirm_password")
+    if newpassword != confirm_password:
+        return {
+            "status" : "failed",
+            "message" : "Password and Confirm Password are not same"
+        }
+    else:
+        payload = decode_forget_password_token(reset_token)
+        if "error" in payload:
+            return { "status" : "failed" , "message" : payload["error"]}
+        response = change_password_indb(payload.get("user_id"), "RESET", None, newpassword)
+        if response.get("status") == 200:
+            return {
+                "status" : "success",
+                "message" : response.get("message")
+            }
+        else:
+            return {
+                "status" : "failed",
+                "message" : response.get("error")
+            }  

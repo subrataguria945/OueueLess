@@ -73,3 +73,73 @@ def send_otp_email(to_email: str, otp: str):
         print(f"Failed to send email to {to_email}: {e}")
         return False
 
+def send_reset_password_email(to_email : str , token : str):
+    url = "https://api.brevo.com/v3/smtp/email"
+    reset_link = f"https://queueless-dusky.vercel.app/forgot-password?token={token}"
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f8fafc; padding: 40px 15px; margin: 0;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 460px; margin: 0 auto; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);">
+            <tr>
+                <td style="padding: 40px 32px 32px 32px;">
+                    <div style="font-size: 19px; font-weight: 700; color: #0f172a; letter-spacing: -0.3px; margin-bottom: 20px;">
+                        QueueLess
+                    </div>
+                    <div style="font-size: 22px; font-weight: 700; color: #1e293b; line-height: 1.3; margin-bottom: 12px;">
+                        Reset your password
+                    </div>
+                    <p style="font-size: 15px; line-height: 24px; color: #475569; margin: 0 0 28px 0;">
+                        We received a request to reset your password. Click the button below to choose a new password.
+                    </p>
+                    
+                    <div style="text-align: center; margin-bottom: 28px;">
+                        <a href="{reset_link}" target="_blank" style="display: inline-block; background-color: #4f46e5; color: #ffffff; font-size: 15px; font-weight: 600; text-decoration: none; padding: 13px 32px; border-radius: 8px; box-shadow: 0 3px 8px rgba(79, 70, 229, 0.25);">
+                            Reset Password
+                        </a>
+                    </div>
+
+                    <p style="font-size: 13px; line-height: 20px; color: #64748b; margin: 0 0 20px 0;">
+                        This link is single-use and will expire in <strong style="color: #0f172a;">5 minutes</strong>.
+                    </p>
+
+                    <div style="height: 1px; background-color: #f1f5f9; margin-bottom: 20px;"></div>
+
+                    <p style="font-size: 12px; line-height: 18px; color: #94a3b8; margin: 0;">
+                        If you didn't request a password reset, you can safely ignore this email.
+                    </p>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    """
+
+    headers = {
+        "accept": "application/json",
+        "api-key": BREVO_API_KEY,
+        "content-type": "application/json"
+    }
+
+    payload = {
+        "sender": {"name": "QueueLess", "email": SENDER_EMAIL},
+        "to": [{"email": to_email}],
+        "subject": "Reset Your QueueLess Password",
+        "htmlContent": html_content
+    }
+
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        if response.status_code in [200, 201]:
+            print(f"Reset password email successfully sent to {to_email} via Brevo")
+            return True
+        else:
+            print(f"Brevo API error: {response.status_code} - {response.text}")
+            return False
+    except Exception as e:
+        print(f"Failed to send reset password email to {to_email}: {e}")
+        return False
