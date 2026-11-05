@@ -1,6 +1,6 @@
 from fastapi import APIRouter , Depends
-from .models import UserLogin , ForgetPassword, ChangePassword , ResetPassword , VerifyRegistrationOTP , InitiateUserRegister , UserRegisterGoogle
-from Library.Authentication.user.utility import login_user as login , change_password as change_pass, initiate_register , veriy_and_register_user , register_google_user , check_and_send_forget_password_link , reset_password as reset_pass
+from .models import UserLogin , RefreshTokenRequest , ForgetPassword, ChangePassword , ResetPassword , VerifyRegistrationOTP , InitiateUserRegister , UserRegisterGoogle
+from Library.Authentication.user.utility import login_user as login , change_password as change_pass, initiate_register , veriy_and_register_user , register_google_user , check_and_send_forget_password_link , reset_password as reset_pass , refresh_user_token
 from Library.Security.gatekeeper import require_active_user
 router = APIRouter()
 
@@ -42,3 +42,7 @@ def reset_password(data : ResetPassword):
     return response
 
  
+@router.post("/refresh")
+def generate_new_access_token(data : RefreshTokenRequest):
+    response = refresh_user_token(data.model_dump())
+    return response

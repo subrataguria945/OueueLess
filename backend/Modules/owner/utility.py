@@ -1,7 +1,7 @@
 from .database import insert_owner_indb
 
 def register_owner(input: dict):
-    admin_user_id = input.get("admin_user_id")
+    admin_id = input.get("admin_id")
     fullname = input.get("fullname")
     email = input.get("email")
     password = input.get("password")
@@ -9,7 +9,7 @@ def register_owner(input: dict):
     max_shop_count = input.get("max_shop_count")
     backup_id = input.get("backup_id")
 
-    response = insert_owner_indb(admin_user_id, fullname, email, password, phone, max_shop_count, backup_id)
+    response = insert_owner_indb(admin_id, fullname, email, password, phone, max_shop_count, backup_id)
     if response.get("status") == 200:
         return {
             "status" : "success",
