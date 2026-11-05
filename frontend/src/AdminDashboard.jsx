@@ -5199,7 +5199,7 @@ export function AdminDashboard() {
               </div>
               <button type="button" className="ql-modal-close-btn" onClick={() => setIsEditingOwner(false)}>✕</button>
             </div>
-            <form onSubmit={handleSaveEditOwner} style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "14px" }}>
+            <form onSubmit={handleSaveEditOwner} className="ql-edit-owner-form" style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: "12px", overflowY: "auto", flex: 1 }}>
               <div className="ql-form-group">
                 <label className="ql-form-label">Full Name</label>
                 <input
@@ -5230,7 +5230,7 @@ export function AdminDashboard() {
                   required
                 />
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              <div className="ql-modern-grid-2">
                 <div className="ql-form-group">
                   <label className="ql-form-label">Account Status</label>
                   <select
@@ -5266,7 +5266,7 @@ export function AdminDashboard() {
                   onChange={(e) => setEditOwnerForm({ ...editOwnerForm, address: e.target.value, city: e.target.value })}
                 />
               </div>
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "10px" }}>
+              <div className="ql-edit-owner-footer-btns" style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "8px" }}>
                 <button
                   type="button"
                   className="ql-btn-secondary"
