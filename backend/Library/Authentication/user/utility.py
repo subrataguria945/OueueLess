@@ -19,7 +19,6 @@ def login_user(input : dict ):
             "message": response.get("message"),
             "access_token": token,
             "token_type" : "bearer" ,
-
         }
     else:
         return {
@@ -190,3 +189,5 @@ def reset_password(input : dict):
                 "status" : "failed",
                 "message" : response.get("error")
             }  
+
+

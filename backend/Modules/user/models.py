@@ -1,4 +1,4 @@
-from pydantic import BaseModel , EmailStr , field_validator
+from pydantic import BaseModel , EmailStr 
 from typing import Literal
 
 class UserLogin(BaseModel):
@@ -39,4 +39,12 @@ class ResetPassword(BaseModel):
 
 class ForgetPassword(BaseModel):
     email : EmailStr
-    
+
+class AddOwnerRequest(BaseModel):
+    admin_user_id: int
+    fullname: str
+    email: EmailStr
+    password: str
+    phone: str
+    max_shop_count: int
+    backup_id:int   

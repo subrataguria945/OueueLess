@@ -38,4 +38,5 @@ def forget_password(data : ForgetPassword):
 def reset_password(data : ResetPassword):
     response = reset_pass(data.model_dump())
     return response
-    
+
+ 

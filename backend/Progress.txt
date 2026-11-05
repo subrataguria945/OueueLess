@@ -1,0 +1,43 @@
+-- For Get All Ownerslist 
+BEGIN;
+DO $$
+DECLARE
+    v_cursor refcursor := 'all_owners_list';
+    v_code text;
+    v_msg text;
+BEGIN
+    CALL public.sp_GetAllOwners(v_cursor, v_code, v_msg);
+END $$;
+
+FETCH ALL FROM "all_owners_list"; --for show the all ownerlist
+COMMIT;
+
+
+-- For Search Owners by ownerid, fullname, email, phone, maxshopcount, backupid, status, createdate
+BEGIN;
+DO $$
+DECLARE
+    v_cursor refcursor := 'search_results_cursor';
+    v_code text;
+    v_msg text;
+BEGIN
+    CALL public.sp_SearchOwners('11', -- search text
+    v_cursor, v_code, v_msg);
+END $$;
+
+FETCH ALL FROM "search_results_cursor";
+COMMIT;
+
+
+-- For Get Any Owner Details by his ID
+CALL public.sp_GetOwnerDetailsTable(
+    3,                  -- ownerid
+    NULL,               -- fullname
+    NULL,               -- email
+    NULL,               -- phone
+    NULL,               -- max_shop_count
+    NULL,               -- backup_id
+    NULL,               -- is_active
+    NULL,               -- status_code
+    NULL                -- status_message
+);
