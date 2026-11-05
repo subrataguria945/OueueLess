@@ -24,4 +24,4 @@ def root():
 app.include_router(user_router, prefix="/user", tags=["Users"])
 
 # Owner routes
-app.include_router(owner_router, prefix="/owner", tags=["Owners"])
+app.include_router(owner_router, prefix="/owner", tags=["Owner"])

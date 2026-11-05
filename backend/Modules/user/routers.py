@@ -1,7 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter , Depends
 from .models import UserLogin , ForgetPassword, ChangePassword , ResetPassword , VerifyRegistrationOTP , InitiateUserRegister , UserRegisterGoogle
 from Library.Authentication.user.utility import login_user as login , change_password as change_pass, initiate_register , veriy_and_register_user , register_google_user , check_and_send_forget_password_link , reset_password as reset_pass
-
+from Library.Security.gatekeeper import require_active_user
 router = APIRouter()
 
 @router.post("/login")
@@ -25,8 +25,10 @@ def register_verify(data : VerifyRegistrationOTP):
     return response
 
 @router.post("/password/change")
-def change_password(data : ChangePassword):
-    response = change_pass(data.model_dump())
+def change_password(data : ChangePassword , user_id : int = Depends(require_active_user)):
+    payload = data.model_dump()
+    payload["userid"] = user_id
+    response = change_pass(payload)
     return response
 
 @router.post("/password/forget")

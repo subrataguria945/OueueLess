@@ -1,5 +1,5 @@
 from Library.Authentication.user.database import user_exists_indb, validate_login_indb , insert_user_indb , change_password_indb
-from Library.Security.JWT import generate_access_token , generate_forget_password_token, generate_signup_token , decode_token , decode_forget_password_token
+from Library.Security.JWT import generate_access_token , generate_forget_password_token, generate_signup_token , decode_access_token , decode_forget_password_token , decode_refresh_token , generate_refresh_token
 import secrets
 import hashlib
 from Library.Notification.email import send_otp_email , send_reset_password_email
@@ -10,15 +10,17 @@ def login_user(input : dict ):
     password = input.get("password")
     response = validate_login_indb(email,password)
     if response.get("status") == 200:
-        token = generate_access_token(response.get("user_id"),email)
+        access_token = generate_access_token(response.get("user_id"),email)
+        refresh_token = generate_refresh_token(response.get("user_id"),email)
         return {
             "status" : "success",
             "user_id": response.get("user_id"),
             "user_role":response.get("user_role"),
             "email": email,
             "message": response.get("message"),
-            "access_token": token,
-            "token_type" : "bearer" ,
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type" : "bearer"
         }
     else:
         return {
@@ -46,14 +48,16 @@ def register_google_user(input : dict ):
         phone = None
         response = insert_user_indb(fullname,email,phone,password,role_id)
         if response.get("status") == 200:
-            token = generate_access_token(response.get("user_id"),email)
+            access_token = generate_access_token(response.get("user_id"),email)
+            refresh_token = generate_refresh_token(response.get("user_id"),email)
             return {
                 "status" : "success",
                 "user_id": response.get("user_id"),
                 "user_role": role_id,
                 "email": email,
                 "message": response.get("message"),
-                "access_token": token,
+                "access_token": access_token,
+                "refresh_token": refresh_token,
                 "token_type" : "bearer"
             }
         else:
@@ -111,7 +115,7 @@ def veriy_and_register_user(input : dict ):
     otp = input.get("otp")
     password = input.get("password")
     
-    payload = decode_token(signup_token)
+    payload = decode_access_token(signup_token)
     if "error" in payload:
         return { "status" : "failed" , "message" : payload["error"]}
     
