@@ -130,11 +130,22 @@ export function Login({ initialMode = "login", initialForgotOpen = false, onSwit
     }
   };
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("session_expired") === "true") {
+      showTemporaryError("Your session has expired. Please sign in again.");
+    }
+  }, []);
+
   const handleGoogleSuccess = (user, token, isNew, message) => {
     setLoginError("");
     setLoginSuccess("");
     if (token) {
       rememberMe ? localStorage.setItem("token", token) : sessionStorage.setItem("token", token);
+    }
+    const googleRefreshToken = user?.refresh_token || (typeof token === "object" ? token?.refresh_token : null);
+    if (googleRefreshToken) {
+      rememberMe ? localStorage.setItem("refresh_token", googleRefreshToken) : sessionStorage.setItem("refresh_token", googleRefreshToken);
     }
     if (user) localStorage.setItem("user", JSON.stringify(user));
 
@@ -208,8 +219,18 @@ export function Login({ initialMode = "login", initialForgotOpen = false, onSwit
           data.data?.token ||
           data.data?.accessToken;
 
+        const refreshToken =
+          data.refresh_token ||
+          data.refreshToken ||
+          data.data?.refresh_token ||
+          data.data?.refreshToken;
+
         if (token) {
           rememberMe ? localStorage.setItem("token", token) : sessionStorage.setItem("token", token);
+        }
+
+        if (refreshToken) {
+          rememberMe ? localStorage.setItem("refresh_token", refreshToken) : sessionStorage.setItem("refresh_token", refreshToken);
         }
 
         const userObj = data.user || data.data?.user || (data.email ? data : {});

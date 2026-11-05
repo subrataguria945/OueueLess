@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import "./AdminDashboard.css";
 import { AdminImageCropModal } from "./AdminImageCropModal";
+import apiClient, { authFetch } from "./apiClient";
 
 // ── MOCK DATA FOR COMPREHENSIVE ADMIN EXPERIENCE ──────────────────────────
 
@@ -798,25 +799,13 @@ export function AdminDashboard() {
   const [isOwnersLoading, setIsOwnersLoading] = useState(true);
   const [ownersError, setOwnersError] = useState(null);
 
-  // Fetch all owners from backend API
+  // Fetch all owners from backend API (with automatic token refresh on 401)
   const fetchOwners = async () => {
     setIsOwnersLoading(true);
     setOwnersError(null);
     try {
-      const token =
-        localStorage.getItem("token") ||
-        localStorage.getItem("ql_admin_token") ||
-        sessionStorage.getItem("token") ||
-        "";
-
-      const headers = { "Content-Type": "application/json" };
-      if (token && token !== "ql_admin_session" && token !== "admin_session") {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
-
-      const res = await fetch(OWNERS_API_URL, {
+      const res = await authFetch(OWNERS_API_URL, {
         method: "GET",
-        headers,
       });
 
       const data = await res.json().catch(() => null);
@@ -1577,26 +1566,15 @@ export function AdminDashboard() {
       return;
     }
 
-    const token =
-      localStorage.getItem("token") ||
-      localStorage.getItem("ql_admin_token") ||
-      sessionStorage.getItem("token") ||
-      "";
-
     const loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
     const adminUserId = Number(loggedUser.user_id || loggedUser.userid || 1);
 
     setIsAddingOwner(true);
 
     try {
-      const headers = { "Content-Type": "application/json" };
-      if (token && token !== "ql_admin_session" && token !== "admin_session") {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
-
-      const res = await fetch(ADD_OWNER_API_URL, {
+      const res = await authFetch(ADD_OWNER_API_URL, {
         method: "POST",
-        headers,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           admin_user_id: adminUserId,
           fullname,
