@@ -132,6 +132,7 @@ def veriy_and_register_user(input : dict ):
     response = insert_user_indb(full_name,email,phone,password,role_id)
     if response.get("status") == 200:
         token = generate_access_token(response.get("user_id"),email)
+        refresh_token = generate_refresh_token(response.get("user_id"),email)
         return {
             "status" : "success",
             "user_id": response.get("user_id"),
@@ -139,6 +140,7 @@ def veriy_and_register_user(input : dict ):
             "email": email,
             "message": response.get("message"),
             "access_token": token,
+            "refresh_token": refresh_token,
             "token_type" : "bearer"
         }
     else:
@@ -195,3 +197,21 @@ def reset_password(input : dict):
             }  
 
 
+def refresh_user_token(input: dict):
+    refresh_token = input.get("refresh_token")
+    payload = decode_refresh_token(refresh_token)
+
+    if "error" in payload:
+        return {
+            "status": "failed",
+            "message": payload["error"]
+        }
+    user_id = payload.get("user_id")
+    email = payload.get("email")
+    new_access_token = generate_access_token(user_id, email)
+    return {
+        "status": "success",
+        "message": "Token refreshed successfully",
+        "access_token": new_access_token,
+        "token_type": "bearer"
+    }
