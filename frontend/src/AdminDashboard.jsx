@@ -101,6 +101,10 @@ const OWNERS_API_URL =
   import.meta.env.VITE_OWNERS_API_URL ||
   `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/owner/all`;
 
+const ADD_OWNER_API_URL =
+  import.meta.env.VITE_ADD_OWNER_API_URL ||
+  `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/owner/add`;
+
 export function mapApiOwnerToDashboard(apiOwner) {
   const id = Number(apiOwner.owner_id ?? apiOwner.id ?? 0);
   const name = (apiOwner.full_name || apiOwner.name || "").trim() || "Owner";
@@ -849,11 +853,14 @@ export function AdminDashboard() {
   const [isEditingOwner, setIsEditingOwner] = useState(false);
   const [editOwnerForm, setEditOwnerForm] = useState(null);
   const [addOwnerModalOpen, setAddOwnerModalOpen] = useState(false);
+  const [isAddingOwner, setIsAddingOwner] = useState(false);
+  const [addOwnerError, setAddOwnerError] = useState("");
   const [newOwnerForm, setNewOwnerForm] = useState({
     name: "",
     email: "",
     phone: "",
-    shops: 1,
+    password: "",
+    maxShops: 5,
     joinedDate: new Date().toISOString().split("T")[0],
     address: "",
   });
@@ -1476,8 +1483,24 @@ export function AdminDashboard() {
 
   const handleAddOwnerSubmit = async (e) => {
     e.preventDefault();
-    if (!newOwnerForm.name || !newOwnerForm.email) {
-      alert("Please fill in Owner Name and Email.");
+    setAddOwnerError("");
+
+    const fullname = (newOwnerForm.name || "").trim();
+    const email = (newOwnerForm.email || "").trim().toLowerCase();
+    const cleanPhone = (newOwnerForm.phone || "").replace(/\D/g, "");
+    const password = (newOwnerForm.password || "").trim() || "Owner@123";
+    const maxShops = Number(newOwnerForm.maxShops || newOwnerForm.shops || 5);
+
+    if (!fullname) {
+      setAddOwnerError("Please enter Owner Full Name.");
+      return;
+    }
+    if (!email || !email.includes("@")) {
+      setAddOwnerError("Please enter a valid Email address.");
+      return;
+    }
+    if (!cleanPhone || cleanPhone.length < 10) {
+      setAddOwnerError("Please enter a valid 10-digit Phone Number.");
       return;
     }
 
@@ -1487,104 +1510,65 @@ export function AdminDashboard() {
       sessionStorage.getItem("token") ||
       "";
 
-    // Attempt backend POST /owner/add
+    const loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const adminUserId = Number(loggedUser.user_id || loggedUser.userid || 1);
+
+    setIsAddingOwner(true);
+
     try {
-      const loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
-      const adminUserId = loggedUser.user_id || loggedUser.userid || 1;
-      const addRes = await fetch("https://queueless-backend-b2qh.onrender.com/owner/add", {
+      const headers = { "Content-Type": "application/json" };
+      if (token && token !== "ql_admin_session" && token !== "admin_session") {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      const res = await fetch(ADD_OWNER_API_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token && token !== "ql_admin_session" && token !== "admin_session"
-            ? { Authorization: `Bearer ${token}` }
-            : {}),
-        },
+        headers,
         body: JSON.stringify({
-          admin_user_id: Number(adminUserId),
-          fullname: newOwnerForm.name.trim(),
-          email: newOwnerForm.email.trim(),
-          password: "OwnerDefault@123",
-          phone: (newOwnerForm.phone || "").replace(/\D/g, "") || "9876500000",
-          max_shop_count: Number(newOwnerForm.shops) || 5,
+          admin_user_id: adminUserId,
+          fullname,
+          email,
+          password,
+          phone: cleanPhone.length === 10 ? cleanPhone : cleanPhone.slice(-10),
+          max_shop_count: maxShops,
           backup_id: 1,
         }),
       });
 
-      if (addRes.ok) {
-        await fetchOwners();
-        setAddOwnerModalOpen(false);
-        setNewOwnerForm({
-          name: "",
-          email: "",
-          phone: "",
-          shops: 1,
-          joinedDate: new Date().toISOString().split("T")[0],
-          address: "",
-        });
-        setSettingsSavedToast(true);
-        setTimeout(() => setSettingsSavedToast(false), 3000);
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || data?.status === "failed" || data?.status === "error") {
+        const errorMsg =
+          (Array.isArray(data?.detail)
+            ? data.detail.map((d) => d.msg).join(", ")
+            : data?.detail) ||
+          data?.message ||
+          data?.error ||
+          "Failed to register owner in database.";
+        setAddOwnerError(errorMsg);
+        setIsAddingOwner(false);
         return;
       }
+
+      // Success: refresh real owners from API
+      await fetchOwners();
+      setIsAddingOwner(false);
+      setAddOwnerModalOpen(false);
+      setNewOwnerForm({
+        name: "",
+        email: "",
+        phone: "",
+        password: "",
+        maxShops: 5,
+        joinedDate: new Date().toISOString().split("T")[0],
+        address: "",
+      });
+      setSettingsSavedToast(true);
+      setTimeout(() => setSettingsSavedToast(false), 3000);
     } catch (err) {
-      console.warn("Could not reach /owner/add, adding locally:", err);
+      setIsAddingOwner(false);
+      setAddOwnerError(err?.message || "Could not connect to the backend server. Please try again.");
     }
-
-    const newId = ownersData.length ? Math.max(...ownersData.map((o) => o.id)) + 1 : 1;
-    const initial = newOwnerForm.name.charAt(0).toUpperCase();
-
-    let formattedJoined = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-    if (newOwnerForm.joinedDate) {
-      try {
-        const parts = newOwnerForm.joinedDate.split("-");
-        if (parts.length === 3) {
-          const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-          formattedJoined = d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    const newOwner = {
-      id: newId,
-      ownerCode: `OWN-${String(newId).padStart(4, "0")}`,
-      name: newOwnerForm.name,
-      initial,
-      avatarBg: "#dbeafe",
-      avatarColor: "#1d4ed8",
-      email: newOwnerForm.email,
-      phone: newOwnerForm.phone || "+91 98765 00000",
-      shops: Number(newOwnerForm.shops) || 1,
-      status: "Active",
-      joinedOn: formattedJoined,
-      plan: "Enterprise Pro",
-      address: newOwnerForm.address || "Kolkata, WB",
-      city: newOwnerForm.address || "Kolkata, WB",
-      kycStatus: "KYC Verified",
-      billingCycle: "Annual (₹ 14,999/yr)",
-      totalTokens: (Number(newOwnerForm.shops) || 1) * 1280,
-      monthlyRevenue: `₹ ${((Number(newOwnerForm.shops) || 1) * 4500).toLocaleString()}`,
-      lastActive: "Just now",
-      notes: "Newly registered business owner.",
-    };
-
-    setOwnersData((prev) => {
-      const updated = [...prev, newOwner].sort((a, b) => a.id - b.id);
-      localStorage.setItem("ql_admin_owners_list", JSON.stringify(updated));
-      return updated;
-    });
-
-    setAddOwnerModalOpen(false);
-    setNewOwnerForm({
-      name: "",
-      email: "",
-      phone: "",
-      shops: 1,
-      joinedDate: new Date().toISOString().split("T")[0],
-      address: "",
-    });
-    setSettingsSavedToast(true);
-    setTimeout(() => setSettingsSavedToast(false), 3000);
   };
 
   const handleSaveSettings = () => {
@@ -5283,6 +5267,25 @@ export function AdminDashboard() {
             </div>
 
             <form onSubmit={handleAddOwnerSubmit} style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+              {addOwnerError && (
+                <div style={{
+                  margin: "12px 24px 0",
+                  padding: "10px 14px",
+                  borderRadius: "10px",
+                  backgroundColor: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  color: "#dc2626",
+                  fontSize: "13px",
+                  fontWeight: "500",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px"
+                }}>
+                  <span>⚠️</span>
+                  <span>{addOwnerError}</span>
+                </div>
+              )}
+
               <div className="ql-premium-modal-body">
                 {/* Row 1: Owner Name & Email Address */}
                 <div className="ql-modern-grid-2">
@@ -5301,7 +5304,10 @@ export function AdminDashboard() {
                         required
                         className="ql-input-modern"
                         value={newOwnerForm.name}
-                        onChange={(e) => setNewOwnerForm({ ...newOwnerForm, name: e.target.value })}
+                        onChange={(e) => {
+                          setNewOwnerForm({ ...newOwnerForm, name: e.target.value });
+                          if (addOwnerError) setAddOwnerError("");
+                        }}
                         placeholder="e.g. Ramesh Kumar"
                         autoFocus
                       />
@@ -5323,7 +5329,10 @@ export function AdminDashboard() {
                         required
                         className="ql-input-modern"
                         value={newOwnerForm.email}
-                        onChange={(e) => setNewOwnerForm({ ...newOwnerForm, email: e.target.value })}
+                        onChange={(e) => {
+                          setNewOwnerForm({ ...newOwnerForm, email: e.target.value });
+                          if (addOwnerError) setAddOwnerError("");
+                        }}
                         placeholder="e.g. ramesh@example.com"
                       />
                     </div>
@@ -5346,8 +5355,11 @@ export function AdminDashboard() {
                         required
                         className="ql-input-modern"
                         value={newOwnerForm.phone}
-                        onChange={(e) => setNewOwnerForm({ ...newOwnerForm, phone: e.target.value })}
-                        placeholder="e.g. +91 98765 43210"
+                        onChange={(e) => {
+                          setNewOwnerForm({ ...newOwnerForm, phone: e.target.value });
+                          if (addOwnerError) setAddOwnerError("");
+                        }}
+                        placeholder="e.g. 9876543210"
                       />
                     </div>
                   </div>
@@ -5375,7 +5387,55 @@ export function AdminDashboard() {
                   </div>
                 </div>
 
-                {/* Row 3: Address (Full Width & Spacious) */}
+                {/* Row 3: Initial Password & Max Shop Quota */}
+                <div className="ql-modern-grid-2">
+                  <div className="ql-input-group-modern">
+                    <label className="ql-input-label-modern">
+                      <span>Initial Password</span>
+                      <span style={{ fontSize: "11px", color: "var(--admin-text-muted)", marginLeft: "4px" }}>(default: Owner@123)</span>
+                    </label>
+                    <div className="ql-input-icon-box">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                      <input
+                        type="password"
+                        className="ql-input-modern"
+                        value={newOwnerForm.password}
+                        onChange={(e) => setNewOwnerForm({ ...newOwnerForm, password: e.target.value })}
+                        placeholder="Owner@123"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="ql-input-group-modern">
+                    <label className="ql-input-label-modern">
+                      <span>Max Allowed Shops</span>
+                      <span className="required-star">*</span>
+                    </label>
+                    <div className="ql-input-icon-box">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7" />
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                        <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4" />
+                        <path d="M2 7h20" />
+                      </svg>
+                      <input
+                        type="number"
+                        min="1"
+                        max="50"
+                        required
+                        className="ql-input-modern"
+                        value={newOwnerForm.maxShops || 5}
+                        onChange={(e) => setNewOwnerForm({ ...newOwnerForm, maxShops: e.target.value })}
+                        placeholder="5"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Row 4: Address (Full Width & Spacious) */}
                 <div className="ql-input-group-modern">
                   <label className="ql-input-label-modern">
                     <span>Address</span>
@@ -5411,15 +5471,40 @@ export function AdminDashboard() {
                     type="button"
                     className="ql-btn-secondary-modern"
                     onClick={() => setAddOwnerModalOpen(false)}
+                    disabled={isAddingOwner}
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="ql-btn-primary-modern">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="12" y1="5" x2="12" y2="19" />
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                    </svg>
-                    <span>Register Owner</span>
+                  <button
+                    type="submit"
+                    className="ql-btn-primary-modern"
+                    disabled={isAddingOwner}
+                    style={{ opacity: isAddingOwner ? 0.7 : 1, cursor: isAddingOwner ? "wait" : "pointer" }}
+                  >
+                    {isAddingOwner ? (
+                      <>
+                        <span
+                          style={{
+                            display: "inline-block",
+                            width: "14px",
+                            height: "14px",
+                            border: "2px solid rgba(255,255,255,0.4)",
+                            borderTopColor: "#ffffff",
+                            borderRadius: "50%",
+                            animation: "qlModalSpin 0.7s linear infinite",
+                          }}
+                        />
+                        <span>Registering on Server...</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="12" y1="5" x2="12" y2="19" />
+                          <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                        <span>Register Owner</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
