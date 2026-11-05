@@ -9,8 +9,7 @@ const RESET_PASSWORD_API_URL =
   import.meta.env.VITE_RESET_PASSWORD_API_URL ||
   "https://queueless-backend-b2qh.onrender.com/user/password/reset";
 
-export function ForgotPasswordModal({ isOpen, onClose, email = "" }) {
-  const [inputEmail, setInputEmail] = useState(email || "");
+export function ForgotPasswordModal({ isOpen, onClose }) {
   const [token, setToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -20,10 +19,6 @@ export function ForgotPasswordModal({ isOpen, onClose, email = "" }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const newPasswordRef = useRef(null);
-
-  useEffect(() => {
-    if (email) setInputEmail(email);
-  }, [email]);
 
   // Read reset token from URL if available
   useEffect(() => {
@@ -87,12 +82,6 @@ export function ForgotPasswordModal({ isOpen, onClose, email = "" }) {
     setError("");
     setSuccess("");
 
-    const cleanEmail = (email || inputEmail || "").trim().toLowerCase();
-    if (!cleanEmail || !cleanEmail.includes("@")) {
-      setError("Please enter a valid email address with an @ sign.");
-      return;
-    }
-
     if (!newPassword || !newPassword.trim()) {
       setError("New password is required. Please fill in this field.");
       return;
@@ -140,10 +129,7 @@ export function ForgotPasswordModal({ isOpen, onClose, email = "" }) {
         body: JSON.stringify({
           reset_token: effectiveToken,
           newpassword: newPassword,
-          new_password: newPassword,
           confirm_password: confirmPassword,
-          email: cleanEmail,
-          password: newPassword,
         }),
       });
 
@@ -302,29 +288,6 @@ export function ForgotPasswordModal({ isOpen, onClose, email = "" }) {
           >
             Enter your new password and confirm it below.
           </p>
-          {email && (
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                backgroundColor: "#f1f5f9",
-                color: "#1e293b",
-                fontSize: "12.5px",
-                fontWeight: "550",
-                padding: "5px 12px",
-                borderRadius: "20px",
-                marginTop: "10px",
-                border: "1px solid #e2e8f0",
-              }}
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="4" width="20" height="16" rx="2" />
-                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-              </svg>
-              <span>{email}</span>
-            </div>
-          )}
         </div>
 
         {/* Error Alert */}
@@ -382,50 +345,6 @@ export function ForgotPasswordModal({ isOpen, onClose, email = "" }) {
 
         {/* Form: ONLY New Password & Confirm Password */}
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-          {/* Email input (only if email was not entered on login page) */}
-          {!email && (
-            <div style={{ position: "relative" }}>
-              <span
-                style={{
-                  position: "absolute",
-                  left: "14px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  pointerEvents: "none",
-                  color: "#94a3b8",
-                }}
-              >
-                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="4" width="20" height="16" rx="2" />
-                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                </svg>
-              </span>
-              <input
-                type="email"
-                placeholder="Email address"
-                value={inputEmail}
-                onChange={(e) => {
-                  setInputEmail(e.target.value);
-                  if (error) setError("");
-                }}
-                required
-                disabled={isLoading || Boolean(success)}
-                style={inputStyle}
-                onFocus={(e) => {
-                  e.target.style.borderColor = "#1960f7";
-                  e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)";
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = "#dde4f0";
-                  e.target.style.boxShadow = "none";
-                }}
-              />
-            </div>
-          )}
-
           {/* 1. New Password */}
           <div style={{ position: "relative" }}>
             <span
