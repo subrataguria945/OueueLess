@@ -136,10 +136,25 @@ export function ForgotPasswordModal({ isOpen, onClose }) {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok || data?.status === "failed" || data?.status === "error") {
-        const errorMsg =
+        const rawError =
           (Array.isArray(data?.detail) ? data.detail.map((d) => d.msg).join(", ") : data?.detail) ||
           data?.message ||
-          data?.error;
+          data?.error ||
+          "";
+
+        let errorMsg = rawError;
+        const lowerErr = String(rawError).toLowerCase();
+
+        if (rawError === "ERR_OTP_REQUIRED" || lowerErr.includes("err_otp_required")) {
+          errorMsg = "Backend error (ERR_OTP_REQUIRED): Database procedure 'sp_manage_password' requires OTP verification. Please ask the backend developer to update the procedure for link-based reset.";
+        } else if (lowerErr.includes("invalid token")) {
+          errorMsg = "This reset link is invalid or has already been used. Please request a new link.";
+        } else if (lowerErr.includes("expired")) {
+          errorMsg = "This reset link has expired (valid for 5 minutes). Please request a new reset link.";
+        } else if (lowerErr.includes("token is required")) {
+          errorMsg = "Reset token missing from URL. Please click the reset link sent to your email.";
+        }
+
         if (errorMsg) {
           setError(errorMsg);
           setIsLoading(false);
