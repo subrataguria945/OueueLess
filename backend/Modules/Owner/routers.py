@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 
 from Library.Owner.database import get_all_owners_details
 from Library.Security.dependencies import require_admin
-from Modules.Owner.models import OwnerDetail
+from .models import OwnerDetail
 
 router = APIRouter()
 

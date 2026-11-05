@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 from Modules.user.routers import router as user_router
-from Modules.Owner.routers import router as owner_router
+from Modules.owner.routers import router as owner_router
 
 load_dotenv()
 from fastapi import FastAPI
