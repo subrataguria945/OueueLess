@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 from Modules.user.routers import router as user_router
 
-from Modules.user.routers import router as admin_router
+from Modules.owner.routers import router as owner_router
 
 load_dotenv()
 from fastapi import FastAPI
@@ -24,5 +24,4 @@ def root():
 # User routes er jonno
 app.include_router(user_router, prefix="/user", tags=["Users"])
 
-# Admin & Owner routes er jonno
-app.include_router(admin_router, prefix="/admin", tags=["Admin & Owner Management"])
+app.include_router(owner_router , prefix="/admin", tags=["Admin"])

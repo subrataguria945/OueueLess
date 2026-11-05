@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from .models import UserLogin , ForgetPassword, ChangePassword , ResetPassword , VerifyRegistrationOTP , InitiateUserRegister , UserRegisterGoogle,AddOwnerRequest
-from Library.Authentication.user.utility import login_user as login , change_password as change_pass, initiate_register , veriy_and_register_user , register_google_user,register_owner , check_and_send_forget_password_link , reset_password as reset_pass
+from .models import UserLogin , ForgetPassword, ChangePassword , ResetPassword , VerifyRegistrationOTP , InitiateUserRegister , UserRegisterGoogle
+from Library.Authentication.user.utility import login_user as login , change_password as change_pass, initiate_register , veriy_and_register_user , register_google_user , check_and_send_forget_password_link , reset_password as reset_pass
 
 router = APIRouter()
 
@@ -39,7 +39,4 @@ def reset_password(data : ResetPassword):
     response = reset_pass(data.model_dump())
     return response
 
-@router.post("/owner/add")
-def add_owner(data : AddOwnerRequest):
-    response = register_owner(data.model_dump())
-    return response   
+ 

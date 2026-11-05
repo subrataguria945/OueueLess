@@ -106,7 +106,7 @@ def change_password_indb(userid,action,oldpassword,newpassword):
     else:
         with con.cursor() as cur:
             try:
-                cur.execute("CALL public.sp_manage_password(%s,%s,%s,%s,NULL,NULL,NULL);",(userid,action,oldpassword,newpassword))
+                cur.execute("CALL public.sp_manage_password(%s,%s,%s,%s,NULL,NULL);",(userid,action,oldpassword,newpassword))
                 result = cur.fetchone()
                 if result:
                     status_code, status_message = result
@@ -163,49 +163,3 @@ def user_exists_indb(email):
             con.close()
 
 
-def insert_owner_indb(admin_user_id,fullname,email,phone,password,max_shop_count,backup_id):
-    con=None
-    try:
-        con = psycopg.connect(
-            host=os.getenv("HOST"),
-            dbname=os.getenv("DATABASE"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            port=os.getenv("DB_PORT")
-        )
-        print("Database connection established successfully.")
-    except Exception as e:
-                 print(f"Error in database connection: {e}")
-                 return {"status" : 404 , "error" : "Error While Connecting DB"}
-    else:               
-         with con.cursor() as cur:
-           try:
-               cur.execute("CALL public.sp_add_owner(%s, %s, %s, %s, %s, %s, %s, NULL, NULL, NULL, NULL);",(admin_user_id, fullname, email, phone, password, max_shop_count, backup_id))
-               result = cur.fetchone()  
-               if result:
-                    status_code, status_message, new_owner_id, new_user_id = result 
-                    print("New Owner ID:", new_owner_id)
-                    print("New User ID:", new_user_id) 
-                    print("Status Code:", status_code)
-                    print("Message:", status_message)
-
-                    if status_code == "SUCCESS":
-                       con.commit()
-                       con.close()
-                       print("Owner Added Successfully.")
-                       return {"status": 200 , "new_owner_id" : new_owner_id, "new_user_id" : new_user_id, "message" : status_message}
-                    else:
-                       con.rollback()
-                       con.close()
-                       print(f"Owner Addition Failed Reason : {status_message}")
-                       return {"status" : 404 , "error" : status_code , "message" : status_message}
-               else:
-                    return {"status" : 404, "error" : "No Response From DB"}
-
-           except Exception as e:
-                print(f"Error in database query: {e}")
-                return {"status" : 404, "error" : "Error While Executing The Query"}
-
-    finally:
-        if con :
-         con.close()          

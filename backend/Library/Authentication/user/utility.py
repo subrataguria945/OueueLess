@@ -1,4 +1,4 @@
-from Library.Authentication.user.database import insert_owner_indb, user_exists_indb, validate_login_indb , insert_user_indb , change_password_indb
+from Library.Authentication.user.database import user_exists_indb, validate_login_indb , insert_user_indb , change_password_indb
 from Library.Security.JWT import generate_access_token , generate_forget_password_token, generate_signup_token , decode_token , decode_forget_password_token
 import secrets
 import hashlib
@@ -19,7 +19,6 @@ def login_user(input : dict ):
             "message": response.get("message"),
             "access_token": token,
             "token_type" : "bearer" ,
-
         }
     else:
         return {
@@ -192,25 +191,3 @@ def reset_password(input : dict):
             }  
 
 
-def register_owner(input: dict):
-    admin_user_id = input.get("admin_user_id")
-    fullname = input.get("fullname")
-    email = input.get("email")
-    phone = input.get("phone")
-    password = input.get("password")
-    max_shop_count = input.get("max_shop_count")
-    backup_id = input.get("backup_id")
-
-    response = insert_owner_indb(admin_user_id, fullname, email, phone, password, max_shop_count, backup_id)
-    if response.get("status") == 200:
-        return {
-            "status" : "success",
-            "new_owner_id": response.get("new_owner_id"),
-            "new_user_id": response.get("new_user_id"),
-            "message": response.get("message")
-        }
-    else:
-        return {
-            "status" : "failed",
-            "message" : response.get("error")
-        }
