@@ -1982,6 +1982,39 @@ html::-webkit-scrollbar {
   transform: translateY(-1px);
 }
 
+.ql-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--admin-card-bg, #ffffff);
+  color: var(--admin-text-main, #0f172a);
+  border: 1px solid var(--admin-border, #cbd5e1);
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 14px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.ql-btn-secondary:hover {
+  background: var(--admin-hover-bg, #f1f5f9);
+  border-color: var(--admin-border-focus, #94a3b8);
+  color: var(--admin-text-main, #0f172a);
+}
+
+.ql-admin-dashboard.dark .ql-btn-secondary {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+.ql-admin-dashboard.dark .ql-btn-secondary:hover {
+  background: #334155;
+  border-color: #475569;
+}
+
 /* Shops Cards Grid */
 /* Shops Cards Grid */
 .ql-shops-grid {
@@ -3889,4 +3922,3166 @@ html::-webkit-scrollbar {
 .ql-queue-mini-btn.call:hover {
   background: #0066ff;
   color: #ffffff;
+}
+
+/* ==========================================================================
+/* ==========================================================================
+   QUEUELESS — OWNER DETAILS FULL PAGE VIEW (SINGLE SCREEN NO-SCROLL & FULL HEIGHT)
+   ========================================================================== */
+
+/* When Owner Details page is active, eliminate outer scrollbar and fit completely in single screen */
+.ql-admin-content.ql-owner-page-active {
+  padding: 14px 24px 18px !important;
+  overflow: hidden !important;
+  height: calc(100vh - 52px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-sizing: border-box !important;
+  gap: 12px !important;
+}
+
+@media (max-height: 640px) {
+  .ql-admin-content.ql-owner-page-active {
+    overflow-y: auto !important;
+  }
+}
+
+.ql-owner-page-top-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 0 !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  flex-shrink: 0 !important;
+}
+
+.ql-owner-page-title-wrap {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+
+.ql-owner-page-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.ql-owner-page-title svg {
+  color: #1960f7 !important;
+  width: 22px !important;
+  height: 22px !important;
+  flex-shrink: 0 !important;
+}
+
+.ql-owner-page-title h2 {
+  margin: 0 !important;
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  color: var(--admin-text-main) !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.15 !important;
+}
+
+.ql-owner-breadcrumbs {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 12px !important;
+  color: var(--admin-text-muted) !important;
+}
+
+.ql-owner-breadcrumbs .crumb-home {
+  font-size: 12px !important;
+}
+
+.ql-owner-breadcrumbs .crumb-sep {
+  color: var(--admin-border) !important;
+  font-size: 11px !important;
+}
+
+.ql-owner-breadcrumbs .crumb-link {
+  color: var(--admin-text-muted) !important;
+  cursor: pointer !important;
+  transition: color 0.15s ease !important;
+}
+
+.ql-owner-breadcrumbs .crumb-link:hover {
+  color: #1960f7 !important;
+  text-decoration: underline !important;
+}
+
+.ql-owner-breadcrumbs .crumb-active {
+  color: var(--admin-text-main) !important;
+  font-weight: 600 !important;
+}
+
+.ql-back-to-owners-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: var(--admin-card-bg, #ffffff) !important;
+  border: 1px solid #1960f7 !important;
+  color: #1960f7 !important;
+  padding: 7px 16px !important;
+  border-radius: 8px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+  font-family: inherit !important;
+}
+
+.ql-back-to-owners-btn:hover {
+  background: rgba(25, 96, 247, 0.08) !important;
+  transform: translateX(-2px) !important;
+}
+
+/* ── OWNER DETAILS FULL PAGE WRAPPER ───────────────────────────────── */
+.ql-tab-view.ql-owner-details-full-page {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  gap: 12px !important;
+  padding-bottom: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* ── OWNER HERO BANNER ─────────────────────────────────────────────── */
+.ql-owner-hero-banner {
+  background: linear-gradient(135deg, #eff6ff 0%, #e1effe 55%, #dbeafe 100%) !important;
+  border: 1px solid rgba(25, 96, 247, 0.16) !important;
+  border-radius: 14px !important;
+  padding: 14px 24px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 0 !important;
+  box-shadow: 0 2px 12px rgba(25, 96, 247, 0.04) !important;
+  flex-shrink: 0 !important;
+  min-height: 98px !important;
+  height: auto !important;
+  box-sizing: border-box !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-hero-banner {
+  background: linear-gradient(135deg, #0d1b32 0%, #112340 65%, #152b4e 100%) !important;
+  border-color: rgba(59, 130, 246, 0.25) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+}
+
+.ql-owner-banner-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 18px !important;
+  z-index: 2 !important;
+  position: relative !important;
+  flex-shrink: 0 !important;
+}
+
+.ql-owner-avatar-container {
+  flex-shrink: 0 !important;
+  width: 70px !important;
+  height: 70px !important;
+}
+
+.ql-owner-avatar-circle {
+  width: 70px !important;
+  height: 70px !important;
+  min-width: 70px !important;
+  min-height: 70px !important;
+  flex-shrink: 0 !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 28px !important;
+  font-weight: 800 !important;
+  border: 3px solid rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 3px 10px rgba(25, 96, 247, 0.14) !important;
+  overflow: hidden !important;
+  background: #dbeafe !important;
+  color: #1d4ed8 !important;
+  user-select: none !important;
+  box-sizing: border-box !important;
+}
+
+.ql-owner-avatar-circle img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+
+.ql-owner-banner-meta {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  flex-shrink: 0 !important;
+}
+
+.ql-owner-banner-name-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.ql-owner-banner-name {
+  margin: 0 !important;
+  font-size: 20px !important;
+  font-weight: 800 !important;
+  color: #091222 !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.15 !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-banner-name {
+  color: #f8fafc !important;
+}
+
+.ql-owner-status-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 3px 9px !important;
+  border-radius: 20px !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+}
+
+.ql-owner-status-pill.active {
+  background: #dcfce7 !important;
+  color: #15803d !important;
+}
+
+.ql-owner-status-pill.expiring {
+  background: #fef3c7 !important;
+  color: #b45309 !important;
+}
+
+.ql-owner-status-pill.suspended {
+  background: #fee2e2 !important;
+  color: #dc2626 !important;
+}
+
+.ql-owner-status-pill .dot {
+  width: 6.5px !important;
+  height: 6.5px !important;
+  border-radius: 50% !important;
+  background: currentColor !important;
+}
+
+.ql-owner-banner-sub-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 12px !important;
+  color: #475569 !important;
+  font-weight: 600 !important;
+  line-height: 1.15 !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-banner-sub-row {
+  color: #94a3b8 !important;
+}
+
+.ql-owner-code-label {
+  color: #475569 !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-code-label {
+  color: #cbd5e1 !important;
+}
+
+.ql-bullet {
+  color: #94a3b8 !important;
+  font-size: 10px !important;
+}
+
+.ql-owner-verified-text {
+  color: #1960f7 !important;
+  font-weight: 700 !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-verified-text {
+  color: #60a5fa !important;
+}
+
+.ql-owner-banner-btn-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-top: 3px !important;
+}
+
+.ql-owner-upload-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: #ffffff !important;
+  border: 1px solid #1960f7 !important;
+  color: #1960f7 !important;
+  padding: 5px 12px !important;
+  border-radius: 7px !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  user-select: none !important;
+}
+
+.ql-owner-upload-btn:hover {
+  background: rgba(25, 96, 247, 0.08) !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-upload-btn {
+  background: #0e1a2f !important;
+  border-color: #3b82f6 !important;
+  color: #60a5fa !important;
+}
+
+.ql-owner-crop-btn,
+.ql-owner-remove-btn {
+  background: #ffffff !important;
+  border: 1px solid var(--admin-border-subtle) !important;
+  color: var(--admin-text-main) !important;
+  padding: 4px 9px !important;
+  border-radius: 7px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.ql-owner-crop-btn:hover {
+  background: var(--admin-hover-bg) !important;
+  border-color: #1960f7 !important;
+  color: #1960f7 !important;
+}
+
+.ql-owner-remove-btn:hover {
+  background: #fee2e2 !important;
+  border-color: #fca5a5 !important;
+  color: #dc2626 !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-crop-btn,
+.ql-admin-dashboard.dark .ql-owner-remove-btn {
+  background: #0e1a2f !important;
+  border-color: #233249 !important;
+}
+
+.ql-owner-banner-wave-decor {
+  position: absolute !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  top: 0 !important;
+  width: 280px !important;
+  pointer-events: none !important;
+  opacity: 0.85 !important;
+  z-index: 1 !important;
+}
+
+.ql-owner-banner-wave-decor svg {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+/* ── TABS BAR ──────────────────────────────────────────────────────── */
+.ql-owner-tabs-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 24px !important;
+  border-bottom: 2px solid var(--admin-border-subtle, #e2e8f0) !important;
+  margin-bottom: 0 !important;
+  padding: 0 2px !important;
+  flex-shrink: 0 !important;
+}
+
+.ql-owner-tab-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 6px 2px 10px !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: var(--admin-text-muted, #64748b) !important;
+  cursor: pointer !important;
+  position: relative !important;
+  font-family: inherit !important;
+  transition: color 0.15s ease !important;
+}
+
+.ql-owner-tab-btn:hover {
+  color: var(--admin-text-main) !important;
+}
+
+.ql-owner-tab-btn.active {
+  color: #1960f7 !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-tab-btn.active {
+  color: #3b82f6 !important;
+}
+
+.ql-owner-tab-btn.active::after {
+  content: "" !important;
+  position: absolute !important;
+  bottom: -2px !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 2.5px !important;
+  background: #1960f7 !important;
+  border-radius: 2px !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-tab-btn.active::after {
+  background: #3b82f6 !important;
+}
+
+/* ── OVERVIEW CONTENT WRAPPER ──────────────────────────────────────── */
+.ql-owner-overview-content {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  width: 100% !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* ── 3 TOP KPI STAT CARDS ──────────────────────────────────────────── */
+.ql-owner-kpis-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 12px !important;
+  margin-bottom: 0 !important;
+  flex-shrink: 0 !important;
+  min-height: 72px !important;
+}
+
+.ql-owner-kpi-card {
+  background: var(--admin-card-bg, #ffffff) !important;
+  border: 1px solid var(--admin-border-subtle, #e2e8f0) !important;
+  border-radius: 12px !important;
+  padding: 10px 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+  box-sizing: border-box !important;
+}
+
+.ql-owner-kpi-card.queues {
+  background: var(--admin-card-bg, #ffffff) !important;
+}
+
+.ql-owner-kpi-card.served {
+  background: #fdf5f5 !important;
+  border-color: rgba(239, 68, 68, 0.16) !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-kpi-card.served {
+  background: rgba(239, 68, 68, 0.08) !important;
+  border-color: rgba(239, 68, 68, 0.25) !important;
+}
+
+.ql-owner-kpi-card.plan {
+  background: #faf5ff !important;
+  border-color: rgba(147, 51, 234, 0.16) !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-kpi-card.plan {
+  background: rgba(147, 51, 234, 0.08) !important;
+  border-color: rgba(147, 51, 234, 0.25) !important;
+}
+
+.ql-owner-kpi-icon {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 9px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.ql-owner-kpi-icon.blue {
+  background: #e0f2fe !important;
+  color: #0284c7 !important;
+}
+
+.ql-owner-kpi-icon.red {
+  background: #fee2e2 !important;
+  color: #ef4444 !important;
+}
+
+.ql-owner-kpi-icon.purple {
+  background: #f3e8ff !important;
+  color: #9333ea !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-kpi-icon.blue {
+  background: rgba(2, 132, 199, 0.2) !important;
+  color: #38bdf8 !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-kpi-icon.red {
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #f87171 !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-kpi-icon.purple {
+  background: rgba(147, 51, 234, 0.2) !important;
+  color: #c084fc !important;
+}
+
+.ql-owner-kpi-info {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1px !important;
+}
+
+.ql-owner-kpi-val {
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  color: var(--admin-text-main) !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.1 !important;
+}
+
+.ql-owner-kpi-lbl {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: var(--admin-text-muted, #64748b) !important;
+}
+
+/* ── 2-COLUMN DETAIL INFO CARDS GRID (ROWS 1-3) ────────────────────── */
+.ql-owner-info-cards-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  grid-template-rows: repeat(3, 1fr) !important;
+  gap: 10px !important;
+  margin-bottom: 0 !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.ql-owner-info-card {
+  background: var(--admin-card-bg, #ffffff) !important;
+  border: 1px solid var(--admin-border-subtle, #e2e8f0) !important;
+  border-radius: 10px !important;
+  padding: 8px 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02) !important;
+  box-sizing: border-box !important;
+  height: 100% !important;
+}
+
+.ql-owner-info-icon-box {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.ql-owner-info-icon-box.blue {
+  background: #e0f2fe !important;
+  color: #0284c7 !important;
+}
+
+.ql-owner-info-icon-box.green {
+  background: #dcfce7 !important;
+  color: #16a34a !important;
+}
+
+.ql-owner-info-icon-box.red {
+  background: #fee2e2 !important;
+  color: #dc2626 !important;
+}
+
+.ql-owner-info-icon-box.purple {
+  background: #f3e8ff !important;
+  color: #9333ea !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-info-icon-box.blue {
+  background: rgba(2, 132, 199, 0.18) !important;
+  color: #38bdf8 !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-info-icon-box.green {
+  background: rgba(22, 163, 74, 0.18) !important;
+  color: #4ade80 !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-info-icon-box.red {
+  background: rgba(220, 38, 38, 0.18) !important;
+  color: #f87171 !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-info-icon-box.purple {
+  background: rgba(147, 51, 234, 0.18) !important;
+  color: #c084fc !important;
+}
+
+.ql-owner-info-text-col {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  min-width: 0 !important;
+}
+
+.ql-owner-info-lbl {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: var(--admin-text-muted, #64748b) !important;
+  line-height: 1.1 !important;
+}
+
+.ql-owner-info-val {
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: var(--admin-text-main) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.2 !important;
+}
+
+.ql-owner-kyc-badge-wrap {
+  display: flex !important;
+  align-items: center !important;
+}
+
+.ql-owner-verified-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  background: #dcfce7 !important;
+  color: #15803d !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  padding: 2px 8px !important;
+  border-radius: 10px !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-verified-pill {
+  background: rgba(22, 163, 74, 0.25) !important;
+  color: #4ade80 !important;
+}
+
+/* ── BOTTOM ACTIONS BAR ────────────────────────────────────────────── */
+.ql-owner-page-actions-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  margin-top: 2px !important;
+  padding: 2px 0 !important;
+  flex-wrap: wrap !important;
+  flex-shrink: 0 !important;
+  height: auto !important;
+}
+
+.ql-owner-page-btn-suspend {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  background: var(--admin-card-bg, #ffffff) !important;
+  border: 1.5px solid #fca5a5 !important;
+  color: #dc2626 !important;
+  padding: 8px 16px !important;
+  border-radius: 8px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+  font-family: inherit !important;
+}
+
+.ql-owner-page-btn-suspend:hover {
+  background: #fee2e2 !important;
+  border-color: #ef4444 !important;
+  transform: translateY(-1px) !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-page-btn-suspend {
+  background: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.35) !important;
+  color: #f87171 !important;
+}
+
+.ql-owner-page-btn-edit {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  background: #1960f7 !important;
+  border: 1px solid #1960f7 !important;
+  color: #ffffff !important;
+  padding: 8px 20px !important;
+  border-radius: 8px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+  font-family: inherit !important;
+  box-shadow: 0 2px 8px rgba(25, 96, 247, 0.22) !important;
+}
+
+.ql-owner-page-btn-edit:hover {
+  background: #154fd0 !important;
+  border-color: #154fd0 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(25, 96, 247, 0.32) !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-page-btn-edit {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+}
+
+.ql-owner-page-btn-delete {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  background: var(--admin-card-bg, #ffffff) !important;
+  border: 1.5px solid #fca5a5 !important;
+  color: #dc2626 !important;
+  padding: 8px 16px !important;
+  border-radius: 8px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+  font-family: inherit !important;
+}
+
+.ql-owner-page-btn-delete:hover {
+  background: #fee2e2 !important;
+  border-color: #ef4444 !important;
+  transform: translateY(-1px) !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-page-btn-delete {
+  background: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.35) !important;
+  color: #f87171 !important;
+}
+
+@media (max-width: 992px) {
+  .ql-owner-kpis-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .ql-owner-info-cards-grid {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
+  }
+  .ql-owner-bottom-row {
+    grid-template-columns: 1fr !important;
+  }
+  .ql-owner-page-actions-bar {
+    justify-content: flex-start !important;
+    margin-top: 4px !important;
+  }
+}
+
+/* ── SHOPS TAB VIEW INSIDE OWNER PAGE ──────────────────────────────── */
+.ql-owner-shops-view {
+  margin-top: 4px;
+}
+
+.ql-owner-shops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.ql-owner-shop-card {
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #e2e8f0);
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.ql-owner-shop-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ql-owner-shop-badge-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #eff6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.ql-owner-shop-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--admin-text-main);
+}
+
+.ql-owner-shop-category {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--admin-text-muted);
+}
+
+.ql-owner-shop-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--admin-hover-bg, #f8fafc);
+  border-radius: 8px;
+}
+
+.ql-owner-shop-stat-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ql-owner-shop-stat-col .lbl {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--admin-text-muted);
+  text-transform: uppercase;
+}
+
+.ql-owner-shop-stat-col .val {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--admin-text-main);
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .ql-owner-kpis-grid {
+    grid-template-columns: 1fr;
+  }
+  .ql-owner-info-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   QUEUELESS — SHOP DETAILS IN-PAGE VIEW (MATCHING HIGH-RES REFERENCE UI)
+   ========================================================================== */
+
+.ql-admin-content.ql-shop-page-active {
+  padding: 14px 24px 24px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
+}
+
+.ql-tab-view.ql-shop-details-full-page {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* ── Top Breadcrumbs / Back Header ─────────────────────────────────── */
+.ql-shop-page-top-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  margin: 0 !important;
+  flex-shrink: 0 !important;
+}
+
+.ql-shop-breadcrumbs {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+.ql-shop-back-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: transparent !important;
+  border: none !important;
+  color: #1960f7 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  font-family: inherit !important;
+  transition: all 0.15s ease !important;
+}
+
+.ql-shop-back-btn:hover {
+  text-decoration: underline !important;
+  transform: translateX(-2px) !important;
+}
+
+.ql-shop-breadcrumbs .crumb-sep {
+  color: #94a3b8 !important;
+  font-size: 12px !important;
+}
+
+.ql-shop-breadcrumbs .crumb-active {
+  color: var(--admin-text-main, #0f172a) !important;
+  font-weight: 700 !important;
+}
+
+/* ── 1. Hero Banner Card ───────────────────────────────────────────── */
+.ql-shop-hero-card {
+  background: var(--admin-card-bg, #ffffff) !important;
+  border: 1px solid var(--admin-border-subtle, #e2e8f0) !important;
+  border-radius: 14px !important;
+  padding: 14px 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 20px !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.ql-admin-dashboard.dark .ql-shop-hero-card {
+  background: #111e33 !important;
+  border-color: #1e3250 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+}
+
+.ql-shop-hero-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  min-width: 0 !important;
+  flex: 1 !important;
+}
+
+.ql-shop-hero-img-wrap {
+  width: 155px !important;
+  height: 98px !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid var(--admin-border-subtle, #e2e8f0) !important;
+}
+
+.ql-shop-hero-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+
+.ql-shop-hero-info {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 5px !important;
+  min-width: 0 !important;
+}
+
+.ql-shop-hero-title-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+}
+
+.ql-shop-hero-name {
+  margin: 0 !important;
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  color: var(--admin-text-main, #0f172a) !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.15 !important;
+}
+
+.ql-shop-hero-status-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 3px 10px !important;
+  border-radius: 20px !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+}
+
+.ql-shop-hero-status-pill.open {
+  background: #dcfce7 !important;
+  color: #15803d !important;
+}
+
+.ql-shop-hero-status-pill.paused {
+  background: #fef3c7 !important;
+  color: #b45309 !important;
+}
+
+.ql-shop-hero-status-pill.closed {
+  background: #fee2e2 !important;
+  color: #dc2626 !important;
+}
+
+.ql-shop-hero-status-pill .dot {
+  width: 6.5px !important;
+  height: 6.5px !important;
+  border-radius: 50% !important;
+  background: currentColor !important;
+}
+
+.ql-shop-hero-sub-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  font-size: 12.5px !important;
+  color: var(--admin-text-muted, #64748b) !important;
+  font-weight: 600 !important;
+}
+
+.ql-shop-hero-category {
+  color: #1960f7 !important;
+  font-weight: 700 !important;
+}
+
+.ql-shop-hero-owner {
+  color: var(--admin-text-muted, #64748b) !important;
+}
+
+.ql-shop-hero-meta-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 18px !important;
+  margin-top: 3px !important;
+  flex-wrap: wrap !important;
+}
+
+.ql-shop-meta-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 12px !important;
+  color: var(--admin-text-muted, #64748b) !important;
+  font-weight: 500 !important;
+}
+
+.ql-shop-meta-item svg {
+  color: #1960f7 !important;
+  flex-shrink: 0 !important;
+}
+
+.ql-shop-hero-right {
+  display: flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+}
+
+.ql-shop-view-public-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  background: var(--admin-card-bg, #ffffff) !important;
+  border: 1px solid var(--admin-border-subtle, #cbd5e1) !important;
+  color: var(--admin-text-main, #0f172a) !important;
+  padding: 8px 16px !important;
+  border-radius: 8px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  font-family: inherit !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+.ql-shop-view-public-btn:hover {
+  background: var(--admin-hover-bg, #f1f5f9) !important;
+  border-color: #1960f7 !important;
+  color: #1960f7 !important;
+}
+
+.ql-admin-dashboard.dark .ql-shop-view-public-btn {
+  background: #0e1a2f !important;
+  border-color: #1e3250 !important;
+  color: #f8fafc !important;
+}
+
+/* ── 2. 4 Metric / KPI Cards ───────────────────────────────────────── */
+.ql-shop-kpis-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 14px !important;
+  flex-shrink: 0 !important;
+}
+
+.ql-shop-kpi-card {
+  border-radius: 12px !important;
+  padding: 14px 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  border: 1px solid transparent !important;
+  box-sizing: border-box !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+}
+
+.ql-shop-kpi-card.blue {
+  background: #f0f7ff !important;
+  border-color: rgba(37, 99, 235, 0.15) !important;
+}
+
+.ql-shop-kpi-card.orange {
+  background: #fff7ed !important;
+  border-color: rgba(234, 88, 12, 0.15) !important;
+}
+
+.ql-shop-kpi-card.purple {
+  background: #faf5ff !important;
+  border-color: rgba(147, 51, 234, 0.15) !important;
+}
+
+.ql-shop-kpi-card.green {
+  background: #f0fdf4 !important;
+  border-color: rgba(22, 163, 74, 0.15) !important;
+}
+
+.ql-admin-dashboard.dark .ql-shop-kpi-card.blue {
+  background: rgba(37, 99, 235, 0.12) !important;
+  border-color: rgba(59, 130, 246, 0.25) !important;
+}
+
+.ql-admin-dashboard.dark .ql-shop-kpi-card.orange {
+  background: rgba(234, 88, 12, 0.12) !important;
+  border-color: rgba(249, 115, 22, 0.25) !important;
+}
+
+.ql-admin-dashboard.dark .ql-shop-kpi-card.purple {
+  background: rgba(147, 51, 234, 0.12) !important;
+  border-color: rgba(168, 85, 247, 0.25) !important;
+}
+
+.ql-admin-dashboard.dark .ql-shop-kpi-card.green {
+  background: rgba(22, 163, 74, 0.12) !important;
+  border-color: rgba(34, 197, 94, 0.25) !important;
+}
+
+.ql-shop-kpi-icon {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.ql-shop-kpi-icon.blue {
+  background: #dbeafe !important;
+  color: #2563eb !important;
+}
+
+.ql-shop-kpi-icon.orange {
+  background: #ffedd5 !important;
+  color: #ea580c !important;
+}
+
+.ql-shop-kpi-icon.purple {
+  background: #f3e8ff !important;
+  color: #9333ea !important;
+}
+
+.ql-shop-kpi-icon.green {
+  background: #dcfce7 !important;
+  color: #16a34a !important;
+}
+
+.ql-shop-kpi-text {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1px !important;
+  min-width: 0 !important;
+}
+
+.ql-shop-kpi-text .val {
+  font-size: 24px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.1 !important;
+}
+
+.ql-shop-kpi-text .val.blue {
+  color: #1d4ed8 !important;
+}
+
+.ql-shop-kpi-text .val.orange {
+  color: #ea580c !important;
+}
+
+.ql-shop-kpi-text .val.purple {
+  color: #1e1b4b !important;
+}
+
+.ql-admin-dashboard.dark .ql-shop-kpi-text .val.purple {
+  color: #e9d5ff !important;
+}
+
+.ql-shop-kpi-text .val.green {
+  color: #0f172a !important;
+}
+
+.ql-admin-dashboard.dark .ql-shop-kpi-text .val.green {
+  color: #f8fafc !important;
+}
+
+.ql-shop-kpi-text .lbl {
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  color: var(--admin-text-muted, #64748b) !important;
+}
+
+/* ── 3. Lower 2-Column Grid (Table + Sidebar) ──────────────────────── */
+.ql-shop-lower-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 340px !important;
+  gap: 16px !important;
+  align-items: start !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Current Queue Table Card */
+.ql-shop-queue-card {
+  background: var(--admin-card-bg, #ffffff) !important;
+  border: 1px solid var(--admin-border-subtle, #e2e8f0) !important;
+  border-radius: 14px !important;
+  padding: 16px 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+  box-sizing: border-box !important;
+}
+
+.ql-admin-dashboard.dark .ql-shop-queue-card {
+  background: #111e33 !important;
+  border-color: #1e3250 !important;
+}
+
+.ql-shop-card-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+}
+
+.ql-shop-card-title-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.ql-shop-card-title {
+  margin: 0 !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: var(--admin-text-main, #0f172a) !important;
+}
+
+.ql-shop-card-title .sub {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--admin-text-muted, #64748b) !important;
+}
+
+.ql-shop-refresh-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: #eff6ff !important;
+  border: 1px solid rgba(37, 99, 235, 0.25) !important;
+  color: #1960f7 !important;
+  padding: 5px 12px !important;
+  border-radius: 7px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  font-family: inherit !important;
+}
+
+.ql-shop-refresh-btn:hover {
+  background: #1960f7 !important;
+  color: #ffffff !important;
+}
+
+.ql-admin-dashboard.dark .ql-shop-refresh-btn {
+  background: rgba(37, 99, 235, 0.18) !important;
+  border-color: rgba(59, 130, 246, 0.35) !important;
+  color: #60a5fa !important;
+}
+
+.ql-shop-table-wrapper {
+  width: 100% !important;
+  overflow-x: auto !important;
+}
+
+.ql-shop-queue-table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 4px !important;
+  font-size: 13px !important;
+}
+
+.ql-shop-queue-table thead th {
+  padding: 8px 12px !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  color: var(--admin-text-muted, #64748b) !important;
+  text-align: left !important;
+  border-bottom: 1.5px solid var(--admin-border-subtle, #e2e8f0) !important;
+}
+
+.ql-shop-queue-table tbody tr {
+  transition: all 0.15s ease !important;
+  border-radius: 8px !important;
+}
+
+.ql-shop-queue-table tbody tr.row-serving {
+  background: #f0fdf4 !important;
+}
+
+.ql-admin-dashboard.dark .ql-shop-queue-table tbody tr.row-serving {
+  background: rgba(22, 163, 74, 0.12) !important;
+}
+
+.ql-shop-queue-table tbody tr.row-waiting {
+  background: transparent !important;
+  border-bottom: 1px solid var(--admin-border-subtle, #f1f5f9) !important;
+}
+
+.ql-shop-queue-table tbody tr.row-waiting:hover {
+  background: var(--admin-hover-bg, #f8fafc) !important;
+}
+
+.ql-shop-queue-table tbody td {
+  padding: 10px 12px !important;
+  vertical-align: middle !important;
+}
+
+.ql-shop-queue-table tbody td:first-child {
+  border-top-left-radius: 8px !important;
+  border-bottom-left-radius: 8px !important;
+}
+
+.ql-shop-queue-table tbody td:last-child {
+  border-top-right-radius: 8px !important;
+  border-bottom-right-radius: 8px !important;
+}
+
+.ql-shop-queue-table .col-idx {
+  font-weight: 700 !important;
+  color: var(--admin-text-muted, #64748b) !important;
+}
+
+.ql-shop-queue-table .col-token {
+  font-weight: 800 !important;
+  color: var(--admin-text-main, #0f172a) !important;
+  letter-spacing: -0.01em !important;
+}
+
+.ql-shop-queue-table .col-token.serving-token {
+  color: #16a34a !important;
+}
+
+.ql-tok-status-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 3px 9px !important;
+  border-radius: 12px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+}
+
+.ql-tok-status-pill.serving {
+  background: #dcfce7 !important;
+  color: #15803d !important;
+}
+
+.ql-tok-status-pill.waiting {
+  background: #ffedd5 !important;
+  color: #c2410c !important;
+}
+
+.ql-tok-status-pill .dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: currentColor !important;
+}
+
+.ql-shop-queue-table .col-time {
+  font-size: 12px !important;
+  color: var(--admin-text-muted, #64748b) !important;
+  font-weight: 600 !important;
+}
+
+.ql-tok-actions-wrap {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 6px !important;
+}
+
+.ql-tok-action-btn {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 7px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: var(--admin-card-bg, #ffffff) !important;
+  border: 1px solid var(--admin-border-subtle, #cbd5e1) !important;
+  color: #1960f7 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.ql-tok-action-btn:hover {
+  background: #1960f7 !important;
+  color: #ffffff !important;
+  border-color: #1960f7 !important;
+}
+
+.ql-tok-action-btn.menu {
+  color: var(--admin-text-muted, #64748b) !important;
+}
+
+.ql-tok-action-btn.menu:hover {
+  background: var(--admin-hover-bg, #f1f5f9) !important;
+  color: var(--admin-text-main, #0f172a) !important;
+  border-color: var(--admin-border, #94a3b8) !important;
+}
+
+.ql-admin-dashboard.dark .ql-tok-action-btn {
+  background: #0e1a2f !important;
+  border-color: #1e3250 !important;
+}
+
+.ql-shop-table-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  padding-top: 6px !important;
+}
+
+.ql-shop-view-full-queue-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: transparent !important;
+  border: none !important;
+  color: #1960f7 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  padding: 4px 6px !important;
+  font-family: inherit !important;
+  transition: all 0.15s ease !important;
+}
+
+.ql-shop-view-full-queue-btn:hover {
+  text-decoration: underline !important;
+  transform: translateX(2px) !important;
+}
+
+/* ── Queue Control Card ────────────────────────────────────────────── */
+.ql-shop-sidebar-col {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+}
+
+.ql-shop-control-card,
+.ql-shop-quick-info-card {
+  background: var(--admin-card-bg, #ffffff) !important;
+  border: 1px solid var(--admin-border-subtle, #e2e8f0) !important;
+  border-radius: 14px !important;
+  padding: 16px 18px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+  box-sizing: border-box !important;
+}
+
+.ql-admin-dashboard.dark .ql-shop-control-card,
+.ql-admin-dashboard.dark .ql-shop-quick-info-card {
+  background: #111e33 !important;
+  border-color: #1e3250 !important;
+}
+
+.ql-shop-control-header {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.ql-shop-ctrl-buttons-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+
+.ql-shop-ctrl-action-btn {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 10px 14px !important;
+  border-radius: 10px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+  font-family: inherit !important;
+  box-sizing: border-box !important;
+}
+
+.ql-shop-ctrl-action-btn .icon-circle {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+/* Pause Button */
+.ql-shop-ctrl-action-btn.pause {
+  background: #fffbeb !important;
+  border: 1.5px solid rgba(245, 158, 11, 0.35) !important;
+  color: #b45309 !important;
+}
+
+.ql-shop-ctrl-action-btn.pause .icon-circle {
+  background: #fef3c7 !important;
+  color: #d97706 !important;
+}
+
+.ql-shop-ctrl-action-btn.pause:hover {
+  background: #fef3c7 !important;
+  border-color: #f59e0b !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Resume Button */
+.ql-shop-ctrl-action-btn.resume {
+  background: #f0fdf4 !important;
+  border: 1.5px solid rgba(34, 197, 94, 0.35) !important;
+  color: #15803d !important;
+}
+
+.ql-shop-ctrl-action-btn.resume .icon-circle {
+  background: #dcfce7 !important;
+  color: #16a34a !important;
+}
+
+.ql-shop-ctrl-action-btn.resume:hover {
+  background: #dcfce7 !important;
+  border-color: #22c55e !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Close Button */
+.ql-shop-ctrl-action-btn.close {
+  background: #fef2f2 !important;
+  border: 1.5px solid rgba(239, 68, 68, 0.35) !important;
+  color: #dc2626 !important;
+}
+
+.ql-shop-ctrl-action-btn.close .icon-circle {
+  background: #fee2e2 !important;
+  color: #ef4444 !important;
+}
+
+.ql-shop-ctrl-action-btn.close:hover {
+  background: #fee2e2 !important;
+  border-color: #ef4444 !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Dark mode buttons */
+.ql-admin-dashboard.dark .ql-shop-ctrl-action-btn.pause {
+  background: rgba(245, 158, 11, 0.1) !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+  color: #fbbf24 !important;
+}
+
+.ql-admin-dashboard.dark .ql-shop-ctrl-action-btn.resume {
+  background: rgba(34, 197, 94, 0.1) !important;
+  border-color: rgba(34, 197, 94, 0.3) !important;
+  color: #4ade80 !important;
+}
+
+.ql-admin-dashboard.dark .ql-shop-ctrl-action-btn.close {
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  color: #f87171 !important;
+}
+
+/* ── Quick Info Card ───────────────────────────────────────────────── */
+.ql-shop-quick-info-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 10px !important;
+}
+
+.ql-shop-quick-stat-box {
+  background: var(--admin-hover-bg, #f8fafc) !important;
+  border: 1px solid var(--admin-border-subtle, #e2e8f0) !important;
+  border-radius: 10px !important;
+  padding: 12px 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  box-sizing: border-box !important;
+}
+
+.ql-admin-dashboard.dark .ql-shop-quick-stat-box {
+  background: #0e1a2f !important;
+  border-color: #1e3250 !important;
+}
+
+.ql-shop-quick-stat-box .icon-blue {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 8px !important;
+  background: #eff6ff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.ql-admin-dashboard.dark .ql-shop-quick-stat-box .icon-blue {
+  background: rgba(37, 99, 235, 0.18) !important;
+}
+
+.ql-shop-quick-stat-box .stat-content {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1px !important;
+  min-width: 0 !important;
+}
+
+.ql-shop-quick-stat-box .stat-content .lbl {
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  color: var(--admin-text-muted, #64748b) !important;
+  line-height: 1.2 !important;
+}
+
+.ql-shop-quick-stat-box .stat-content .val {
+  font-size: 17px !important;
+  font-weight: 800 !important;
+  color: var(--admin-text-main, #0f172a) !important;
+  line-height: 1.1 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1080px) {
+  .ql-shop-kpis-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .ql-shop-lower-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .ql-shop-hero-card {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  .ql-shop-hero-left {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  .ql-shop-hero-img-wrap {
+    width: 100% !important;
+    height: 160px !important;
+  }
+  .ql-shop-kpis-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   PREMIUM ADD OWNER MODAL REDESIGN
+   ══════════════════════════════════════════════════════════════════ */
+.ql-premium-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+  animation: qlFadeIn 0.2s ease-out;
+}
+
+@keyframes qlFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ql-premium-modal-dialog {
+  width: 100%;
+  max-width: 600px;
+  background: var(--admin-modal-bg, #ffffff);
+  border-radius: 18px;
+  box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--admin-border, #e2e8f0);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden !important;
+  animation: qlModalScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+@keyframes qlModalScaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.ql-modal-accent-line {
+  height: 4px;
+  width: 100%;
+  background: linear-gradient(90deg, #2563eb 0%, #4f46e5 50%, #06b6d4 100%);
+  flex-shrink: 0;
+}
+
+.ql-premium-modal-header {
+  padding: 13px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--admin-border-subtle, #f1f5f9);
+  background: var(--admin-card-bg, #ffffff);
+  flex-shrink: 0;
+}
+
+.ql-modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ql-modal-icon-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.15), rgba(79, 70, 229, 0.1));
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ql-modal-title-wrap h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--admin-text-main, #0f172a);
+  letter-spacing: -0.01em;
+}
+
+.ql-modal-title-wrap p {
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  color: var(--admin-text-muted, #64748b);
+  font-weight: 500;
+}
+
+.ql-premium-close-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--admin-border-subtle, #e2e8f0);
+  background: var(--admin-bg, #f8fafc);
+  color: var(--admin-text-muted, #64748b);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.15s ease;
+}
+
+.ql-premium-close-btn:hover {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+  transform: rotate(90deg);
+}
+
+/* Interactive Preview Strip */
+.ql-modal-preview-strip {
+  margin: 10px 20px 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(37, 99, 235, 0.04);
+  border: 1px dashed rgba(37, 99, 235, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.ql-preview-left {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.ql-preview-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+  flex-shrink: 0;
+}
+
+.ql-preview-info-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--admin-text-main, #0f172a);
+}
+
+.ql-preview-info-sub {
+  font-size: 11px;
+  color: var(--admin-text-muted, #64748b);
+}
+
+.ql-preview-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  white-space: nowrap;
+}
+
+.ql-premium-modal-body {
+  padding: 12px 20px 14px;
+  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: none !important;
+  box-sizing: border-box;
+}
+
+.ql-form-section-title {
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--admin-blue, #2563eb);
+  margin-top: 2px;
+  margin-bottom: -2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ql-form-section-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--admin-border-subtle, #f1f5f9);
+}
+
+.ql-input-group-modern {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ql-input-label-modern {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--admin-text-main, #0f172a);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 2px;
+}
+
+.ql-input-label-modern .required-star {
+  color: #ef4444;
+  margin-left: 2px;
+  font-weight: 800;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.ql-input-icon-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.ql-input-icon-box svg {
+  position: absolute;
+  left: 10px;
+  color: #94a3b8;
+  pointer-events: none;
+  transition: color 0.15s ease;
+}
+
+.ql-input-icon-box:focus-within svg {
+  color: #2563eb;
+}
+
+.ql-input-modern {
+  width: 100%;
+  padding: 8px 12px 8px 34px !important;
+  height: 38px !important;
+  border-radius: 9px !important;
+  border: 1.5px solid var(--admin-border, #cbd5e1) !important;
+  background: var(--admin-input-bg, #ffffff) !important;
+  color: var(--admin-text-main, #0f172a) !important;
+  font-size: 12.5px !important;
+  font-family: inherit !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.ql-input-modern:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+  background: var(--admin-card-bg, #ffffff) !important;
+}
+
+.ql-input-modern::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.ql-modern-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.ql-modern-grid-3 {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr 1fr;
+  gap: 12px;
+}
+
+.ql-premium-modal-footer {
+  padding: 11px 20px;
+  border-top: 1px solid var(--admin-border-subtle, #f1f5f9);
+  background: var(--admin-card-bg, #ffffff);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.ql-modal-footer-note {
+  font-size: 11px;
+  color: var(--admin-text-muted, #64748b);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ql-modal-footer-btns {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ql-btn-secondary-modern {
+  padding: 9px 18px;
+  border-radius: 10px;
+  border: 1.5px solid var(--admin-border, #cbd5e1);
+  background: var(--admin-card-bg, #ffffff);
+  color: var(--admin-text-main, #0f172a);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ql-btn-secondary-modern:hover {
+  background: var(--admin-hover-bg, #f1f5f9);
+  border-color: #94a3b8;
+}
+
+.ql-btn-primary-modern {
+  padding: 9px 20px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ql-btn-primary-modern:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.45);
+}
+
+.ql-btn-primary-modern:active {
+  transform: translateY(0);
+}
+
+/* Dark mode overrides for modern modal */
+.ql-admin-dashboard.dark .ql-premium-modal-dialog {
+  background: #0f172a;
+  border-color: #1e293b;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.ql-admin-dashboard.dark .ql-premium-modal-header,
+.ql-admin-dashboard.dark .ql-premium-modal-footer {
+  background: #0f172a;
+  border-color: #1e293b;
+}
+
+.ql-admin-dashboard.dark .ql-modal-preview-strip {
+  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.3);
+}
+
+.ql-admin-dashboard.dark .ql-premium-close-btn {
+  background: #1e293b;
+  border-color: #334155;
+  color: #94a3b8;
+}
+
+.ql-admin-dashboard.dark .ql-btn-secondary-modern {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+.ql-admin-dashboard.dark .ql-btn-secondary-modern:hover {
+  background: #334155;
+  border-color: #475569;
+}
+
+.ql-admin-dashboard.dark .ql-input-modern {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+
+.ql-admin-dashboard.dark .ql-input-modern:focus {
+  background: #0f172a !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   USER DETAILS FULL PAGE VIEW
+   ══════════════════════════════════════════════════════════════════ */
+.ql-user-details-full-page {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  animation: qlFadeIn 0.2s ease-out;
+}
+
+.ql-user-page-top-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.ql-user-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.ql-user-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #cbd5e1);
+  color: var(--admin-blue, #1960f7);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ql-user-back-btn:hover {
+  background: var(--admin-hover-bg, #f1f5f9);
+  border-color: var(--admin-blue, #1960f7);
+  transform: translateX(-2px);
+}
+
+.ql-admin-dashboard.dark .ql-user-back-btn {
+  background: #111e33;
+  border-color: #1e3250;
+  color: #60a5fa;
+}
+
+/* 1. User Hero Card */
+.ql-user-hero-card {
+  background: var(--admin-card-bg, #ffffff) !important;
+  border: 1px solid var(--admin-border-subtle, #e2e8f0) !important;
+  border-radius: 14px !important;
+  padding: 16px 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 20px !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+  box-sizing: border-box !important;
+}
+
+.ql-admin-dashboard.dark .ql-user-hero-card {
+  background: #111e33 !important;
+  border-color: #1e3250 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+}
+
+.ql-user-hero-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  min-width: 0 !important;
+  flex: 1 !important;
+}
+
+.ql-user-avatar-circle {
+  width: 54px !important;
+  height: 54px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+  color: #ffffff !important;
+  font-size: 20px !important;
+  font-weight: 800 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3) !important;
+  flex-shrink: 0 !important;
+}
+
+.ql-user-hero-info {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  min-width: 0 !important;
+}
+
+.ql-user-hero-title-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+}
+
+.ql-user-hero-name {
+  margin: 0 !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  color: var(--admin-text-main, #0f172a) !important;
+}
+
+.ql-user-hero-meta-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  flex-wrap: wrap !important;
+  margin-top: 2px !important;
+}
+
+.ql-user-meta-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  font-size: 12px !important;
+  color: var(--admin-text-muted, #64748b) !important;
+  font-weight: 500 !important;
+}
+
+.ql-user-meta-item svg {
+  color: #2563eb !important;
+  flex-shrink: 0 !important;
+}
+
+.ql-user-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* 2. User KPIs Grid */
+.ql-user-kpis-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 10px !important;
+}
+
+.ql-user-kpi-card {
+  background: var(--admin-card-bg, #ffffff) !important;
+  border: 1px solid var(--admin-border-subtle, #e2e8f0) !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+}
+
+.ql-admin-dashboard.dark .ql-user-kpi-card {
+  background: #111e33 !important;
+  border-color: #1e3250 !important;
+}
+
+.ql-user-kpi-icon {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.ql-user-kpi-icon.blue { background: rgba(37, 99, 235, 0.12) !important; color: #2563eb !important; }
+.ql-user-kpi-icon.orange { background: rgba(234, 88, 12, 0.12) !important; color: #ea580c !important; }
+.ql-user-kpi-icon.purple { background: rgba(147, 51, 234, 0.12) !important; color: #9333ea !important; }
+.ql-user-kpi-icon.green { background: rgba(16, 185, 129, 0.12) !important; color: #059669 !important; }
+
+.ql-user-kpi-text {
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+}
+
+.ql-user-kpi-text .val {
+  font-size: 17px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  color: var(--admin-text-main, #0f172a) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.ql-user-kpi-text .val.blue { color: #2563eb !important; }
+.ql-user-kpi-text .val.orange { color: #ea580c !important; }
+.ql-user-kpi-text .val.purple { color: #9333ea !important; }
+.ql-user-kpi-text .val.green { color: #059669 !important; }
+
+.ql-user-kpi-text .lbl {
+  font-size: 11.5px !important;
+  color: var(--admin-text-muted, #64748b) !important;
+  font-weight: 600 !important;
+  margin-top: 1px !important;
+}
+
+/* 3. Lower Grid */
+.ql-user-lower-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 310px !important;
+  gap: 12px !important;
+  align-items: stretch !important;
+}
+
+.ql-user-journey-card {
+  background: var(--admin-card-bg, #ffffff) !important;
+  border: 1px solid var(--admin-border-subtle, #e2e8f0) !important;
+  border-radius: 14px !important;
+  padding: 16px 20px !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+}
+
+.ql-admin-dashboard.dark .ql-user-journey-card {
+  background: #111e33 !important;
+  border-color: #1e3250 !important;
+}
+
+/* Stepper Journey */
+.ql-journey-stepper {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  position: relative;
+  gap: 8px;
+  padding: 10px 0 14px;
+  border-bottom: 1px solid var(--admin-border-subtle, #f1f5f9);
+}
+
+.ql-stepper-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+}
+
+.ql-stepper-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 6px;
+  z-index: 2;
+  transition: all 0.2s ease;
+}
+
+.ql-stepper-step.done .ql-stepper-badge {
+  background: #10b981;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+}
+
+.ql-stepper-step.active .ql-stepper-badge {
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+  animation: pulse 2s infinite;
+}
+
+.ql-stepper-step.pending .ql-stepper-badge {
+  background: var(--admin-border, #e2e8f0);
+  color: var(--admin-text-muted, #94a3b8);
+}
+
+.ql-stepper-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--admin-text-main, #0f172a);
+}
+
+.ql-stepper-sub {
+  font-size: 10.5px;
+  color: var(--admin-text-muted, #64748b);
+  margin-top: 1px;
+}
+
+/* User Info Table in Journey Card */
+.ql-user-spec-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ql-user-spec-table tr {
+  border-bottom: 1px solid var(--admin-border-subtle, #f1f5f9);
+}
+
+.ql-user-spec-table td {
+  padding: 8px 6px;
+  font-size: 12.5px;
+}
+
+.ql-user-spec-table td.label-col {
+  color: var(--admin-text-muted, #64748b);
+  font-weight: 600;
+  width: 160px;
+}
+
+.ql-user-spec-table td.value-col {
+  color: var(--admin-text-main, #0f172a);
+  font-weight: 700;
+}
+
+/* Sidebar cards */
+.ql-user-sidebar-card {
+  background: var(--admin-card-bg, #ffffff) !important;
+  border: 1px solid var(--admin-border-subtle, #e2e8f0) !important;
+  border-radius: 14px !important;
+  padding: 14px 18px !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+
+.ql-admin-dashboard.dark .ql-user-sidebar-card {
+  background: #111e33 !important;
+  border-color: #1e3250 !important;
+}
+
+/* Automated Alert Delivery Logs */
+.ql-auto-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+.ql-admin-dashboard.dark .ql-auto-badge {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+.ql-auto-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.8);
+  animation: pulse 1.8s infinite;
+}
+
+.ql-alert-logs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.ql-alert-log-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: var(--admin-hover-bg, #f8fafc);
+  border: 1px solid var(--admin-border-subtle, #f1f5f9);
+  transition: all 0.15s ease;
+}
+
+.ql-admin-dashboard.dark .ql-alert-log-item {
+  background: #0d1624;
+  border-color: #1a283c;
+}
+
+.ql-alert-log-item.delivered .ql-alert-log-icon {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.ql-alert-log-item.queued .ql-alert-log-icon {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+}
+
+.ql-alert-log-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.ql-alert-log-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ql-alert-log-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.ql-alert-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--admin-text-main, #0f172a);
+}
+
+.ql-alert-time {
+  font-size: 10.5px;
+  color: var(--admin-text-muted, #64748b);
+  font-weight: 500;
+}
+
+.ql-alert-channel {
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.ql-alert-channel.sms {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+}
+
+.ql-alert-channel.wa {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+.ql-alert-footer-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--admin-border-subtle, #e2e8f0);
+}
+
+.ql-gateway-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--admin-text-muted, #64748b);
+}
+
+.ql-gateway-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+}
+
+.ql-resend-backup-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border-subtle, #cbd5e1);
+  color: var(--admin-text-main, #334155);
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ql-resend-backup-btn:hover {
+  background: var(--admin-hover-bg, #f1f5f9);
+  border-color: var(--admin-blue, #1960f7);
+  color: var(--admin-blue, #1960f7);
+}
+
+.ql-admin-dashboard.dark .ql-resend-backup-btn {
+  background: #16243b;
+  border-color: #223755;
+  color: #cbd5e1;
+}
+
+.ql-admin-dashboard.dark .ql-resend-backup-btn:hover {
+  background: #1c2e4a;
+  border-color: #60a5fa;
+  color: #60a5fa;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SUBSCRIPTION HUB & PLANS STYLES
+   ══════════════════════════════════════════════════════════════════ */
+.ql-subs-container {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  animation: qlFadeIn 0.2s ease-out;
+}
+
+/* 1. Subscription KPIs */
+.ql-subs-kpis-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 12px !important;
+}
+
+.ql-subs-kpi-card {
+  background: var(--admin-card-bg, #ffffff) !important;
+  border: 1px solid var(--admin-border-subtle, #e2e8f0) !important;
+  border-radius: 12px !important;
+  padding: 14px 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+}
+
+.ql-admin-dashboard.dark .ql-subs-kpi-card {
+  background: #111e33 !important;
+  border-color: #1e3250 !important;
+}
+
+.ql-subs-kpi-icon {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 20px !important;
+  flex-shrink: 0 !important;
+}
+
+.ql-subs-kpi-icon.blue { background: rgba(37, 99, 235, 0.12) !important; color: #2563eb !important; }
+.ql-subs-kpi-icon.purple { background: rgba(147, 51, 234, 0.12) !important; color: #9333ea !important; }
+.ql-subs-kpi-icon.green { background: rgba(16, 185, 129, 0.12) !important; color: #059669 !important; }
+.ql-subs-kpi-icon.amber { background: rgba(245, 158, 11, 0.12) !important; color: #d97706 !important; }
+
+.ql-subs-kpi-info {
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+}
+
+.ql-subs-kpi-val {
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  color: var(--admin-text-main, #0f172a) !important;
+}
+
+.ql-subs-kpi-lbl {
+  font-size: 11.5px !important;
+  color: var(--admin-text-muted, #64748b) !important;
+  font-weight: 600 !important;
+  margin-top: 1px !important;
+}
+
+.ql-subs-kpi-trend {
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  color: #10b981 !important;
+  margin-top: 2px !important;
+}
+
+/* 2. Controls & Filter Bar */
+.ql-subs-controls-bar {
+  background: var(--admin-card-bg, #ffffff) !important;
+  border: 1px solid var(--admin-border-subtle, #e2e8f0) !important;
+  border-radius: 12px !important;
+  padding: 10px 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+}
+
+.ql-admin-dashboard.dark .ql-subs-controls-bar {
+  background: #111e33 !important;
+  border-color: #1e3250 !important;
+}
+
+.ql-subs-tab-pills {
+  display: inline-flex;
+  align-items: center;
+  background: var(--admin-hover-bg, #f1f5f9);
+  padding: 3px;
+  border-radius: 8px;
+  gap: 2px;
+}
+
+.ql-admin-dashboard.dark .ql-subs-tab-pills {
+  background: #0d1624;
+}
+
+.ql-subs-tab-btn {
+  border: none;
+  background: transparent;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--admin-text-muted, #64748b);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ql-subs-tab-btn.active {
+  background: var(--admin-card-bg, #ffffff);
+  color: var(--admin-blue, #1960f7);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.ql-admin-dashboard.dark .ql-subs-tab-btn.active {
+  background: #1e3250;
+  color: #60a5fa;
+}
+
+.ql-subs-billing-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--admin-text-main, #0f172a);
+}
+
+.ql-cycle-pill-btn {
+  border: 1px solid var(--admin-border-subtle, #cbd5e1);
+  background: transparent;
+  color: var(--admin-text-muted, #64748b);
+  padding: 5px 11px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ql-cycle-pill-btn.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.ql-save-badge {
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 12px;
+  margin-left: 4px;
+}
+
+.ql-admin-dashboard.dark .ql-save-badge {
+  background: rgba(16, 185, 129, 0.25);
+  color: #34d399;
+}
+
+/* 3. Plans Grid & Cards */
+.ql-subs-plans-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 16px !important;
+  align-items: stretch !important;
+}
+
+.ql-subs-plan-card {
+  background: var(--admin-card-bg, #ffffff) !important;
+  border: 1px solid var(--admin-border-subtle, #e2e8f0) !important;
+  border-radius: 16px !important;
+  padding: 22px 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  position: relative !important;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
+}
+
+.ql-subs-plan-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08) !important;
+}
+
+.ql-admin-dashboard.dark .ql-subs-plan-card {
+  background: #111e33 !important;
+  border-color: #1e3250 !important;
+}
+
+.ql-subs-plan-card.popular {
+  border: 2px solid #8b5cf6 !important;
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.15) !important;
+}
+
+.ql-admin-dashboard.dark .ql-subs-plan-card.popular {
+  border-color: #a78bfa !important;
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.25) !important;
+}
+
+.ql-popular-ribbon {
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(109, 40, 217, 0.4);
+  text-transform: uppercase;
+}
+
+.ql-plan-top-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.ql-plan-icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+
+.ql-plan-icon-circle.blue { background: rgba(37, 99, 235, 0.12); color: #2563eb; }
+.ql-plan-icon-circle.purple { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; }
+.ql-plan-icon-circle.emerald { background: rgba(16, 185, 129, 0.12); color: #059669; }
+
+.ql-plan-tier-name {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--admin-text-main, #0f172a);
+}
+
+.ql-plan-tagline {
+  margin: 4px 0 14px;
+  font-size: 12px;
+  color: var(--admin-text-muted, #64748b);
+  line-height: 1.4;
+  min-height: 34px;
+}
+
+.ql-plan-price-block {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.ql-plan-amount {
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--admin-text-main, #0f172a);
+  letter-spacing: -0.5px;
+}
+
+.ql-plan-interval {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--admin-text-muted, #64748b);
+}
+
+.ql-plan-billed-note {
+  font-size: 11px;
+  color: #10b981;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.ql-plan-subscribers-meter {
+  background: var(--admin-hover-bg, #f8fafc);
+  border: 1px solid var(--admin-border-subtle, #f1f5f9);
+  padding: 8px 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-size: 11.5px;
+  color: var(--admin-text-muted, #64748b);
+  font-weight: 600;
+}
+
+.ql-admin-dashboard.dark .ql-plan-subscribers-meter {
+  background: #0d1624;
+  border-color: #1a283c;
+}
+
+.ql-plan-features-block {
+  border-top: 1px solid var(--admin-border-subtle, #f1f5f9);
+  padding-top: 14px;
+  margin-top: 4px;
+  flex: 1;
+}
+
+.ql-plan-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 9px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.ql-plan-feature-item.included {
+  color: var(--admin-text-main, #1e293b);
+  font-weight: 600;
+}
+
+.ql-admin-dashboard.dark .ql-plan-feature-item.included {
+  color: #e2e8f0;
+}
+
+.ql-plan-feature-item.excluded {
+  color: var(--admin-text-muted, #94a3b8);
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+.ql-plan-card-ctas {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* 4. Subscribers Directory Table Specifics */
+.ql-subs-table-card {
+  background: var(--admin-card-bg, #ffffff) !important;
+  border: 1px solid var(--admin-border-subtle, #e2e8f0) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+}
+
+.ql-admin-dashboard.dark .ql-subs-table-card {
+  background: #111e33 !important;
+  border-color: #1e3250 !important;
+}
+
+.ql-plan-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.ql-plan-pill.starter { background: rgba(37, 99, 235, 0.12); color: #2563eb; }
+.ql-plan-pill.growth { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; }
+.ql-plan-pill.enterprise { background: rgba(16, 185, 129, 0.15); color: #059669; }
+
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVE MEDIA QUERIES (TABLETS & MOBILE SCREENS)
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Tablets & Small Laptops (<= 1024px) */
+@media (max-width: 1024px) {
+  .ql-subs-kpis-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .ql-subs-plans-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .ql-user-kpis-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .ql-user-lower-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Medium Tablets & Mobile Landscape (<= 768px) */
+@media (max-width: 768px) {
+  /* Subscriptions Controls */
+  .ql-subs-controls-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  .ql-subs-tab-pills {
+    width: 100% !important;
+    display: flex !important;
+  }
+  .ql-subs-tab-btn {
+    flex: 1 !important;
+    justify-content: center !important;
+  }
+  .ql-subs-billing-toggle {
+    justify-content: space-between !important;
+    width: 100% !important;
+    flex-wrap: wrap !important;
+  }
+
+  /* User Details Page */
+  .ql-user-page-top-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+  .ql-user-page-top-header .ql-user-back-btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  .ql-user-hero-card {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+  }
+  .ql-user-hero-left {
+    width: 100% !important;
+  }
+  .ql-user-hero-actions {
+    width: 100% !important;
+  }
+  .ql-user-hero-actions button,
+  .ql-user-hero-actions span {
+    width: 100% !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
+
+  /* Modals */
+  .ql-modal-card-modern {
+    width: 95% !important;
+    margin: 10px auto !important;
+    max-height: 92vh !important;
+  }
+  .ql-modern-grid-2 {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .ql-modern-grid-3 {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+}
+
+/* Mobile Screens (<= 540px) */
+@media (max-width: 540px) {
+  .ql-subs-kpis-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .ql-user-kpis-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .ql-user-avatar-circle {
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 16px !important;
+  }
+  .ql-user-hero-name {
+    font-size: 16px !important;
+  }
+  .ql-user-hero-meta-row {
+    gap: 8px !important;
+  }
+  .ql-journey-stepper {
+    gap: 4px !important;
+    padding: 8px 0 !important;
+  }
+  .ql-stepper-badge {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 11px !important;
+  }
+  .ql-stepper-title {
+    font-size: 10px !important;
+  }
+  .ql-stepper-sub {
+    font-size: 8.5px !important;
+  }
+  .ql-user-spec-table td.label-col {
+    width: 110px !important;
+    font-size: 11.5px !important;
+  }
+  .ql-user-spec-table td.value-col {
+    font-size: 11.5px !important;
+  }
+  .ql-plan-amount {
+    font-size: 26px !important;
+  }
+  .ql-subs-kpi-val {
+    font-size: 16px !important;
+  }
 }
