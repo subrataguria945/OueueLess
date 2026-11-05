@@ -2359,7 +2359,17 @@ export function AdminDashboard() {
                             <tr key={owner.id}>
                               <td className="col-hide-mobile">{index + 1}</td>
                               <td>
-                                <div className="ql-owner-info">
+                                <div
+                                  className="ql-owner-info"
+                                  style={{ cursor: "pointer" }}
+                                  onClick={() => {
+                                    setActiveTab("owners");
+                                    setDetailModalOwner(owner);
+                                    setIsEditingOwner(false);
+                                    setOwnerProfileTab("overview");
+                                  }}
+                                  title="Click to view Owner Profile & Details"
+                                >
                                   <span
                                     className="ql-owner-avatar"
                                     style={{
@@ -2404,7 +2414,12 @@ export function AdminDashboard() {
                                     type="button"
                                     className="ql-action-icon blue"
                                     title="View Owner Details"
-                                    onClick={() => setDetailModalOwner(owner)}
+                                    onClick={() => {
+                                      setActiveTab("owners");
+                                      setDetailModalOwner(owner);
+                                      setIsEditingOwner(false);
+                                      setOwnerProfileTab("overview");
+                                    }}
                                   >
                                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                                       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
