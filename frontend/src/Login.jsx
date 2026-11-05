@@ -23,6 +23,7 @@ export function Login({ initialMode = "login", initialForgotOpen = false, onSwit
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoginLoading, setIsLoginLoading] = useState(false);
+  const [isForgotLoading, setIsForgotLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [loginSuccess, setLoginSuccess] = useState("");
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -63,8 +64,8 @@ export function Login({ initialMode = "login", initialForgotOpen = false, onSwit
     if (onSwitchToLogin) onSwitchToLogin();
   };
 
-  const handleSwitchToForgot = () => {
-    const cleanEmail = (loginEmail || "").trim();
+  const handleSwitchToForgot = async () => {
+    const cleanEmail = (loginEmail || "").trim().toLowerCase();
 
     // Check if email is entered on login page
     if (!cleanEmail) {
@@ -77,8 +78,32 @@ export function Login({ initialMode = "login", initialForgotOpen = false, onSwit
     }
 
     setLoginError("");
-    setIsForgotModalOpen(true);
-    if (onSwitchToForgot) onSwitchToForgot();
+    setLoginSuccess("");
+    setIsForgotLoading(true);
+
+    try {
+      const response = await fetch(FORGOT_PASSWORD_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cleanEmail }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      setIsForgotLoading(false);
+
+      if (!response.ok || data?.status === "failed" || data?.status === "error") {
+        setLoginError(data?.message || data?.error || "User does not exist or failed to send reset link.");
+        return;
+      }
+
+      setLoginSuccess(data?.message || "Reset password link sent to your email!");
+      setIsForgotModalOpen(true);
+      if (onSwitchToForgot) onSwitchToForgot();
+    } catch {
+      setIsForgotLoading(false);
+      setLoginError("Unable to connect to the server. Please try again.");
+    }
   };
 
   const handleGoogleSuccess = (user, token, isNew, message) => {
@@ -375,10 +400,34 @@ export function Login({ initialMode = "login", initialForgotOpen = false, onSwit
                   className="ql-forgot"
                   onClick={(e) => {
                     e.preventDefault();
-                    handleSwitchToForgot();
+                    if (!isForgotLoading) handleSwitchToForgot();
+                  }}
+                  style={{
+                    opacity: isForgotLoading ? 0.7 : 1,
+                    pointerEvents: isForgotLoading ? "none" : "auto",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
                   }}
                 >
-                  Forgot password?
+                  {isForgotLoading ? (
+                    <>
+                      <span
+                        style={{
+                          width: "12px",
+                          height: "12px",
+                          border: "2px solid #1960f7",
+                          borderTopColor: "transparent",
+                          borderRadius: "50%",
+                          display: "inline-block",
+                          animation: "qlModalSpin 0.7s linear infinite",
+                        }}
+                      />
+                      <span>Sending...</span>
+                    </>
+                  ) : (
+                    "Forgot password?"
+                  )}
                 </a>
               </div>
 
