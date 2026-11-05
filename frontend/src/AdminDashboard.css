@@ -5916,7 +5916,7 @@ input.ql-input-modern:-webkit-autofill:focus {
 
 .ql-input-eye-btn {
   position: absolute;
-  right: 10px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   background: transparent !important;
@@ -5928,10 +5928,12 @@ input.ql-input-modern:-webkit-autofill:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
+  padding: 0 !important;
+  width: 22px;
+  height: 22px;
   border-radius: 4px;
   transition: color 0.15s ease;
-  z-index: 2;
+  z-index: 5;
   -webkit-appearance: none;
   appearance: none;
 }
@@ -5945,6 +5947,16 @@ input.ql-input-modern:-webkit-autofill:focus {
   outline: none !important;
   box-shadow: none !important;
   border: none !important;
+}
+
+.ql-input-eye-btn svg {
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+  color: inherit !important;
+  pointer-events: none;
+  display: block;
 }
 
 .ql-cred-footer-bar {
@@ -6055,7 +6067,7 @@ input.ql-input-modern:-webkit-autofill:focus {
   width: 100%;
 }
 
-.ql-input-icon-box svg {
+.ql-input-icon-box > svg {
   position: absolute;
   left: 10px;
   color: #94a3b8;
@@ -6063,7 +6075,7 @@ input.ql-input-modern:-webkit-autofill:focus {
   transition: color 0.15s ease;
 }
 
-.ql-input-icon-box:focus-within svg {
+.ql-input-icon-box:focus-within > svg {
   color: #2563eb;
 }
 
