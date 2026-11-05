@@ -5679,7 +5679,7 @@ html::-webkit-scrollbar {
 
 .ql-premium-modal-dialog {
   width: 100%;
-  max-width: 600px;
+  max-width: 660px;
   background: var(--admin-modal-bg, #ffffff);
   border-radius: 18px;
   box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.2);
@@ -5777,11 +5777,11 @@ html::-webkit-scrollbar {
 
 /* Interactive Preview Strip */
 .ql-modal-preview-strip {
-  margin: 10px 20px 0;
-  padding: 8px 12px;
-  border-radius: 10px;
-  background: rgba(37, 99, 235, 0.04);
-  border: 1px dashed rgba(37, 99, 235, 0.25);
+  margin: 12px 20px 2px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--admin-preview-bg, #f8fafc);
+  border: 1px solid var(--admin-border, #e2e8f0);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -5792,17 +5792,17 @@ html::-webkit-scrollbar {
 .ql-preview-left {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
 }
 
 .ql-preview-avatar {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: #2563eb;
   color: #ffffff;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5811,25 +5811,31 @@ html::-webkit-scrollbar {
 }
 
 .ql-preview-info-name {
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 700;
   color: var(--admin-text-main, #0f172a);
 }
 
 .ql-preview-info-sub {
-  font-size: 11px;
+  font-size: 11.5px;
   color: var(--admin-text-muted, #64748b);
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .ql-preview-badge {
-  font-size: 10.5px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 20px;
-  background: rgba(16, 185, 129, 0.12);
-  color: #059669;
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3.5px 12px;
+  border-radius: 9999px;
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .ql-premium-modal-body {
@@ -5837,9 +5843,129 @@ html::-webkit-scrollbar {
   overflow: hidden !important;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   max-height: none !important;
   box-sizing: border-box;
+}
+
+/* Create Login Credentials Section */
+.ql-cred-box {
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.ql-cred-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ql-cred-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #dbeafe;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ql-cred-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e3a8a;
+  line-height: 1.2;
+}
+
+.ql-cred-subtitle {
+  font-size: 11.5px;
+  color: #475569;
+  margin-top: 2px;
+}
+
+.ql-input-eye-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.15s ease;
+}
+
+.ql-input-eye-btn:hover {
+  color: #2563eb;
+}
+
+.ql-cred-footer-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 11.5px;
+  flex-wrap: wrap;
+  padding-top: 2px;
+}
+
+.ql-cred-strength-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.ql-cred-strength-lbl {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.ql-cred-strength-bars {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ql-cred-strength-bar {
+  width: 20px;
+  height: 4px;
+  border-radius: 2px;
+  background-color: #cbd5e1;
+  transition: background-color 0.2s ease;
+}
+
+.ql-cred-divider {
+  width: 1px;
+  height: 14px;
+  background: #cbd5e1;
+  flex-shrink: 0;
+}
+
+.ql-cred-hint {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #475569;
+  flex: 1;
+}
+
+.ql-cred-hint svg {
+  flex-shrink: 0;
+  color: #3b82f6;
 }
 
 .ql-form-section-title {
@@ -6023,8 +6149,44 @@ html::-webkit-scrollbar {
 }
 
 .ql-admin-dashboard.dark .ql-modal-preview-strip {
-  background: rgba(37, 99, 235, 0.08);
-  border-color: rgba(37, 99, 235, 0.3);
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.ql-admin-dashboard.dark .ql-preview-badge {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #34d399;
+}
+
+.ql-admin-dashboard.dark .ql-cred-box {
+  background: rgba(30, 58, 138, 0.2);
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+.ql-admin-dashboard.dark .ql-cred-icon {
+  background: rgba(59, 130, 246, 0.25);
+  color: #60a5fa;
+}
+
+.ql-admin-dashboard.dark .ql-cred-title {
+  color: #bfdbfe;
+}
+
+.ql-admin-dashboard.dark .ql-cred-subtitle {
+  color: #94a3b8;
+}
+
+.ql-admin-dashboard.dark .ql-cred-strength-lbl {
+  color: #cbd5e1;
+}
+
+.ql-admin-dashboard.dark .ql-cred-hint {
+  color: #94a3b8;
+}
+
+.ql-admin-dashboard.dark .ql-cred-divider {
+  background: #334155;
 }
 
 .ql-admin-dashboard.dark .ql-premium-close-btn {

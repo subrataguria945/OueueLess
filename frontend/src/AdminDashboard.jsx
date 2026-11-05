@@ -855,15 +855,28 @@ export function AdminDashboard() {
   const [addOwnerModalOpen, setAddOwnerModalOpen] = useState(false);
   const [isAddingOwner, setIsAddingOwner] = useState(false);
   const [addOwnerError, setAddOwnerError] = useState("");
+  const [showAddOwnerPassword, setShowAddOwnerPassword] = useState(false);
+  const [showAddOwnerConfirmPassword, setShowAddOwnerConfirmPassword] = useState(false);
   const [newOwnerForm, setNewOwnerForm] = useState({
     name: "",
     email: "",
     phone: "",
     password: "",
+    confirmPassword: "",
     maxShops: 5,
     joinedDate: new Date().toISOString().split("T")[0],
     address: "",
   });
+
+  const getOwnerPasswordStrength = (pwd) => {
+    if (!pwd) return 0;
+    let score = 0;
+    if (pwd.length >= 8) score++;
+    if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) score++;
+    if (/\d/.test(pwd)) score++;
+    if (/[^a-zA-Z0-9]/.test(pwd)) score++;
+    return score;
+  };
 
   // Live Queue Modal State & Interactive Shops State
   const [selectedShopDetail, setSelectedShopDetail] = useState(null);
@@ -1488,19 +1501,41 @@ export function AdminDashboard() {
     const fullname = (newOwnerForm.name || "").trim();
     const email = (newOwnerForm.email || "").trim().toLowerCase();
     const cleanPhone = (newOwnerForm.phone || "").replace(/\D/g, "");
-    const password = (newOwnerForm.password || "").trim() || "Owner@123";
-    const maxShops = Number(newOwnerForm.maxShops || newOwnerForm.shops || 5);
+    const password = (newOwnerForm.password || "").trim();
+    const confirmPassword = (newOwnerForm.confirmPassword || "").trim();
+    const address = (newOwnerForm.address || "").trim();
+    const maxShops = Number(newOwnerForm.maxShops || 5);
 
     if (!fullname) {
-      setAddOwnerError("Please enter Owner Full Name.");
+      setAddOwnerError("Please enter Owner Name.");
       return;
     }
     if (!email || !email.includes("@")) {
-      setAddOwnerError("Please enter a valid Email address.");
+      setAddOwnerError("Please enter a valid Email Address.");
       return;
     }
     if (!cleanPhone || cleanPhone.length < 10) {
       setAddOwnerError("Please enter a valid 10-digit Phone Number.");
+      return;
+    }
+    if (!address) {
+      setAddOwnerError("Please enter the Address.");
+      return;
+    }
+    if (!password) {
+      setAddOwnerError("Please enter a Password.");
+      return;
+    }
+    if (password.length < 8) {
+      setAddOwnerError("Password must contain at least 8 characters.");
+      return;
+    }
+    if (!confirmPassword) {
+      setAddOwnerError("Please confirm your Password.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setAddOwnerError("Password and Confirm Password do not match.");
       return;
     }
 
@@ -1559,10 +1594,13 @@ export function AdminDashboard() {
         email: "",
         phone: "",
         password: "",
+        confirmPassword: "",
         maxShops: 5,
         joinedDate: new Date().toISOString().split("T")[0],
         address: "",
       });
+      setShowAddOwnerPassword(false);
+      setShowAddOwnerConfirmPassword(false);
       setSettingsSavedToast(true);
       setTimeout(() => setSettingsSavedToast(false), 3000);
     } catch (err) {
@@ -5218,7 +5256,10 @@ export function AdminDashboard() {
 
       {/* ── ADD OWNER MODAL (PREMIUM REDESIGN) ─────────────────── */}
       {addOwnerModalOpen && (
-        <div className="ql-premium-modal-backdrop" onClick={() => setAddOwnerModalOpen(false)}>
+        <div className="ql-premium-modal-backdrop" onClick={() => {
+          setAddOwnerModalOpen(false);
+          setAddOwnerError("");
+        }}>
           <div className="ql-premium-modal-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="ql-modal-accent-line" />
 
@@ -5226,11 +5267,11 @@ export function AdminDashboard() {
             <div className="ql-premium-modal-header">
               <div className="ql-modal-header-left">
                 <div className="ql-modal-icon-badge">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                    <circle cx="8.5" cy="7" r="4" />
-                    <line x1="20" y1="8" x2="20" y2="14" />
-                    <line x1="23" y1="11" x2="17" y2="11" />
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <line x1="19" y1="8" x2="19" y2="14" />
+                    <line x1="22" y1="11" x2="16" y2="11" />
                   </svg>
                 </div>
                 <div className="ql-modal-title-wrap">
@@ -5241,7 +5282,10 @@ export function AdminDashboard() {
               <button
                 type="button"
                 className="ql-premium-close-btn"
-                onClick={() => setAddOwnerModalOpen(false)}
+                onClick={() => {
+                  setAddOwnerModalOpen(false);
+                  setAddOwnerError("");
+                }}
                 title="Close modal"
               >
                 ✕
@@ -5259,17 +5303,20 @@ export function AdminDashboard() {
                     {newOwnerForm.name || "Owner Name Preview"}
                   </div>
                   <div className="ql-preview-info-sub">
-                    {newOwnerForm.email || "email@domain.com"} &bull; Verified Merchant Setup
+                    {(newOwnerForm.email ? newOwnerForm.email + " • " : "email@domain.com • ") + "Verified Merchant Setup"}
                   </div>
                 </div>
               </div>
-              <span className="ql-preview-badge">&bull; Enterprise Ready</span>
+              <span className="ql-preview-badge">
+                <span style={{ fontSize: "10px" }}>●</span>
+                <span>Enterprise Ready</span>
+              </span>
             </div>
 
             <form onSubmit={handleAddOwnerSubmit} style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
               {addOwnerError && (
                 <div style={{
-                  margin: "12px 24px 0",
+                  margin: "10px 20px 0",
                   padding: "10px 14px",
                   borderRadius: "10px",
                   backgroundColor: "#fef2f2",
@@ -5359,7 +5406,7 @@ export function AdminDashboard() {
                           setNewOwnerForm({ ...newOwnerForm, phone: e.target.value });
                           if (addOwnerError) setAddOwnerError("");
                         }}
-                        placeholder="e.g. 9876543210"
+                        placeholder="e.g. +91 98765 43210"
                       />
                     </div>
                   </div>
@@ -5387,55 +5434,7 @@ export function AdminDashboard() {
                   </div>
                 </div>
 
-                {/* Row 3: Initial Password & Max Shop Quota */}
-                <div className="ql-modern-grid-2">
-                  <div className="ql-input-group-modern">
-                    <label className="ql-input-label-modern">
-                      <span>Initial Password</span>
-                      <span style={{ fontSize: "11px", color: "var(--admin-text-muted)", marginLeft: "4px" }}>(default: Owner@123)</span>
-                    </label>
-                    <div className="ql-input-icon-box">
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                      </svg>
-                      <input
-                        type="password"
-                        className="ql-input-modern"
-                        value={newOwnerForm.password}
-                        onChange={(e) => setNewOwnerForm({ ...newOwnerForm, password: e.target.value })}
-                        placeholder="Owner@123"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="ql-input-group-modern">
-                    <label className="ql-input-label-modern">
-                      <span>Max Allowed Shops</span>
-                      <span className="required-star">*</span>
-                    </label>
-                    <div className="ql-input-icon-box">
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7" />
-                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-                        <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4" />
-                        <path d="M2 7h20" />
-                      </svg>
-                      <input
-                        type="number"
-                        min="1"
-                        max="50"
-                        required
-                        className="ql-input-modern"
-                        value={newOwnerForm.maxShops || 5}
-                        onChange={(e) => setNewOwnerForm({ ...newOwnerForm, maxShops: e.target.value })}
-                        placeholder="5"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Row 4: Address (Full Width & Spacious) */}
+                {/* Row 3: Address (Full Width) */}
                 <div className="ql-input-group-modern">
                   <label className="ql-input-label-modern">
                     <span>Address</span>
@@ -5451,9 +5450,160 @@ export function AdminDashboard() {
                       required
                       className="ql-input-modern"
                       value={newOwnerForm.address}
-                      onChange={(e) => setNewOwnerForm({ ...newOwnerForm, address: e.target.value })}
+                      onChange={(e) => {
+                        setNewOwnerForm({ ...newOwnerForm, address: e.target.value });
+                        if (addOwnerError) setAddOwnerError("");
+                      }}
                       placeholder="e.g. 12, Main Road, Contai, Purba Medinipur, West Bengal"
                     />
+                  </div>
+                </div>
+
+                {/* Box: Create Login Credentials */}
+                <div className="ql-cred-box">
+                  <div className="ql-cred-header">
+                    <div className="ql-cred-icon">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="ql-cred-title">Create Login Credentials</div>
+                      <div className="ql-cred-subtitle">Set the login password for the new owner account.</div>
+                    </div>
+                  </div>
+
+                  <div className="ql-modern-grid-2">
+                    <div className="ql-input-group-modern">
+                      <label className="ql-input-label-modern">
+                        <span>Password</span>
+                        <span className="required-star">*</span>
+                      </label>
+                      <div className="ql-input-icon-box">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        <input
+                          type={showAddOwnerPassword ? "text" : "password"}
+                          required
+                          className="ql-input-modern"
+                          style={{ paddingRight: "36px" }}
+                          value={newOwnerForm.password}
+                          onChange={(e) => {
+                            setNewOwnerForm({ ...newOwnerForm, password: e.target.value });
+                            if (addOwnerError) setAddOwnerError("");
+                          }}
+                          placeholder="Enter password"
+                        />
+                        <button
+                          type="button"
+                          className="ql-input-eye-btn"
+                          onClick={() => setShowAddOwnerPassword(!showAddOwnerPassword)}
+                          tabIndex={-1}
+                          title={showAddOwnerPassword ? "Hide password" : "Show password"}
+                        >
+                          {showAddOwnerPassword ? (
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                              <circle cx="12" cy="12" r="3" />
+                            </svg>
+                          ) : (
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                              <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                              <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                              <line x1="2" y1="22" x2="22" y2="2" />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="ql-input-group-modern">
+                      <label className="ql-input-label-modern">
+                        <span>Confirm Password</span>
+                        <span className="required-star">*</span>
+                      </label>
+                      <div className="ql-input-icon-box">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        <input
+                          type={showAddOwnerConfirmPassword ? "text" : "password"}
+                          required
+                          className="ql-input-modern"
+                          style={{ paddingRight: "36px" }}
+                          value={newOwnerForm.confirmPassword}
+                          onChange={(e) => {
+                            setNewOwnerForm({ ...newOwnerForm, confirmPassword: e.target.value });
+                            if (addOwnerError) setAddOwnerError("");
+                          }}
+                          placeholder="Confirm password"
+                        />
+                        <button
+                          type="button"
+                          className="ql-input-eye-btn"
+                          onClick={() => setShowAddOwnerConfirmPassword(!showAddOwnerConfirmPassword)}
+                          tabIndex={-1}
+                          title={showAddOwnerConfirmPassword ? "Hide password" : "Show password"}
+                        >
+                          {showAddOwnerConfirmPassword ? (
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                              <circle cx="12" cy="12" r="3" />
+                            </svg>
+                          ) : (
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                              <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                              <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                              <line x1="2" y1="22" x2="22" y2="2" />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Password Strength & Policy Hint */}
+                  <div className="ql-cred-footer-bar">
+                    <div className="ql-cred-strength-wrap">
+                      <span className="ql-cred-strength-lbl">Password Strength:</span>
+                      <div className="ql-cred-strength-bars">
+                        {[1, 2, 3, 4].map((step) => {
+                          const strength = getOwnerPasswordStrength(newOwnerForm.password);
+                          const isActive = strength >= step;
+                          let barColor = "#cbd5e1";
+                          if (isActive) {
+                            if (strength <= 1) barColor = "#ef4444";
+                            else if (strength === 2) barColor = "#f97316";
+                            else if (strength === 3) barColor = "#eab308";
+                            else barColor = "#22c55e";
+                          }
+                          return (
+                            <span
+                              key={step}
+                              className="ql-cred-strength-bar"
+                              style={{ backgroundColor: barColor }}
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="ql-cred-divider" />
+
+                    <div className="ql-cred-hint">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="16" x2="12" y2="12" />
+                        <line x1="12" y1="8" x2="12.01" y2="8" />
+                      </svg>
+                      <span>Password must contain at least 8 characters, including uppercase, lowercase, number and special character.</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -5461,7 +5611,7 @@ export function AdminDashboard() {
               {/* Modal Footer */}
               <div className="ql-premium-modal-footer">
                 <div className="ql-modal-footer-note">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
                   </svg>
                   <span>Encrypted merchant registration</span>
@@ -5470,7 +5620,10 @@ export function AdminDashboard() {
                   <button
                     type="button"
                     className="ql-btn-secondary-modern"
-                    onClick={() => setAddOwnerModalOpen(false)}
+                    onClick={() => {
+                      setAddOwnerModalOpen(false);
+                      setAddOwnerError("");
+                    }}
                     disabled={isAddingOwner}
                   >
                     Cancel
@@ -5498,7 +5651,7 @@ export function AdminDashboard() {
                       </>
                     ) : (
                       <>
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                           <line x1="12" y1="5" x2="12" y2="19" />
                           <line x1="5" y1="12" x2="19" y2="12" />
                         </svg>
