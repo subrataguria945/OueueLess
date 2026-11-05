@@ -97,73 +97,82 @@ const REVENUE_BARS = [
   { month: "Dec", val: 41, heightPct: 95 },
 ];
 
-const RECENT_OWNERS = [
-  {
-    id: 1,
-    name: "Ananya Das",
-    initial: "A",
+const OWNERS_API_URL =
+  import.meta.env.VITE_OWNERS_API_URL ||
+  `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/owner/all`;
+
+export function mapApiOwnerToDashboard(apiOwner) {
+  const id = Number(apiOwner.owner_id ?? apiOwner.id ?? 0);
+  const name = (apiOwner.full_name || apiOwner.name || "").trim() || "Owner";
+  const initial = name ? name.charAt(0).toUpperCase() : "O";
+  const avatarImg = apiOwner.profile_image || apiOwner.avatarImg || null;
+  const email = apiOwner.email || "";
+  const phone = apiOwner.phone || "N/A";
+  const shops = Number(apiOwner.shop_count ?? apiOwner.shops ?? 0);
+  const maxShops = Number(apiOwner.max_shop_count ?? 5);
+  const isActive =
+    apiOwner.account_status !== undefined
+      ? Boolean(apiOwner.account_status)
+      : apiOwner.status === "Active";
+  const status = isActive ? "Active" : "Suspended";
+
+  let joinedOn = "Recently";
+  if (apiOwner.joined_date || apiOwner.joinedOn) {
+    try {
+      const d = new Date(apiOwner.joined_date || apiOwner.joinedOn);
+      if (!isNaN(d.getTime())) {
+        joinedOn = d.toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+      }
+    } catch {}
+  }
+
+  // Parse shop_details if provided by backend
+  let parsedShopDetails = [];
+  if (apiOwner.shop_details) {
+    try {
+      if (
+        typeof apiOwner.shop_details === "string" &&
+        (apiOwner.shop_details.startsWith("[") || apiOwner.shop_details.startsWith("{"))
+      ) {
+        parsedShopDetails = JSON.parse(apiOwner.shop_details);
+      } else if (Array.isArray(apiOwner.shop_details)) {
+        parsedShopDetails = apiOwner.shop_details;
+      }
+    } catch {}
+  }
+
+  return {
+    id,
+    ownerCode: `OWN-${String(id).padStart(4, "0")}`,
+    name,
+    initial,
     avatarBg: "#dbeafe",
     avatarColor: "#1d4ed8",
-    avatarImg: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
-    email: "ananya@example.com",
-    phone: "+91 98765 43210",
-    shops: 3,
-    status: "Active",
-    joinedOn: "12 Jun 2026",
-  },
-  {
-    id: 2,
-    name: "Rahul Sen",
-    initial: "R",
-    avatarBg: "#dbeafe",
-    avatarColor: "#1d4ed8",
-    avatarImg: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-    email: "rahul@example.com",
-    phone: "+91 98765 43211",
-    shops: 1,
-    status: "Expiring Soon",
-    joinedOn: "25 Jul 2026",
-  },
-  {
-    id: 3,
-    name: "Priya Ghosh",
-    initial: "P",
-    avatarBg: "#dbeafe",
-    avatarColor: "#1d4ed8",
-    avatarImg: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80",
-    email: "priya@example.com",
-    phone: "+91 98765 43212",
-    shops: 2,
-    status: "Active",
-    joinedOn: "03 Aug 2026",
-  },
-  {
-    id: 4,
-    name: "Sujit Paul",
-    initial: "S",
-    avatarBg: "#dbeafe",
-    avatarColor: "#1d4ed8",
-    avatarImg: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
-    email: "sujit@example.com",
-    phone: "+91 98765 43213",
-    shops: 1,
-    status: "Suspended",
-    joinedOn: "18 Aug 2026",
-  },
-  {
-    id: 5,
-    name: "Arjun Roy",
-    initial: "A",
-    avatarBg: "#dbeafe",
-    avatarColor: "#1d4ed8",
-    avatarImg: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-    email: "arjun@example.com",
-    phone: "+91 98765 43214",
-    shops: 4,
-    status: "Active",
-    joinedOn: "01 Sep 2026",
-  },
-];
+    avatarImg,
+    email,
+    phone,
+    shops,
+    maxShops,
+    status,
+    joinedOn,
+    plan: status === "Active" ? "Enterprise Pro" : "Starter Trial",
+    city: "Kolkata, WB",
+    kycStatus: "KYC Verified",
+    billingCycle: "Annual (₹ 14,999/yr)",
+    totalTokens: shops * 1420 + 350,
+    monthlyRevenue: `₹ ${(shops * 4500 + 1200).toLocaleString()}`,
+    lastActive: "Today",
+    notes: "Verified platform merchant.",
+    shopDetails: apiOwner.shop_details,
+    parsedShopDetails,
+  };
+}
+
+const RECENT_OWNERS = [];
 
 const ALL_SHOPS_DATA = [
   {
@@ -761,50 +770,78 @@ export function AdminDashboard() {
   const [shopCategoryFilter, setShopCategoryFilter] = useState("All");
   const [userStatusFilter, setUserStatusFilter] = useState("All");
 
-  // Owners List State
+  // Owners List State (strictly real data from API — no demo data)
   const [ownersData, setOwnersData] = useState(() => {
     const saved = localStorage.getItem("ql_admin_owners_list");
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map((p) => {
-            const match = RECENT_OWNERS.find((r) => r.id === p.id);
-            const isRemoved = p.avatarRemoved === true || p.avatarImg === "none";
-            const avatarImg = isRemoved
-              ? null
-              : (p.avatarImg || match?.avatarImg || null);
-            return {
-              ownerCode: `OWN-${String(p.id).padStart(4, "0")}`,
-              plan: p.status === "Active" ? "Enterprise Pro" : p.status === "Expiring Soon" ? "Business Standard" : "Starter Trial",
-              city: "Kolkata, WB",
-              kycStatus: "KYC Verified",
-              billingCycle: "Annual (₹ 14,999/yr)",
-              totalTokens: p.shops * 1420 + 350,
-              monthlyRevenue: `₹ ${(p.shops * 4500 + 1200).toLocaleString()}`,
-              lastActive: "Today, 11:30 AM",
-              notes: "Registered business merchant operating verified token counter queues.",
-              ...p,
-              avatarImg,
-              avatarRemoved: isRemoved,
-            };
-          });
+        const hasDemo =
+          Array.isArray(parsed) &&
+          parsed.some(
+            (p) =>
+              p.email === "ananya@example.com" ||
+              p.name === "Ananya Das" ||
+              p.email === "rahul@example.com"
+          );
+        if (!hasDemo && Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
         }
       } catch (e) {}
     }
-    return RECENT_OWNERS.map((o) => ({
-      ...o,
-      ownerCode: `OWN-${String(o.id).padStart(4, "0")}`,
-      plan: o.status === "Active" ? "Enterprise Pro" : o.status === "Expiring Soon" ? "Business Standard" : "Starter Trial",
-      city: "Kolkata, WB",
-      kycStatus: "KYC Verified",
-      billingCycle: "Annual (₹ 14,999/yr)",
-      totalTokens: o.shops * 1420 + 350,
-      monthlyRevenue: `₹ ${(o.shops * 4500 + 1200).toLocaleString()}`,
-      lastActive: "Today, 11:30 AM",
-      notes: "Registered business merchant operating verified token counter queues.",
-    }));
+    return [];
   });
+  const [isOwnersLoading, setIsOwnersLoading] = useState(true);
+  const [ownersError, setOwnersError] = useState(null);
+
+  // Fetch all owners from backend API
+  const fetchOwners = async () => {
+    setIsOwnersLoading(true);
+    setOwnersError(null);
+    try {
+      const token =
+        localStorage.getItem("token") ||
+        localStorage.getItem("ql_admin_token") ||
+        sessionStorage.getItem("token") ||
+        "";
+
+      const headers = { "Content-Type": "application/json" };
+      if (token && token !== "ql_admin_session" && token !== "admin_session") {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      const res = await fetch(OWNERS_API_URL, {
+        method: "GET",
+        headers,
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (res.ok && Array.isArray(data)) {
+        const mapped = data.map(mapApiOwnerToDashboard);
+        setOwnersData(mapped);
+        localStorage.setItem("ql_admin_owners_list", JSON.stringify(mapped));
+      } else if (res.status === 401 || res.status === 403) {
+        console.warn("Owner API auth restriction:", data?.detail || res.statusText);
+        setOwnersError(data?.detail || "Admin authentication required to load owners.");
+        setOwnersData([]);
+      } else {
+        console.warn("Owner API failed:", data);
+        setOwnersError(data?.detail || data?.message || "Failed to load owners.");
+        setOwnersData([]);
+      }
+    } catch (err) {
+      console.error("fetchOwners error:", err);
+      setOwnersError("Could not connect to server. Please check your internet connection.");
+      setOwnersData([]);
+    } finally {
+      setIsOwnersLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOwners();
+  }, []);
 
   // Modals & Forms State
   const [detailModalOwner, setDetailModalOwner] = useState(null);
@@ -1437,12 +1474,61 @@ export function AdminDashboard() {
     setTimeout(() => setSettingsSavedToast(false), 3000);
   };
 
-  const handleAddOwnerSubmit = (e) => {
+  const handleAddOwnerSubmit = async (e) => {
     e.preventDefault();
     if (!newOwnerForm.name || !newOwnerForm.email) {
       alert("Please fill in Owner Name and Email.");
       return;
     }
+
+    const token =
+      localStorage.getItem("token") ||
+      localStorage.getItem("ql_admin_token") ||
+      sessionStorage.getItem("token") ||
+      "";
+
+    // Attempt backend POST /owner/add
+    try {
+      const loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      const adminUserId = loggedUser.user_id || loggedUser.userid || 1;
+      const addRes = await fetch("https://queueless-backend-b2qh.onrender.com/owner/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && token !== "ql_admin_session" && token !== "admin_session"
+            ? { Authorization: `Bearer ${token}` }
+            : {}),
+        },
+        body: JSON.stringify({
+          admin_user_id: Number(adminUserId),
+          fullname: newOwnerForm.name.trim(),
+          email: newOwnerForm.email.trim(),
+          password: "OwnerDefault@123",
+          phone: (newOwnerForm.phone || "").replace(/\D/g, "") || "9876500000",
+          max_shop_count: Number(newOwnerForm.shops) || 5,
+          backup_id: 1,
+        }),
+      });
+
+      if (addRes.ok) {
+        await fetchOwners();
+        setAddOwnerModalOpen(false);
+        setNewOwnerForm({
+          name: "",
+          email: "",
+          phone: "",
+          shops: 1,
+          joinedDate: new Date().toISOString().split("T")[0],
+          address: "",
+        });
+        setSettingsSavedToast(true);
+        setTimeout(() => setSettingsSavedToast(false), 3000);
+        return;
+      }
+    } catch (err) {
+      console.warn("Could not reach /owner/add, adding locally:", err);
+    }
+
     const newId = ownersData.length ? Math.max(...ownersData.map((o) => o.id)) + 1 : 1;
     const initial = newOwnerForm.name.charAt(0).toUpperCase();
 
@@ -1973,7 +2059,13 @@ export function AdminDashboard() {
                       <div className="ql-stat-icon-wrap">{item.icon}</div>
                       <div className="ql-stat-body">
                         <div className="ql-stat-label">{item.label}</div>
-                        <div className="ql-stat-number">{item.value}</div>
+                        <div className="ql-stat-number">
+                          {item.id === "owners"
+                            ? isOwnersLoading
+                              ? "..."
+                              : String(ownersData.length)
+                            : item.value}
+                        </div>
                       </div>
                     </div>
                     <div className="ql-stat-bottom">
@@ -2174,77 +2266,107 @@ export function AdminDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredOwners.slice(0, 5).map((owner, index) => (
-                          <tr key={owner.id}>
-                            <td className="col-hide-mobile">{index + 1}</td>
-                            <td>
-                              <div className="ql-owner-info">
-                                <span
-                                  className="ql-owner-avatar"
-                                  style={{
-                                    backgroundColor: owner.avatarBg,
-                                    color: owner.avatarColor,
-                                    overflow: "hidden",
-                                  }}
-                                >
-                                  {owner.avatarImg ? (
-                                    <img src={owner.avatarImg} alt={owner.name} className="ql-avatar-fill-img" />
-                                  ) : (
-                                    owner.name ? owner.name.trim().charAt(0).toUpperCase() : (owner.initial || "O")
-                                  )}
-                                </span>
-                                <div className="ql-owner-details">
-                                  <span className="ql-owner-name">{owner.name}</span>
-                                  <span className="ql-owner-email col-hide-mobile">{owner.email}</span>
-                                  <span className="ql-owner-phone-mobile col-show-mobile">{owner.phone}</span>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="col-hide-mobile">{owner.phone}</td>
-                            <td style={{ textAlign: "center", fontWeight: "700" }}>{owner.shops}</td>
-                            <td>
+                        {isOwnersLoading ? (
+                          <tr>
+                            <td colSpan="7" style={{ textAlign: "center", padding: "28px", color: "var(--admin-text-muted)" }}>
                               <span
-                                className={`ql-badge-pill ${
-                                  owner.status === "Active"
-                                    ? "active"
-                                    : owner.status === "Expiring Soon"
-                                    ? "expiring"
-                                    : "suspended"
-                                }`}
-                              >
-                                <span className="dot" />
-                                {owner.status}
-                              </span>
+                                style={{
+                                  display: "inline-block",
+                                  width: "16px",
+                                  height: "16px",
+                                  border: "2px solid #cbd5e1",
+                                  borderTopColor: "#1960f7",
+                                  borderRadius: "50%",
+                                  animation: "qlModalSpin 0.7s linear infinite",
+                                  verticalAlign: "middle",
+                                  marginRight: "8px",
+                                }}
+                              />
+                              Loading owners from API...
                             </td>
-                            <td className="col-hide-mobile">{owner.joinedOn}</td>
-                            <td>
-                              <div className="ql-row-actions">
-                                <button
-                                  type="button"
-                                  className="ql-action-icon blue"
-                                  title="View Owner Details"
-                                  onClick={() => setDetailModalOwner(owner)}
-                                >
-                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                    <circle cx="12" cy="12" r="3" />
-                                  </svg>
-                                </button>
-                                <button
-                                  type="button"
-                                  className="ql-action-icon red"
-                                  title="Delete Owner"
-                                  onClick={() => handleDeleteOwner(owner.id, owner.name)}
-                                >
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                    <polyline points="3 6 5 6 21 6" />
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                                  </svg>
-                                </button>
+                          </tr>
+                        ) : filteredOwners.length === 0 ? (
+                          <tr>
+                            <td colSpan="7" style={{ textAlign: "center", padding: "32px 16px", color: "var(--admin-text-muted)" }}>
+                              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
+                                <span style={{ fontWeight: "600", fontSize: "13.5px", color: "var(--admin-text-main)" }}>No owners registered</span>
+                                <span style={{ fontSize: "12px" }}>Real registered owners will appear here automatically.</span>
                               </div>
                             </td>
                           </tr>
-                        ))}
+                        ) : (
+                          filteredOwners.slice(0, 5).map((owner, index) => (
+                            <tr key={owner.id}>
+                              <td className="col-hide-mobile">{index + 1}</td>
+                              <td>
+                                <div className="ql-owner-info">
+                                  <span
+                                    className="ql-owner-avatar"
+                                    style={{
+                                      backgroundColor: owner.avatarBg,
+                                      color: owner.avatarColor,
+                                      overflow: "hidden",
+                                    }}
+                                  >
+                                    {owner.avatarImg ? (
+                                      <img src={owner.avatarImg} alt={owner.name} className="ql-avatar-fill-img" />
+                                    ) : (
+                                      owner.name ? owner.name.trim().charAt(0).toUpperCase() : (owner.initial || "O")
+                                    )}
+                                  </span>
+                                  <div className="ql-owner-details">
+                                    <span className="ql-owner-name">{owner.name}</span>
+                                    <span className="ql-owner-email col-hide-mobile">{owner.email}</span>
+                                    <span className="ql-owner-phone-mobile col-show-mobile">{owner.phone}</span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="col-hide-mobile">{owner.phone}</td>
+                              <td style={{ textAlign: "center", fontWeight: "700" }}>{owner.shops}</td>
+                              <td>
+                                <span
+                                  className={`ql-badge-pill ${
+                                    owner.status === "Active"
+                                      ? "active"
+                                      : owner.status === "Expiring Soon"
+                                      ? "expiring"
+                                      : "suspended"
+                                  }`}
+                                >
+                                  <span className="dot" />
+                                  {owner.status}
+                                </span>
+                              </td>
+                              <td className="col-hide-mobile">{owner.joinedOn}</td>
+                              <td>
+                                <div className="ql-row-actions">
+                                  <button
+                                    type="button"
+                                    className="ql-action-icon blue"
+                                    title="View Owner Details"
+                                    onClick={() => setDetailModalOwner(owner)}
+                                  >
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                      <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="ql-action-icon red"
+                                    title="Delete Owner"
+                                    onClick={() => handleDeleteOwner(owner.id, owner.name)}
+                                  >
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                      <polyline points="3 6 5 6 21 6" />
+                                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -2295,42 +2417,29 @@ export function AdminDashboard() {
           {/* ═════════ TAB 2: OWNERS MANAGEMENT ═════════ */}
           {activeTab === "owners" && (
             detailModalOwner ? (() => {
-              // Associated shops for this owner
+              // Associated shops for this owner (real shops only, no mock shops)
               const ownerShops = ALL_SHOPS_DATA.filter(
                 (s) => s.owner && s.owner.toLowerCase() === detailModalOwner.name.toLowerCase()
               );
-              const displayShops = ownerShops.length > 0 ? ownerShops : [
-                {
-                  id: `shop-${detailModalOwner.id}-1`,
-                  name: `${detailModalOwner.name.split(" ")[0]}'s Express Counter`,
-                  category: "General Retail & Services",
-                  owner: detailModalOwner.name,
-                  phone: detailModalOwner.phone,
-                  status: detailModalOwner.status === "Suspended" ? "Closed" : "Active",
-                  currentServing: `TK-0${detailModalOwner.id}2`,
-                  waitingCount: 8,
-                  avgWaitTime: "6 mins",
-                  dailyTokens: 112,
-                },
-                ...(detailModalOwner.shops > 1 ? [
-                  {
-                    id: `shop-${detailModalOwner.id}-2`,
-                    name: `${detailModalOwner.name.split(" ")[0]} Branch 2`,
-                    category: "Customer Support & Token Desk",
+              const apiShops = Array.isArray(detailModalOwner.parsedShopDetails)
+                ? detailModalOwner.parsedShopDetails.map((sh, idx) => ({
+                    id: sh.shop_id || `shop-api-${idx}`,
+                    name: sh.shop_name || sh.name || "Counter",
+                    category: sh.category || "Retail",
                     owner: detailModalOwner.name,
                     phone: detailModalOwner.phone,
                     status: detailModalOwner.status === "Suspended" ? "Closed" : "Active",
-                    currentServing: `TK-0${detailModalOwner.id}8`,
-                    waitingCount: 12,
-                    avgWaitTime: "10 mins",
-                    dailyTokens: 86,
-                  }
-                ] : [])
-              ];
+                    currentServing: sh.current_serving || `TK-${String(idx + 1).padStart(3, "0")}`,
+                    waitingCount: sh.waiting_count || 0,
+                    avgWaitTime: sh.avg_wait_time || "5 mins",
+                    dailyTokens: sh.daily_tokens || 0,
+                  }))
+                : [];
+              const displayShops = apiShops.length > 0 ? apiShops : ownerShops;
 
               const currentOwnerAvatar = detailModalOwner.avatarRemoved
                 ? null
-                : (detailModalOwner.avatarImg || (detailModalOwner.avatarRemoved !== true ? RECENT_OWNERS.find((r) => r.id === detailModalOwner.id)?.avatarImg : null) || null);
+                : (detailModalOwner.avatarImg || null);
 
               return (
                 <div className="ql-tab-view ql-owner-details-full-page">
@@ -2636,58 +2745,69 @@ export function AdminDashboard() {
                     /* TAB CONTENT: REGISTERED SHOPS */
                     <div className="ql-owner-shops-view">
                       <div className="ql-owner-shops-grid">
-                        {displayShops.map((shop, idx) => (
-                          <div key={shop.id || idx} className="ql-owner-shop-card">
-                            <div className="ql-owner-shop-card-header">
-                              <div className="ql-owner-shop-badge-icon">
-                                {shop.category?.includes("Cafe") || shop.category?.includes("Dining")
-                                  ? "☕"
-                                  : shop.category?.includes("Health")
-                                  ? "🏥"
-                                  : shop.category?.includes("Fitness")
-                                  ? "💪"
-                                  : "🏪"}
-                              </div>
-                              <div>
-                                <h4 className="ql-owner-shop-title">{shop.name}</h4>
-                                <p className="ql-owner-shop-category">{shop.category}</p>
-                              </div>
-                              <span className={`ql-badge-pill ${shop.status === "Active" ? "active" : "suspended"}`} style={{ marginLeft: "auto" }}>
-                                <span className="dot" />
-                                {shop.status}
-                              </span>
-                            </div>
-
-                            <div className="ql-owner-shop-stats-row">
-                              <div className="ql-owner-shop-stat-col">
-                                <span className="lbl">Current Serving</span>
-                                <span className="val" style={{ color: "var(--admin-blue)" }}>{shop.currentServing}</span>
-                              </div>
-                              <div className="ql-owner-shop-stat-col">
-                                <span className="lbl">Waiting Visitors</span>
-                                <span className="val">{shop.waitingCount} persons</span>
-                              </div>
-                              <div className="ql-owner-shop-stat-col">
-                                <span className="lbl">Avg Wait Time</span>
-                                <span className="val">{shop.avgWaitTime}</span>
-                              </div>
-                            </div>
-
-                            <div className="ql-owner-shop-card-footer">
-                              <button
-                                type="button"
-                                className="ql-btn-secondary"
-                                style={{ width: "100%", justifyContent: "center" }}
-                                onClick={() => {
-                                  setActiveTab("shops");
-                                  setSelectedShopDetail(shop);
-                                }}
-                              >
-                                ⚡ View Shop & Live Queue
-                              </button>
-                            </div>
+                        {displayShops.length === 0 ? (
+                          <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "48px 16px", color: "var(--admin-text-muted)" }}>
+                            <span style={{ fontSize: "14px", fontWeight: "600", display: "block", marginBottom: "4px", color: "var(--admin-text-main)" }}>
+                              No shops registered yet
+                            </span>
+                            <span style={{ fontSize: "12px" }}>
+                              This owner currently has no registered shops in the database.
+                            </span>
                           </div>
-                        ))}
+                        ) : (
+                          displayShops.map((shop, idx) => (
+                            <div key={shop.id || idx} className="ql-owner-shop-card">
+                              <div className="ql-owner-shop-card-header">
+                                <div className="ql-owner-shop-badge-icon">
+                                  {shop.category?.includes("Cafe") || shop.category?.includes("Dining")
+                                    ? "☕"
+                                    : shop.category?.includes("Health")
+                                    ? "🏥"
+                                    : shop.category?.includes("Fitness")
+                                    ? "💪"
+                                    : "🏪"}
+                                </div>
+                                <div>
+                                  <h4 className="ql-owner-shop-title">{shop.name}</h4>
+                                  <p className="ql-owner-shop-category">{shop.category}</p>
+                                </div>
+                                <span className={`ql-badge-pill ${shop.status === "Active" ? "active" : "suspended"}`} style={{ marginLeft: "auto" }}>
+                                  <span className="dot" />
+                                  {shop.status}
+                                </span>
+                              </div>
+
+                              <div className="ql-owner-shop-stats-row">
+                                <div className="ql-owner-shop-stat-col">
+                                  <span className="lbl">Current Serving</span>
+                                  <span className="val" style={{ color: "var(--admin-blue)" }}>{shop.currentServing}</span>
+                                </div>
+                                <div className="ql-owner-shop-stat-col">
+                                  <span className="lbl">Waiting Visitors</span>
+                                  <span className="val">{shop.waitingCount} persons</span>
+                                </div>
+                                <div className="ql-owner-shop-stat-col">
+                                  <span className="lbl">Avg Wait Time</span>
+                                  <span className="val">{shop.avgWaitTime}</span>
+                                </div>
+                              </div>
+
+                              <div className="ql-owner-shop-card-footer">
+                                <button
+                                  type="button"
+                                  className="ql-btn-secondary"
+                                  style={{ width: "100%", justifyContent: "center" }}
+                                  onClick={() => {
+                                    setActiveTab("shops");
+                                    setSelectedShopDetail(shop);
+                                  }}
+                                >
+                                  ⚡ View Shop & Live Queue
+                                </button>
+                              </div>
+                            </div>
+                          ))
+                        )}
                       </div>
                     </div>
                   )}
@@ -2699,19 +2819,25 @@ export function AdminDashboard() {
                 <div className="ql-tab-stats-bar">
                   <div className="ql-tab-stat-pill">
                     <span className="lbl">Total Registered Owners</span>
-                    <span className="val">{RECENT_OWNERS.length}</span>
+                    <span className="val">{isOwnersLoading ? "..." : ownersData.length}</span>
                   </div>
                   <div className="ql-tab-stat-pill">
                     <span className="lbl">Active Subscriptions</span>
-                    <span className="val" style={{ color: "var(--admin-green)" }}>3</span>
+                    <span className="val" style={{ color: "var(--admin-green)" }}>
+                      {isOwnersLoading ? "..." : ownersData.filter((o) => o.status === "Active").length}
+                    </span>
                   </div>
                   <div className="ql-tab-stat-pill">
                     <span className="lbl">Expiring Soon</span>
-                    <span className="val" style={{ color: "var(--admin-amber)" }}>1</span>
+                    <span className="val" style={{ color: "var(--admin-amber)" }}>
+                      {isOwnersLoading ? "..." : ownersData.filter((o) => o.status === "Expiring Soon").length}
+                    </span>
                   </div>
                   <div className="ql-tab-stat-pill">
                     <span className="lbl">Suspended</span>
-                    <span className="val" style={{ color: "var(--admin-red)" }}>1</span>
+                    <span className="val" style={{ color: "var(--admin-red)" }}>
+                      {isOwnersLoading ? "..." : ownersData.filter((o) => o.status === "Suspended").length}
+                    </span>
                   </div>
                 </div>
 
@@ -2732,13 +2858,46 @@ export function AdminDashboard() {
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    className="ql-btn-primary"
-                    onClick={() => setAddOwnerModalOpen(true)}
-                  >
-                    <span>+</span> Add New Owner
-                  </button>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <button
+                      type="button"
+                      className="ql-btn-secondary"
+                      onClick={fetchOwners}
+                      disabled={isOwnersLoading}
+                      title="Sync with backend database"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        cursor: isOwnersLoading ? "wait" : "pointer",
+                      }}
+                    >
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{
+                          animation: isOwnersLoading ? "qlModalSpin 0.7s linear infinite" : "none",
+                        }}
+                      >
+                        <polyline points="23 4 23 10 17 10" />
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                      </svg>
+                      <span>{isOwnersLoading ? "Syncing..." : "Refresh"}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="ql-btn-primary"
+                      onClick={() => setAddOwnerModalOpen(true)}
+                    >
+                      <span>+</span> Add New Owner
+                    </button>
+                  </div>
                 </div>
 
                 <div className="ql-card" style={{ flex: 1, minHeight: "350px", overflow: "hidden" }}>
@@ -2757,7 +2916,74 @@ export function AdminDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredOwners.map((owner, index) => (
+                        {isOwnersLoading ? (
+                          <tr>
+                            <td colSpan="8" style={{ textAlign: "center", padding: "48px 16px", color: "var(--admin-text-muted)" }}>
+                              <span
+                                style={{
+                                  display: "inline-block",
+                                  width: "20px",
+                                  height: "20px",
+                                  border: "2.5px solid #cbd5e1",
+                                  borderTopColor: "#1960f7",
+                                  borderRadius: "50%",
+                                  animation: "qlModalSpin 0.7s linear infinite",
+                                  verticalAlign: "middle",
+                                  marginRight: "10px",
+                                }}
+                              />
+                              Fetching registered owners from API...
+                            </td>
+                          </tr>
+                        ) : ownersError ? (
+                          <tr>
+                            <td colSpan="8" style={{ textAlign: "center", padding: "36px 16px", color: "#ef4444" }}>
+                              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+                                <span style={{ fontWeight: "600", fontSize: "14px" }}>{ownersError}</span>
+                                <button
+                                  type="button"
+                                  onClick={fetchOwners}
+                                  style={{
+                                    padding: "6px 16px",
+                                    borderRadius: "8px",
+                                    border: "1px solid #ef4444",
+                                    background: "#fee2e2",
+                                    color: "#b91c1c",
+                                    fontWeight: "600",
+                                    fontSize: "12px",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  Retry Fetch
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : filteredOwners.length === 0 ? (
+                          <tr>
+                            <td colSpan="8" style={{ textAlign: "center", padding: "48px 16px", color: "var(--admin-text-muted)" }}>
+                              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+                                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                  <circle cx="9" cy="7" r="4" />
+                                  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                </svg>
+                                <span style={{ fontWeight: "700", fontSize: "15px", color: "var(--admin-text-main)" }}>No Owners Found</span>
+                                <span style={{ fontSize: "13px" }}>There are currently no owners in the database.</span>
+                                <button
+                                  type="button"
+                                  className="ql-btn-primary"
+                                  style={{ marginTop: "8px" }}
+                                  onClick={() => setAddOwnerModalOpen(true)}
+                                >
+                                  + Add First Owner
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : (
+                          filteredOwners.map((owner, index) => (
                           <tr key={owner.id}>
                             <td>{index + 1}</td>
                             <td>
@@ -2837,7 +3063,7 @@ export function AdminDashboard() {
                               </div>
                             </td>
                           </tr>
-                        ))}
+                        )))}
                       </tbody>
                     </table>
                   </div>
