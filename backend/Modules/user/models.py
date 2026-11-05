@@ -47,3 +47,6 @@ class AddOwnerRequest(BaseModel):
     phone: str
     max_shop_count: int
     backup_id:int   
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token : str
