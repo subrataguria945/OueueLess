@@ -1,0 +1,217 @@
+# Queueless Project -- Stored Procedures Documentation
+
+এই ডকুমেন্টে Queueless Project-এর চারটি Stored Procedure-এর কাজ, Calling
+Query, Inputs, Possible Outputs এবং Critical Scenarios সহজ বাংলায় তুলে
+ধরা হয়েছে।
+
+------------------------------------------------------------------------
+
+# 1. `sp_AddOwner`
+
+## SP-এর আসল কাজ কী?
+
+নতুন Owner তৈরি করা। শুধু Admin নতুন Owner যোগ করতে পারবে। প্রথমে `Owners`
+table-এ তথ্য ঢুকবে, সেখান থেকে নতুন `ownerid` পাওয়া যাবে। তারপর সেই
+`ownerid` ব্যবহার করে `Users` table-এ Owner-এর বাকি তথ্য যোগ হবে।
+
+## SP Calling Query
+
+``` sql
+CALL public.sp_add_owner(
+    -- Input parameters
+    -- Output parameters
+);
+```
+
+## Inputs
+
+-   Admin-এর User ID
+-   Owner-এর Full Name
+-   Email
+-   Phone
+-   Password
+-   Maximum Shop Count
+-   Backup ID (Optional)
+
+## Possible Output
+
+  Output                     অর্থ
+  -------------------------- ------------------------------------
+  `SUCCESS`                  Owner সফলভাবে তৈরি হয়েছে
+  `ERR_UNAUTHORIZED`         Admin ছাড়া অন্য কেউ যোগ করতে চেয়েছে
+  `ERR_DUPLICATE_EMAIL`      এই Email আগে থেকেই আছে
+  `ERR_INVALID_ROLE`         Owner-এর Role ID সঠিক নয়
+  `ERR_INVALID_SHOP_COUNT`   Shop Count সঠিক নয়
+  `ERR_SYSTEM`               Database-এ সমস্যা হয়েছে
+
+## Any Critical Scenario
+
+-   শুধু Active Admin Owner যোগ করতে পারবে।
+-   একই Email দিয়ে একাধিক User তৈরি হবে না।
+-   Owner table-এ data insert হওয়ার পর Users table-এ insert ব্যর্থ হলে
+    আগের insertion-ও rollback হবে।
+-   Password কখনো সরাসরি database-এ রাখা হবে না, hash করে রাখতে হবে।
+-   Owner-এর Role ID হবে `2`।
+
+------------------------------------------------------------------------
+
+# 2. `sp_UpdateUser`
+
+## SP-এর আসল কাজ কী?
+
+আগে থেকে থাকা User-এর ব্যক্তিগত তথ্য পরিবর্তন করা। যেমন User নিজের নাম,
+Phone Number বা Profile Picture পরিবর্তন করতে পারবে।
+
+## SP Calling Query
+
+``` sql
+CALL public.sp_update_user(
+    10,                         -- User ID
+    'Rahul Jana',               -- Full Name
+    '9876543210',               -- Phone
+    'profile-image-url',        -- Profile Image
+    NULL,
+    NULL
+);
+```
+
+## Inputs
+
+-   User ID
+-   Full Name
+-   Phone Number (Optional)
+-   Profile Image (Optional)
+
+## Possible Output
+
+  Output                 অর্থ
+  ---------------------- ----------------------------
+  `SUCCESS`              User-এর তথ্য পরিবর্তন হয়েছে
+  `ERR_INVALID_USER`     User ID সঠিক নয়
+  `ERR_USER_NOT_FOUND`   এই User পাওয়া যায়নি
+  `ERR_INVALID_NAME`     নাম দেওয়া হয়নি
+  `ERR_PHONE_LENGTH`     Phone Number-এর দৈর্ঘ্য বেশি
+  `ERR_SYSTEM`           Database-এ সমস্যা হয়েছে
+
+## Any Critical Scenario
+
+-   যে User login করেছে, সে শুধু নিজের তথ্য পরিবর্তন করতে পারবে।
+-   অন্য User-এর ID দিয়ে তার তথ্য পরিবর্তন করা যাবে না।
+-   Email, Password, Role ID এবং Owner ID এই procedure দিয়ে পরিবর্তন করা
+    যাবে না।
+-   Password পরিবর্তনের জন্য আলাদা `sp_manage_password` ব্যবহার হবে।
+-   তথ্য পরিবর্তনের সময় `updatedat` স্বয়ংক্রিয়ভাবে update হবে।
+
+------------------------------------------------------------------------
+
+# 3. `sp_UpdateOwnerStatus`
+
+## SP-এর আসল কাজ কী?
+
+কোনো Owner-এর Account Active অথবা Inactive করা।
+
+যদি Admin কোনো Owner-কে সাময়িকভাবে বন্ধ করতে চায়, তাহলে তার Status
+Inactive করবে। আবার প্রয়োজন হলে Active করতে পারবে।
+
+## SP Calling Query
+
+``` sql
+CALL public.sp_update_owner_status(
+    1,       -- Admin User ID
+    10,      -- Owner ID
+    FALSE,   -- New Status
+    NULL,
+    NULL
+);
+```
+
+এখানে:
+
+-   `TRUE` = Active
+-   `FALSE` = Inactive
+
+## Inputs
+
+-   Admin User ID
+-   Owner ID
+-   New Status (`TRUE` / `FALSE`)
+
+## Possible Output
+
+  Output                  অর্থ
+  ----------------------- -------------------------------
+  `SUCCESS`               Owner-এর Status পরিবর্তন হয়েছে
+  `ERR_UNAUTHORIZED`      Admin অনুমতি নেই
+  `ERR_OWNER_NOT_FOUND`   Owner পাওয়া যায়নি
+  `ERR_INVALID_STATUS`    Status সঠিক নয়
+  `ERR_SYSTEM`            Database-এ সমস্যা হয়েছে
+
+## Any Critical Scenario
+
+-   শুধু Active Admin Owner-এর Status পরিবর্তন করতে পারবে।
+-   Owner ID সঠিক হতে হবে।
+-   একই Status আবার দিতে চাইলে অপ্রয়োজনীয় update না করাই ভালো।
+-   Owner Inactive হলে তার account দিয়ে login বা Owner-এর কাজ করা যাবে
+    না।
+-   Owner-এর Shop-গুলোর Status স্বয়ংক্রিয়ভাবে পরিবর্তন হবে কি না, সেটা আলাদা
+    business rule হিসেবে ঠিক করতে হবে।
+-   Owner-এর Status পরিবর্তন করলে সংশ্লিষ্ট `Users.status`-এর সঙ্গেও সামঞ্জস্য
+    রাখতে হবে।
+
+------------------------------------------------------------------------
+
+# 4. `sp_DeleteOwner`
+
+## SP-এর আসল কাজ কী?
+
+কোনো Owner-কে সম্পূর্ণভাবে Database থেকে Delete করা। এই কাজ শুধু Admin করতে
+পারবে।
+
+প্রথমে পরীক্ষা করবে Owner-এর অধীনে কোনো Shop আছে কি না। Shop থাকলে Owner
+Delete করা যাবে না। Shop না থাকলে সংশ্লিষ্ট `Users` record এবং `Owners`
+record delete হবে।
+
+## SP Calling Query
+
+``` sql
+CALL public.sp_delete_owner(
+    1,       -- Admin User ID
+    10,      -- Owner ID
+    NULL,
+    NULL
+);
+```
+
+## Inputs
+
+-   Admin User ID
+-   Owner ID
+
+## Possible Output
+
+  Output                       অর্থ
+  ---------------------------- ----------------------------------------
+  `SUCCESS`                    Owner সফলভাবে Delete হয়েছে
+  `ERR_UNAUTHORIZED`           শুধু Admin Delete করতে পারবে
+  `ERR_INVALID_OWNER`          Owner ID সঠিক নয়
+  `ERR_OWNER_NOT_FOUND`        Owner পাওয়া যায়নি
+  `ERR_OWNER_HAS_SHOPS`        Owner-এর অধীনে Shop আছে
+  `ERR_OWNER_USER_NOT_FOUND`   Owner-এর User record পাওয়া যায়নি
+  `ERR_OWNER_REFERENCED`       অন্য কোনো Table Owner-কে Reference করছে
+  `ERR_SYSTEM`                 Database-এ সমস্যা হয়েছে
+
+## Any Critical Scenario
+
+-   শুধু Active Admin Owner Delete করতে পারবে।
+-   Owner-এর অধীনে একটি Shop থাকলেও Delete করা যাবে না।
+-   Shop reference থাকলে উপযুক্ত Error Message দেখাবে।
+-   Owner-এর সঙ্গে যুক্ত `Users` record-ও Delete করতে হবে।
+-   প্রথমে `Users` থেকে এবং তারপর `Owners` থেকে Delete করতে হবে, কারণ
+    `Users.ownerid` হলো `Owners.ownerid`-এর Foreign Key।
+-   কোনো একটি Delete ব্যর্থ হলে দুটো Delete-ই Rollback হবে।
+-   অন্য কোনো Table থেকে Owner reference করা থাকলেও Delete আটকাতে হবে।
+-   Owner-এর `backupid` অন্য Owner-কে reference করলে সেটিও পরীক্ষা করতে
+    হবে।
+
+------------------------------------------------------------------------
+
