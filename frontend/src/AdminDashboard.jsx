@@ -5344,7 +5344,7 @@ export function AdminDashboard() {
               </span>
             </div>
 
-            <form onSubmit={handleAddOwnerSubmit} autoComplete="off" style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+            <form onSubmit={handleAddOwnerSubmit} autoComplete="off" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0, overflow: "hidden" }}>
               {/* Neutralize browser credential autofill targeting address/password */}
               <div style={{ position: "absolute", opacity: 0, pointerEvents: "none", height: 0, width: 0, overflow: "hidden" }}>
                 <input type="text" name="fake_user_remembered" tabIndex={-1} autoComplete="off" />
@@ -5353,7 +5353,7 @@ export function AdminDashboard() {
 
               {addOwnerError && (
                 <div style={{
-                  margin: "10px 20px 0",
+                  margin: "8px 16px 0",
                   padding: "10px 14px",
                   borderRadius: "10px",
                   backgroundColor: "#fef2f2",
@@ -5363,7 +5363,8 @@ export function AdminDashboard() {
                   fontWeight: "500",
                   display: "flex",
                   alignItems: "center",
-                  gap: "8px"
+                  gap: "8px",
+                  flexShrink: 0
                 }}>
                   <span>⚠️</span>
                   <span>{addOwnerError}</span>

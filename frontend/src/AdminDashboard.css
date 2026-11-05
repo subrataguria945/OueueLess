@@ -5680,6 +5680,7 @@ html::-webkit-scrollbar {
 .ql-premium-modal-dialog {
   width: 100%;
   max-width: 680px;
+  max-height: 92vh;
   background: var(--admin-modal-bg, #ffffff);
   border-radius: 18px;
   box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.2);
@@ -5864,12 +5865,35 @@ input.ql-input-modern:-webkit-autofill:focus {
 
 .ql-premium-modal-body {
   padding: 12px 20px 14px;
-  overflow: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-height: none !important;
+  flex: 1;
+  min-height: 0;
   box-sizing: border-box;
+}
+
+.ql-premium-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ql-premium-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ql-premium-modal-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.ql-premium-modal-body::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.ql-admin-dashboard.dark .ql-premium-modal-body::-webkit-scrollbar-thumb {
+  background: #334155;
 }
 
 /* Create Login Credentials Section */
@@ -6264,6 +6288,216 @@ input.ql-input-modern:-webkit-autofill:focus {
   background: #0f172a !important;
   border-color: #3b82f6 !important;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+}
+
+/* ── Mobile Responsive for Add Owner Modal (Screens <= 640px) ── */
+@media (max-width: 640px) {
+  .ql-premium-modal-backdrop {
+    padding: 8px;
+    align-items: center;
+  }
+
+  .ql-premium-modal-dialog {
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: 94vh !important;
+    border-radius: 16px !important;
+    margin: 0 !important;
+  }
+
+  .ql-premium-modal-header {
+    padding: 12px 14px !important;
+  }
+
+  .ql-modal-header-left {
+    gap: 10px !important;
+    min-width: 0 !important;
+  }
+
+  .ql-modal-icon-badge {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 8px !important;
+  }
+
+  .ql-modal-icon-badge svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .ql-modal-title-wrap {
+    min-width: 0 !important;
+  }
+
+  .ql-modal-title-wrap h3 {
+    font-size: 15px !important;
+    line-height: 1.2 !important;
+  }
+
+  .ql-modal-title-wrap p {
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 200px !important;
+  }
+
+  .ql-premium-close-btn {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 14px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .ql-modal-preview-strip {
+    margin: 8px 14px 2px !important;
+    padding: 8px 12px !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .ql-preview-left {
+    gap: 8px !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+  }
+
+  .ql-preview-avatar {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 13px !important;
+  }
+
+  .ql-preview-info-name {
+    font-size: 12.5px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 160px !important;
+  }
+
+  .ql-preview-info-sub {
+    font-size: 10.5px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 170px !important;
+  }
+
+  .ql-preview-badge {
+    padding: 2.5px 8px !important;
+    font-size: 10.5px !important;
+    align-self: center !important;
+  }
+
+  .ql-premium-modal-body {
+    padding: 10px 14px 14px !important;
+    gap: 10px !important;
+  }
+
+  .ql-modern-grid-2 {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .ql-modern-grid-3 {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .ql-input-modern {
+    height: 42px !important;
+    font-size: 13.5px !important;
+    border-radius: 9px !important;
+  }
+
+  .ql-input-label-modern {
+    font-size: 12px !important;
+  }
+
+  .ql-input-eye-btn {
+    width: 32px !important;
+    height: 32px !important;
+    right: 8px !important;
+  }
+
+  .ql-cred-box {
+    padding: 12px !important;
+    gap: 10px !important;
+    border-radius: 12px !important;
+  }
+
+  .ql-cred-box .ql-input-modern {
+    padding-right: 42px !important;
+  }
+
+  .ql-cred-header {
+    gap: 8px !important;
+  }
+
+  .ql-cred-icon {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .ql-cred-title {
+    font-size: 13px !important;
+  }
+
+  .ql-cred-subtitle {
+    font-size: 11px !important;
+  }
+
+  .ql-cred-footer-bar {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+    padding-top: 2px !important;
+  }
+
+  .ql-cred-divider {
+    display: none !important;
+  }
+
+  .ql-cred-hint {
+    font-size: 10.5px !important;
+    line-height: 1.35 !important;
+  }
+
+  .ql-premium-modal-footer {
+    padding: 12px 14px !important;
+    flex-direction: column-reverse !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .ql-modal-footer-note {
+    justify-content: center !important;
+    font-size: 11px !important;
+  }
+
+  .ql-modal-footer-btns {
+    width: 100% !important;
+    display: flex !important;
+    gap: 8px !important;
+  }
+
+  .ql-btn-secondary-modern {
+    flex: 1 !important;
+    padding: 11px 12px !important;
+    font-size: 13.5px !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
+
+  .ql-btn-primary-modern {
+    flex: 1.6 !important;
+    padding: 11px 14px !important;
+    font-size: 13.5px !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════════
