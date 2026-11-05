@@ -97,8 +97,7 @@ export function Login({ initialMode = "login", initialForgotOpen = false, onSwit
         return;
       }
 
-      setLoginSuccess(data?.message || "Reset password link sent to your email!");
-      setIsForgotModalOpen(true);
+      setLoginSuccess(data?.message || "Reset password link sent to your email! Please check your inbox.");
       if (onSwitchToForgot) onSwitchToForgot();
     } catch {
       setIsForgotLoading(false);
