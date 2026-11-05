@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from .models import UserLogin , ChangePassword , ResetPassword , VerifyRegistrationOTP , InitiateUserRegister , UserRegisterGoogle
-from Library.Authentication.user.utility import login_user as login , change_password , initiate_register , veriy_and_register_user , register_google_user
+from .models import UserLogin , ForgetPassword, ChangePassword , ResetPassword , VerifyRegistrationOTP , InitiateUserRegister , UserRegisterGoogle,AddOwnerRequest
+from Library.Authentication.user.utility import login_user as login , change_password as change_pass, initiate_register , veriy_and_register_user , register_google_user,register_owner , check_and_send_forget_password_link , reset_password as reset_pass
 
 router = APIRouter()
 
@@ -24,11 +24,22 @@ def register_verify(data : VerifyRegistrationOTP):
     response = veriy_and_register_user(data.model_dump())
     return response
 
-@router.post("/password")
-def change_or_reset_password(data : ChangePassword | ResetPassword):
-    data = data.model_dump()
-    if data["action"].upper() == "CHANGE":
-        response = change_password(data)
-    # elif data["action"].upper() == "RESET":
-    #     response = reset_password(data)
+@router.post("/password/change")
+def change_password(data : ChangePassword):
+    response = change_pass(data.model_dump())
     return response
+
+@router.post("/password/forget")
+def forget_password(data : ForgetPassword):
+    response = check_and_send_forget_password_link(data.model_dump())
+    return response
+    
+@router.post("/password/reset")
+def reset_password(data : ResetPassword):
+    response = reset_pass(data.model_dump())
+    return response
+
+@router.post("/owner/add")
+def add_owner(data : AddOwnerRequest):
+    response = register_owner(data.model_dump())
+    return response   

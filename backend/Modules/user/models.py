@@ -29,17 +29,22 @@ class InitiateUserRegister(BaseModel):
 class ChangePassword(BaseModel):
     userid : int
     email : EmailStr
-    action : Literal["CHANGE", "RESET"]
     oldpassword : str
     newpassword : str
 
-    @field_validator("action", mode="before")
-    def to_uppercase(cls, v):
-        if isinstance(v, str):
-            return v.upper()
-        return v
-
 class ResetPassword(BaseModel):
+    reset_token  : str
+    newpassword : str
+    confirm_password : str
+
+class ForgetPassword(BaseModel):
     email : EmailStr
-    action : Literal["RESET"]
-    
+
+class AddOwnerRequest(BaseModel):
+    admin_user_id: int
+    fullname: str
+    email: EmailStr
+    password: str
+    phone: str
+    max_shop_count: int
+    backup_id:int   
