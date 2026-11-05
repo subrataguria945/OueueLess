@@ -5,8 +5,13 @@ const FORGOT_PASSWORD_API_URL =
   import.meta.env.VITE_FORGOT_PASSWORD_API_URL ||
   "https://queueless-backend-b2qh.onrender.com/user/password/forget";
 
+const RESET_PASSWORD_API_URL =
+  import.meta.env.VITE_RESET_PASSWORD_API_URL ||
+  "https://queueless-backend-b2qh.onrender.com/user/password/reset";
+
 export function ForgotPasswordModal({ isOpen, onClose, email = "" }) {
   const [inputEmail, setInputEmail] = useState(email || "");
+  const [token, setToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -19,6 +24,17 @@ export function ForgotPasswordModal({ isOpen, onClose, email = "" }) {
   useEffect(() => {
     if (email) setInputEmail(email);
   }, [email]);
+
+  // Read reset token from URL if available
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      const urlToken = searchParams.get("token") || searchParams.get("reset_token") || "";
+      if (urlToken) {
+        setToken(urlToken);
+      }
+    }
+  }, [isOpen]);
 
   // Strong password checks
   const hasMinLength = newPassword.length >= 8;
@@ -115,13 +131,18 @@ export function ForgotPasswordModal({ isOpen, onClose, email = "" }) {
     setIsLoading(true);
 
     try {
-      const res = await fetch(FORGOT_PASSWORD_API_URL, {
+      const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+      const effectiveToken = (token || searchParams?.get("token") || searchParams?.get("reset_token") || "").trim();
+
+      const res = await fetch(RESET_PASSWORD_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: cleanEmail,
+          reset_token: effectiveToken,
+          newpassword: newPassword,
           new_password: newPassword,
           confirm_password: confirmPassword,
+          email: cleanEmail,
           password: newPassword,
         }),
       });
