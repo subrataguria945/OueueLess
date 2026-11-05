@@ -1,6 +1,5 @@
 from dotenv import load_dotenv
 from Modules.user.routers import router as user_router
-
 from Modules.owner.routers import router as owner_router
 
 load_dotenv()
@@ -21,7 +20,8 @@ app.add_middleware(
 def root():
     return {"message": "Welcome to the QueueLess Backend API"}
 
-# User routes er jonno
+# User routes
 app.include_router(user_router, prefix="/user", tags=["Users"])
 
-app.include_router(owner_router , prefix="/admin", tags=["Admin"])
+# Owner routes
+app.include_router(owner_router, prefix="/owner", tags=["Owner"])

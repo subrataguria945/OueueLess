@@ -27,7 +27,6 @@ class InitiateUserRegister(BaseModel):
 
   
 class ChangePassword(BaseModel):
-    userid : int
     email : EmailStr
     oldpassword : str
     newpassword : str

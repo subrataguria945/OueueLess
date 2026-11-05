@@ -1,361 +1,920 @@
-/* Reset & Base Styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-}
+/* ===================================================
+   QueueLess — Animated Dual Auth (Login & Register)
+   Smooth Sliding Hero Overlay Transition
+   =================================================== */
 
+/* Base document styling */
 html,
 body {
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-  background-color: #0b0b0e;
-  color: #ffffff;
-}
-
-/* Page Wrapper */
-.login-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  width: 100vw;
-  padding: 16px;
-  background-color: #0b0b0e;
-  overflow: hidden;
-}
-
-/* Card Container */
-.login-card {
+  margin: 0;
+  padding: 0;
   width: 100%;
-  max-width: 380px;
-  background-color: #13131c;
-  border: 1px solid #232334;
-  border-radius: 18px;
-  padding: 24px 24px;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
-  text-align: center;
+  min-height: 100%;
 }
 
-/* Brand Section (Logo & Name) */
-.brand-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 14px;
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
-.logo-icon {
-  width: 42px;
-  height: 42px;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  border-radius: 12px;
+/* Auth Pages (.ql-root) scroll lock */
+.ql-root {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.ql-root::-webkit-scrollbar,
+.ql-root *::-webkit-scrollbar {
+  display: none;
+}
+
+:root {
+  --ql-blue: #1960f7;
+  --ql-blue-hover: #1452db;
+  --ql-navy: #0f172a;
+  --ql-text-sub: #64748b;
+  --ql-border: #dde4f0;
+  --ql-hero-width: min(calc(100vh * 484 / 682), 50vw);
+  --ql-form-width: calc(100vw - min(calc(100vh * 484 / 682), 50vw));
+}
+
+/* ── ROOT CONTAINER ──────────────────────────────── */
+.ql-root {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background: linear-gradient(180deg, #f8fbfe 0%, #f4f8fe 25%, #f1f7fe 50%, #f2f8fe 75%, #f5fafd 100%);
+}
+
+/* Floating Ambient Animated Background Glows */
+.ql-root::before,
+.ql-root::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(85px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.55;
+  will-change: transform;
+}
+
+.ql-root::before {
+  width: 520px;
+  height: 520px;
+  top: -140px;
+  left: -80px;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.13) 0%, rgba(147, 197, 253, 0.05) 55%, transparent 70%);
+  animation: qlFloatOrb1 16s ease-in-out infinite alternate;
+}
+
+.ql-root::after {
+  width: 560px;
+  height: 560px;
+  bottom: -160px;
+  right: 12%;
+  background: radial-gradient(circle, rgba(79, 70, 229, 0.10) 0%, rgba(191, 219, 254, 0.04) 55%, transparent 70%);
+  animation: qlFloatOrb2 20s ease-in-out infinite alternate;
+}
+
+@keyframes qlFloatOrb1 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate(50px, 35px) scale(1.08);
+  }
+
+  100% {
+    transform: translate(-25px, 60px) scale(0.94);
+  }
+}
+
+@keyframes qlFloatOrb2 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate(-45px, -35px) scale(1.06);
+  }
+
+  100% {
+    transform: translate(35px, -50px) scale(0.92);
+  }
+}
+
+/* ── FORM STAGE (SYNCHRONIZED OPPOSING SLIDE) ────── */
+.ql-forms-stage {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--ql-form-width);
+  height: 100vh;
+  z-index: 2;
+  overflow: hidden;
+  transition: transform 1.2s cubic-bezier(0.65, 0, 0.35, 1);
+  will-change: transform;
+}
+
+/* In Login mode: Form Stage sits on the LEFT */
+.ql-mode-login .ql-forms-stage {
+  transform: translateX(0);
+}
+
+/* In Register & Forgot mode: Form Stage glides to the RIGHT */
+.ql-mode-register .ql-forms-stage,
+.ql-mode-forgot .ql-forms-stage {
+  transform: translateX(var(--ql-hero-width));
+}
+
+/* ── FORM PANELS (INSIDE THE SLIDING FORM STAGE) ─── */
+.ql-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
-  margin-bottom: 8px;
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+  padding: 12px 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
 }
 
-.brand-name {
-  font-size: 22px;
-  font-weight: 700;
-  color: #ffffff;
-  margin-bottom: 2px;
+.ql-panel::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
-.brand-tagline {
-  font-size: 12px;
-  color: #94a3b8;
+/* Panel transitions: Form progressively morphs in-flight as the stage travels */
+.ql-mode-login .ql-panel-login {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1) translateX(0);
+  transition: opacity 0.85s cubic-bezier(0.4, 0, 0.2, 1) 0.2s, transform 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.2s;
 }
 
-/* Title & Subtitle */
-.card-title-group {
-  margin-bottom: 14px;
+.ql-mode-login .ql-panel-register,
+.ql-mode-login .ql-panel-forgot {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.97) translateX(35px);
+  transition: opacity 0.75s cubic-bezier(0.4, 0, 0.2, 1) 0.05s, transform 0.85s cubic-bezier(0.4, 0, 0.2, 1) 0.05s;
 }
 
-.card-title-group h2 {
-  font-size: 18px;
-  font-weight: 700;
-  color: #ffffff;
-  margin-bottom: 2px;
+/* While traveling to Register: Login smoothly dissolves across the journey, Register smoothly emerges */
+.ql-mode-register .ql-panel-login {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.97) translateX(35px);
+  transition: opacity 0.75s cubic-bezier(0.4, 0, 0.2, 1) 0.05s, transform 0.85s cubic-bezier(0.4, 0, 0.2, 1) 0.05s;
 }
 
-.card-title-group p {
-  font-size: 12px;
-  color: #8e8ea8;
+.ql-mode-register .ql-panel-register {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1) translateX(0);
+  transition: opacity 0.85s cubic-bezier(0.4, 0, 0.2, 1) 0.2s, transform 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.2s;
 }
 
-/* Form Styles */
-.login-form {
+.ql-mode-register .ql-panel-forgot {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.97) translateX(-35px);
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0s, transform 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0s;
+}
+
+/* While traveling to Forgot Password */
+.ql-mode-forgot .ql-panel-login {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.97) translateX(35px);
+  transition: opacity 0.75s cubic-bezier(0.4, 0, 0.2, 1) 0.05s, transform 0.85s cubic-bezier(0.4, 0, 0.2, 1) 0.05s;
+}
+
+.ql-mode-forgot .ql-panel-register {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.97) translateX(-35px);
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0s, transform 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0s;
+}
+
+.ql-mode-forgot .ql-panel-forgot {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1) translateX(0);
+  transition: opacity 0.85s cubic-bezier(0.4, 0, 0.2, 1) 0.2s, transform 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.2s;
+}
+
+.ql-inner {
+  width: 100%;
+  max-width: 440px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  text-align: left;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.form-group label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #d1d5db;
-}
-
-.label-row {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 12px;
+  margin: auto;
 }
 
-.forgot-link {
-  font-size: 12px;
-  color: #818cf8;
-  text-decoration: none;
+/* ── BRAND LOGO ──────────────────────────────────── */
+.ql-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  user-select: none;
 }
 
-.forgot-link:hover {
+.ql-brand-img {
+  width: 320px;
+  max-width: 90%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ql-brand-img:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+
+/* ── AUTH CARD ───────────────────────────────────── */
+.ql-panel .ql-card {
+  width: 100%;
+  border-radius: 20px;
+  padding: 24px 32px 20px;
+  box-shadow:
+    0 20px 48px -12px rgba(16, 40, 80, 0.09),
+    0 4px 14px -2px rgba(16, 40, 80, 0.04);
+  border: 1px solid rgba(226, 235, 246, 0.85);
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+/* Card Header */
+.ql-panel .ql-card-head {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  margin-bottom: 20px !important;
+  width: 100% !important;
+}
+
+.ql-head-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.ql-panel .ql-card-title {
+  font-size: 26px !important;
+  font-weight: 800 !important;
+  color: #0d1b35 !important;
+  margin: 0 0 6px 0 !important;
+  letter-spacing: -0.4px !important;
+  line-height: 1.25 !important;
+}
+
+.ql-panel .ql-card-sub {
+  font-size: 14px !important;
+  color: #64748b !important;
+  font-weight: 450 !important;
+  margin: 0 !important;
+  line-height: 1.4 !important;
+}
+
+.ql-already-text {
+  font-size: 13px;
+  color: var(--ql-text-sub);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.ql-link-btn {
+  background: none;
+  border: none;
+  color: var(--ql-blue);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  margin-left: 3px;
+}
+
+.ql-link-btn:hover {
   text-decoration: underline;
 }
 
-/* Input Fields */
-.input-field {
-  position: relative;
+/* ── ALERTS ──────────────────────────────────────── */
+.ql-alert {
   display: flex;
   align-items: center;
-}
-
-.input-icon {
-  position: absolute;
-  left: 12px;
-  color: #6b7280;
-  display: flex;
-  align-items: center;
-  pointer-events: none;
-}
-
-.input-field input {
-  width: 100%;
-  height: 40px;
-  background-color: #1a1a26;
-  border: 1px solid #2a2a3d;
-  border-radius: 8px;
-  padding: 0 36px 0 38px;
-  color: #ffffff;
+  gap: 9px;
+  padding: 10px 14px;
+  border-radius: 10px;
   font-size: 13px;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.input-field input::placeholder {
-  color: #525266;
-}
-
-.input-field input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-}
-
-.toggle-eye {
-  position: absolute;
-  right: 10px;
-  background: none;
-  border: none;
-  color: #6b7280;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  padding: 4px;
-}
-
-.toggle-eye:hover {
-  color: #9ca3af;
-}
-
-/* Remember Me Checkbox */
-.remember-row {
-  display: flex;
-  align-items: center;
-  margin-top: 1px;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #9ca3af;
-  cursor: pointer;
-}
-
-.checkbox-label input {
-  width: 15px;
-  height: 15px;
-  accent-color: #6366f1;
-  cursor: pointer;
-}
-
-/* Alert Messages */
-.alert-message {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 12px;
-  margin-bottom: 12px;
-  text-align: left;
+  font-weight: 450;
   line-height: 1.4;
-  animation: fadeIn 0.25s ease-out;
+  margin-bottom: 14px;
+  animation: qlAlertFade 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.alert-message svg {
-  flex-shrink: 0;
-}
-
-.error-alert {
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #fca5a5;
-}
-
-.success-alert {
-  background: rgba(34, 197, 94, 0.12);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  color: #86efac;
-}
-
-@keyframes fadeIn {
+@keyframes qlAlertFade {
   from {
     opacity: 0;
     transform: translateY(-4px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-/* Submit Button */
-.submit-btn {
+.ql-alert-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.06);
+}
+
+.ql-alert-success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+  box-shadow: 0 1px 3px rgba(22, 101, 52, 0.06);
+}
+
+/* ── FORM ────────────────────────────────────────── */
+.ql-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ql-field {
+  position: relative;
+  display: flex;
+  align-items: center;
   width: 100%;
-  height: 40px;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+}
+
+.ql-field-icon {
+  position: absolute;
+  left: 14px;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Eye toggle */
+.ql-eye-btn {
+  position: absolute;
+  right: 13px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  z-index: 3;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s;
+}
+
+.ql-eye-btn:hover {
+  transform: scale(1.15);
+}
+
+.ql-eye-btn:active {
+  transform: scale(0.9);
+}
+
+/* ── OPTIONS ROW ─────────────────────────────────── */
+.ql-row-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 3px 0 5px;
+}
+
+.ql-remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ql-cb-box {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.8px solid #cbd5e1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ql-remember:hover .ql-cb-box {
+  border-color: var(--ql-blue);
+}
+
+.ql-remember-text {
+  font-size: 13.5px;
+  color: #334155;
+  font-weight: 500;
+}
+
+.ql-forgot {
+  font-size: 13.5px;
+  color: var(--ql-blue);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.ql-forgot:hover {
+  color: var(--ql-blue-hover);
+  text-decoration: underline;
+}
+
+/* Terms Checkbox Row in Register */
+.ql-terms-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 12.5px;
+  color: #334155;
+  margin: 3px 0 3px;
+  line-height: 1.35;
+}
+
+.ql-terms-label:hover .ql-cb-box {
+  border-color: var(--ql-blue);
+}
+
+.ql-terms-link {
+  color: var(--ql-blue);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ql-terms-link:hover {
+  text-decoration: underline;
+}
+
+/* ── SUBMIT BUTTON ───────────────────────────────── */
+.ql-submit {
+  width: 100%;
+  height: 48px;
+  background: linear-gradient(135deg, #1960f7 0%, #1153dc 100%);
   color: #ffffff;
   border: none;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 12px;
+  font-size: 15px;
   font-weight: 600;
+  font-family: inherit;
   cursor: pointer;
-  margin-top: 4px;
-  transition: opacity 0.2s, transform 0.1s;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 14px rgba(25, 96, 247, 0.28);
+  position: relative;
+  overflow: hidden;
 }
 
-.submit-btn:hover:not(:disabled) {
-  opacity: 0.95;
-  transform: translateY(-1px);
+.ql-submit:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2467fb 0%, #1555e0 100%);
+  transform: translateY(-1.5px);
+  box-shadow: 0 8px 22px rgba(25, 96, 247, 0.38);
 }
 
-.submit-btn:active:not(:disabled) {
-  transform: translateY(0);
+.ql-submit:active:not(:disabled) {
+  transform: translateY(0.5px) scale(0.99);
+  box-shadow: 0 2px 8px rgba(25, 96, 247, 0.25);
 }
 
-.submit-btn:disabled {
-  opacity: 0.7;
+.ql-submit:disabled {
+  opacity: 0.65;
   cursor: not-allowed;
   transform: none;
 }
 
-.btn-spinner-text {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.spinner {
-  width: 14px;
-  height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #ffffff;
+.ql-spin {
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  display: inline-block;
+  animation: qlSpin 0.7s linear infinite;
 }
 
-@keyframes spin {
+@keyframes qlSpin {
   to {
     transform: rotate(360deg);
   }
 }
 
-/* Divider Line */
-.divider {
+/* ── DIVIDER ─────────────────────────────────────── */
+.ql-divider {
   display: flex;
   align-items: center;
-  margin: 14px 0;
-  text-align: center;
+  gap: 12px;
+  margin: 16px 0 14px;
 }
 
-.divider::before,
-.divider::after {
-  content: "";
+.ql-divider-line {
   flex: 1;
-  border-bottom: 1px solid #232334;
+  height: 1px;
+  background: #e2e8f0;
 }
 
-.divider span {
-  padding: 0 10px;
-  font-size: 11px;
-  color: #6b7280;
-}
-
-/* Google Sign-in Button */
-.google-btn {
-  width: 100%;
-  height: 40px;
-  background-color: #1a1a26;
-  border: 1px solid #2a2a3d;
-  border-radius: 8px;
-  color: #ffffff;
-  font-size: 13px;
+.ql-divider-text {
+  font-size: 12.5px;
+  color: #94a3b8;
   font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ── GOOGLE BUTTON ───────────────────────────────── */
+.ql-google {
+  width: 100%;
+  height: 48px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.google-btn:hover {
-  background-color: #222234;
-}
-
-/* Footer Link */
-.card-footer {
-  margin-top: 14px;
-  font-size: 12px;
-  color: #8e8ea8;
-}
-
-.signup-link {
-  color: #818cf8;
+  gap: 10px;
+  font-size: 14.5px;
   font-weight: 600;
-  text-decoration: none;
-  margin-left: 4px;
+  color: #334155;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
-.signup-link:hover {
+.ql-google:hover {
+  background: #f8fafc !important;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+}
+
+.ql-google:active {
+  transform: translateY(0);
+}
+
+/* ── CARD FOOTER ─────────────────────────────────── */
+.ql-footer {
+  margin-top: 15px;
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--ql-text-sub);
+  font-weight: 500;
+}
+
+.ql-signup {
+  background: none;
+  border: none;
+  color: var(--ql-blue);
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  margin-left: 2px;
+  transition: color 0.15s ease;
+}
+
+.ql-signup:hover {
+  color: var(--ql-blue-hover);
   text-decoration: underline;
+}
+
+/* ── SLIDING HERO OVERLAY (COORDINATED OPPOSING SLIDE) ─ */
+.ql-hero-overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--ql-hero-width);
+  height: 100vh;
+  z-index: 10;
+  overflow: hidden;
+  background: transparent;
+  pointer-events: none;
+  transition: transform 1.2s cubic-bezier(0.65, 0, 0.35, 1);
+  will-change: transform;
+}
+
+/* In Login mode: Hero sits on the RIGHT */
+.ql-mode-login .ql-hero-overlay {
+  transform: translateX(var(--ql-form-width));
+}
+
+/* In Register or Forgot mode: Hero moves to the LEFT */
+.ql-mode-register .ql-hero-overlay,
+.ql-mode-forgot .ql-hero-overlay {
+  transform: translateX(0);
+}
+
+/* Hero Images inside the overlay */
+.ql-hero-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  will-change: opacity, transform;
+}
+
+/* Login Hero Image (for Right edge, wavy mask on left edge) */
+.ql-hero-login {
+  object-position: left center;
+  mask-image: linear-gradient(to right, transparent 0px, black 32px);
+  -webkit-mask-image: linear-gradient(to right, transparent 0px, black 32px);
+}
+
+/* Register Hero Image (for Left edge, wavy mask on right edge) */
+.ql-hero-register {
+  object-position: right center;
+  mask-image: linear-gradient(to left, transparent 0px, black 32px);
+  -webkit-mask-image: linear-gradient(to left, transparent 0px, black 32px);
+}
+
+/* Slide Transition with Gentle Opacity Dip:
+   When moving across, active image fades down smoothly (opacity kombe),
+   and the incoming image blooms back in as it settles into place (abar barbe)! */
+.ql-mode-login .ql-hero-login {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.65s cubic-bezier(0.4, 0, 0.2, 1) 0.45s, transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ql-mode-login .ql-hero-register {
+  opacity: 0;
+  transform: scale(1.02);
+  transition: opacity 0.52s cubic-bezier(0.4, 0, 0.2, 1) 0s, transform 1.2s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.ql-mode-register .ql-hero-login,
+.ql-mode-forgot .ql-hero-login {
+  opacity: 0;
+  transform: scale(1.02);
+  transition: opacity 0.52s cubic-bezier(0.4, 0, 0.2, 1) 0s, transform 1.2s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.ql-mode-register .ql-hero-register,
+.ql-mode-forgot .ql-hero-register {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.65s cubic-bezier(0.4, 0, 0.2, 1) 0.45s, transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+
+/* ── BACK TO LOGIN BUTTON (FORGOT PASSWORD) ───────── */
+.ql-back-btn {
+  background: none;
+  border: none;
+  color: var(--ql-blue);
+  font-weight: 600;
+  font-size: 13.5px;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+  width: 100%;
+  transition: all 0.18s ease;
+}
+
+.ql-back-btn:hover {
+  color: var(--ql-blue-hover);
+  transform: translateX(-3px);
+}
+
+/* ── RESPONSIVE STYLES (TABLETS, MOBILES, & SMALL HEIGHTS) ── */
+
+/* 1. Tablet & Mobile Layout Switch (<= 992px) */
+@media (max-width: 992px) {
+  .ql-root {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Hide split hero overlay illustration on tablets and mobile */
+  .ql-hero-overlay {
+    display: none !important;
+  }
+
+  /* Full-width centered form stage */
+  .ql-forms-stage {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+    transform: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 32px 20px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Full-width responsive panels */
+  .ql-panel {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    padding: 0 !important;
+    transform: none !important;
+    display: none !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Strictly display only the active mode's panel */
+  .ql-mode-login .ql-panel-login {
+    display: flex !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  .ql-mode-register .ql-panel-register {
+    display: flex !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  .ql-mode-forgot .ql-panel-forgot {
+    display: flex !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  .ql-inner,
+  .ql-panel-register .ql-inner,
+  .ql-inner-forgot {
+    width: 100% !important;
+    max-width: 440px !important;
+    margin: 0 auto !important;
+  }
+}
+
+/* 2. Mobile Screens (<= 768px) */
+@media (max-width: 768px) {
+  .ql-forms-stage {
+    padding: 24px 16px !important;
+  }
+
+  .ql-panel .ql-card {
+    padding: 24px 22px 20px !important;
+    border-radius: 18px !important;
+  }
+
+  .ql-panel-register .ql-card {
+    padding: 20px 22px 18px !important;
+  }
+
+  .ql-brand-img {
+    width: 280px !important;
+  }
+
+  .ql-panel-register .ql-brand-img {
+    width: 260px !important;
+  }
+}
+
+/* 3. Small Mobile Devices (<= 480px) */
+@media (max-width: 480px) {
+  .ql-forms-stage {
+    padding: 16px 12px !important;
+  }
+
+  .ql-panel .ql-card {
+    padding: 20px 16px 18px !important;
+    border-radius: 16px !important;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  .ql-panel-register .ql-card {
+    padding: 18px 16px 16px !important;
+  }
+
+  .ql-brand-img {
+    width: 240px !important;
+  }
+
+  .ql-panel .ql-card-title {
+    font-size: 23px !important;
+  }
+
+  .ql-panel .ql-card-sub {
+    font-size: 13px !important;
+  }
+
+  .ql-row-options {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .ql-remember-text,
+  .ql-forgot {
+    font-size: 12.5px !important;
+  }
+
+  .ql-submit,
+  .ql-google {
+    height: 46px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* 4. Very Narrow Phones (<= 360px) */
+@media (max-width: 360px) {
+  .ql-forms-stage {
+    padding: 12px 8px !important;
+  }
+
+  .ql-panel .ql-card {
+    padding: 16px 12px 16px !important;
+  }
+
+  .ql-panel .ql-card-title {
+    font-size: 21px !important;
+  }
+
+  .ql-brand-img {
+    width: 210px !important;
+  }
+}
+
+/* 5. Compact Height Screens (Laptops, Landscape Phones, Devtools open) */
+@media (max-height: 750px) {
+  .ql-panel {
+    overflow-y: auto !important;
+    align-items: flex-start !important;
+    padding-top: 16px !important;
+    padding-bottom: 24px !important;
+  }
+
+  .ql-brand-img {
+    width: 260px !important;
+  }
+
+  .ql-panel .ql-card {
+    padding-top: 18px !important;
+    padding-bottom: 16px !important;
+  }
+
+  .ql-panel .ql-card-head {
+    margin-bottom: 14px !important;
+  }
+
+  .ql-divider {
+    margin: 12px 0 10px !important;
+  }
 }
