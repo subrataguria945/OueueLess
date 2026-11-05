@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import "./Login.css";
 import { RegisterPanel } from "./register";
-import { ForgotPasswordPanel } from "./ForgotPassword";
+import { ForgotPasswordModal } from "./ForgotPasswordModal";
 import { triggerGoogleSignIn } from "./googleAuth";
 
 const LOGIN_API_URL =
@@ -9,18 +9,42 @@ const LOGIN_API_URL =
   import.meta.env.VITE_API_URL ||
   "https://queueless-backend-b2qh.onrender.com/user/login";
 
-export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLogin, onSwitchToForgot }) {
-  const [mode, setMode] = useState(initialMode); // "login" | "register" | "forgot"
+const FORGOT_PASSWORD_API_URL =
+  import.meta.env.VITE_FORGOT_PASSWORD_API_URL ||
+  "https://queueless-backend-b2qh.onrender.com/user/password/forget";
+
+export function Login({ initialMode = "login", initialForgotOpen = false, onSwitchToRegister, onSwitchToLogin, onSwitchToForgot }) {
+  const [mode, setMode] = useState(initialMode === "forgot" ? "login" : initialMode); // "login" | "register"
+  const [isForgotModalOpen, setIsForgotModalOpen] = useState(initialForgotOpen || initialMode === "forgot");
+
+  /* ── Login State ──────────────────────────────────── */
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
+  const [isLoginLoading, setIsLoginLoading] = useState(false);
+  const [loginError, setLoginError] = useState("");
+  const [loginSuccess, setLoginSuccess] = useState("");
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   useEffect(() => {
-    if (initialMode) setMode(initialMode);
+    if (initialMode === "forgot") {
+      setMode("login");
+      setIsForgotModalOpen(true);
+    } else if (initialMode) {
+      setMode(initialMode);
+    }
   }, [initialMode]);
+
+  useEffect(() => {
+    if (initialForgotOpen) {
+      setIsForgotModalOpen(true);
+    }
+  }, [initialForgotOpen]);
 
   useEffect(() => {
     if (mode === "register") {
       document.title = "Create Account — QueueLess";
-    } else if (mode === "forgot") {
-      document.title = "Reset Password — QueueLess";
     } else {
       document.title = "Login — QueueLess";
     }
@@ -40,20 +64,22 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
   };
 
   const handleSwitchToForgot = () => {
-    setMode("forgot");
-    window.history.replaceState(null, "", "/forgot-password");
+    const cleanEmail = (loginEmail || "").trim();
+
+    // Check if email is entered on login page
+    if (!cleanEmail) {
+      setLoginError("Please enter your email address first to reset password.");
+      const emailInput = document.getElementById("ql-login-email");
+      if (emailInput) {
+        emailInput.focus();
+      }
+      return;
+    }
+
+    setLoginError("");
+    setIsForgotModalOpen(true);
     if (onSwitchToForgot) onSwitchToForgot();
   };
-
-  /* ── Login State ──────────────────────────────────── */
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
-  const [isLoginLoading, setIsLoginLoading] = useState(false);
-  const [loginError, setLoginError] = useState("");
-  const [loginSuccess, setLoginSuccess] = useState("");
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const handleGoogleSuccess = (user, token, isNew, message) => {
     setLoginError("");
@@ -225,8 +251,10 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
     transition: "border-color 0.15s, box-shadow 0.15s",
   };
 
+  const isAnyLoading = isLoginLoading || isGoogleLoading;
+
   return (
-    <div className={`ql-root ql-mode-${mode}`}>
+    <div className={`ql-root ql-mode-${mode}${isAnyLoading ? " ql-loading-active" : ""}`}>
 
       {/* ── FORM STAGE (SLIDES LEFT <-> RIGHT) ───────────── */}
       <div className="ql-forms-stage">
@@ -416,15 +444,9 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
         <div className="ql-panel ql-panel-register">
           <RegisterPanel onSwitchToLogin={handleSwitchToLogin} />
         </div>
-
-        {/* ── 3. FORGOT PASSWORD FORM PANEL ────────────────── */}
-        <div className="ql-panel ql-panel-forgot">
-          <ForgotPasswordPanel onSwitchToLogin={handleSwitchToLogin} />
-        </div>
-
       </div>
 
-      {/* ── 4. SLIDING HERO OVERLAY (RIGHT <-> LEFT) ────── */}
+      {/* ── 3. SLIDING HERO OVERLAY (RIGHT <-> LEFT) ────── */}
       <div className="ql-hero-overlay">
         {/* Active on Right edge in Login mode */}
         <img
@@ -433,13 +455,32 @@ export function Login({ initialMode = "login", onSwitchToRegister, onSwitchToLog
           className="ql-hero-img ql-hero-login"
         />
 
-        {/* Active on Left edge in Register & Forgot mode */}
+        {/* Active on Left edge in Register mode */}
         <img
           src="/hero-left.png?v=5"
           alt="Queueless — Be a Part of a Smarter Tomorrow."
           className="ql-hero-img ql-hero-register"
         />
       </div>
+
+      {/* ── 4. FORGOT PASSWORD POPUP MODAL ────────────────── */}
+      <ForgotPasswordModal
+        isOpen={isForgotModalOpen}
+        onClose={() => setIsForgotModalOpen(false)}
+        email={loginEmail}
+      />
+
+      {/* ── 5. FULL-PAGE BLURRED LOADING OVERLAY ─────────── */}
+      {isAnyLoading && (
+        <div className="ql-loading-overlay" aria-label="Loading" role="status">
+          <div className="ql-loader-card">
+            <div className="ql-spinner-disc">
+              <div className="ql-spinner-inner"></div>
+              <div className="ql-spinner-core"></div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
