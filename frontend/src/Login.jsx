@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./Login.css";
 import { RegisterPanel } from "./register";
 import { ForgotPasswordModal } from "./ForgotPasswordModal";
@@ -27,6 +27,31 @@ export function Login({ initialMode = "login", initialForgotOpen = false, onSwit
   const [loginError, setLoginError] = useState("");
   const [loginSuccess, setLoginSuccess] = useState("");
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const forgotTimerRef = useRef(null);
+
+  // Auto-dismiss helper for messages
+  const showTemporaryError = (msg, duration = 4000) => {
+    if (forgotTimerRef.current) clearTimeout(forgotTimerRef.current);
+    setLoginError(msg);
+    forgotTimerRef.current = setTimeout(() => {
+      setLoginError("");
+    }, duration);
+  };
+
+  const showTemporarySuccess = (msg, duration = 4500) => {
+    if (forgotTimerRef.current) clearTimeout(forgotTimerRef.current);
+    setLoginSuccess(msg);
+    forgotTimerRef.current = setTimeout(() => {
+      setLoginSuccess("");
+    }, duration);
+  };
+
+  // Clean timer on unmount
+  useEffect(() => {
+    return () => {
+      if (forgotTimerRef.current) clearTimeout(forgotTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (initialMode === "forgot") {
@@ -69,7 +94,7 @@ export function Login({ initialMode = "login", initialForgotOpen = false, onSwit
 
     // Check if email is entered on login page
     if (!cleanEmail) {
-      setLoginError("Please enter your email address first to reset password.");
+      showTemporaryError("Please enter your email address first to reset password.", 3500);
       const emailInput = document.getElementById("ql-login-email");
       if (emailInput) {
         emailInput.focus();
@@ -93,15 +118,15 @@ export function Login({ initialMode = "login", initialForgotOpen = false, onSwit
       setIsForgotLoading(false);
 
       if (!response.ok || data?.status === "failed" || data?.status === "error") {
-        setLoginError(data?.message || data?.error || "User does not exist or failed to send reset link.");
+        showTemporaryError(data?.message || data?.error || "User does not exist or failed to send reset link.", 4000);
         return;
       }
 
-      setLoginSuccess(data?.message || "Reset password link sent to your email! Please check your inbox.");
+      showTemporarySuccess(data?.message || "Reset password link sent to your email! Please check your inbox.", 4500);
       if (onSwitchToForgot) onSwitchToForgot();
     } catch {
       setIsForgotLoading(false);
-      setLoginError("Unable to connect to the server. Please try again.");
+      showTemporaryError("Unable to connect to the server. Please try again.", 3500);
     }
   };
 
@@ -304,19 +329,37 @@ export function Login({ initialMode = "login", initialForgotOpen = false, onSwit
             </div>
 
             {loginError && (
-              <div className="ql-alert ql-alert-error" role="alert">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-                </svg>
-                <span>{loginError}</span>
+              <div
+                className="ql-alert ql-alert-error"
+                role="alert"
+                onClick={() => setLoginError("")}
+                title="Click to dismiss"
+                style={{ cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  <span>{loginError}</span>
+                </div>
+                <span style={{ fontSize: "14px", opacity: 0.6, paddingLeft: "8px", lineHeight: 1 }}>✕</span>
               </div>
             )}
             {loginSuccess && (
-              <div className="ql-alert ql-alert-success" role="status">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
-                <span>{loginSuccess}</span>
+              <div
+                className="ql-alert ql-alert-success"
+                role="status"
+                onClick={() => setLoginSuccess("")}
+                title="Click to dismiss"
+                style={{ cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                  <span>{loginSuccess}</span>
+                </div>
+                <span style={{ fontSize: "14px", opacity: 0.6, paddingLeft: "8px", lineHeight: 1 }}>✕</span>
               </div>
             )}
 
