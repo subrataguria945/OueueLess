@@ -868,6 +868,44 @@ export function AdminDashboard() {
     address: "",
   });
 
+  // Prevent browser password manager from autofilling saved credentials into Address/Password fields
+  useEffect(() => {
+    if (addOwnerModalOpen) {
+      setNewOwnerForm((prev) => ({
+        ...prev,
+        address: prev.address?.includes("@") ? "" : prev.address,
+        password: "",
+        confirmPassword: "",
+      }));
+      const clearTimer = setTimeout(() => {
+        setNewOwnerForm((prev) => ({
+          ...prev,
+          address: prev.address?.includes("@") ? "" : prev.address,
+          password: "",
+          confirmPassword: "",
+        }));
+      }, 80);
+      return () => clearTimeout(clearTimer);
+    }
+  }, [addOwnerModalOpen]);
+
+  const handleOpenAddOwnerModal = () => {
+    setNewOwnerForm({
+      name: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
+      maxShops: 5,
+      joinedDate: new Date().toISOString().split("T")[0],
+      address: "",
+    });
+    setAddOwnerError("");
+    setShowAddOwnerPassword(false);
+    setShowAddOwnerConfirmPassword(false);
+    setAddOwnerModalOpen(true);
+  };
+
   const getOwnerPasswordStrength = (pwd) => {
     if (!pwd) return 0;
     let score = 0;
@@ -2915,7 +2953,7 @@ export function AdminDashboard() {
                     <button
                       type="button"
                       className="ql-btn-primary"
-                      onClick={() => setAddOwnerModalOpen(true)}
+                      onClick={handleOpenAddOwnerModal}
                     >
                       <span>+</span> Add New Owner
                     </button>
@@ -2997,7 +3035,7 @@ export function AdminDashboard() {
                                   type="button"
                                   className="ql-btn-primary"
                                   style={{ marginTop: "8px" }}
-                                  onClick={() => setAddOwnerModalOpen(true)}
+                                  onClick={handleOpenAddOwnerModal}
                                 >
                                   + Add First Owner
                                 </button>
@@ -5313,7 +5351,13 @@ export function AdminDashboard() {
               </span>
             </div>
 
-            <form onSubmit={handleAddOwnerSubmit} style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+            <form onSubmit={handleAddOwnerSubmit} autoComplete="off" style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+              {/* Neutralize browser credential autofill targeting address/password */}
+              <div style={{ position: "absolute", opacity: 0, pointerEvents: "none", height: 0, width: 0, overflow: "hidden" }}>
+                <input type="text" name="fake_user_remembered" tabIndex={-1} autoComplete="off" />
+                <input type="password" name="fake_pwd_remembered" tabIndex={-1} autoComplete="off" />
+              </div>
+
               {addOwnerError && (
                 <div style={{
                   margin: "10px 20px 0",
@@ -5348,6 +5392,8 @@ export function AdminDashboard() {
                       </svg>
                       <input
                         type="text"
+                        name="new_owner_name_field"
+                        autoComplete="off"
                         required
                         className="ql-input-modern"
                         value={newOwnerForm.name}
@@ -5373,6 +5419,8 @@ export function AdminDashboard() {
                       </svg>
                       <input
                         type="email"
+                        name="new_owner_email_field"
+                        autoComplete="off"
                         required
                         className="ql-input-modern"
                         value={newOwnerForm.email}
@@ -5399,6 +5447,8 @@ export function AdminDashboard() {
                       </svg>
                       <input
                         type="tel"
+                        name="new_owner_phone_field"
+                        autoComplete="off"
                         required
                         className="ql-input-modern"
                         value={newOwnerForm.phone}
@@ -5425,6 +5475,8 @@ export function AdminDashboard() {
                       </svg>
                       <input
                         type="date"
+                        name="new_owner_date_field"
+                        autoComplete="off"
                         required
                         className="ql-input-modern"
                         value={newOwnerForm.joinedDate}
@@ -5447,6 +5499,9 @@ export function AdminDashboard() {
                     </svg>
                     <input
                       type="text"
+                      name="new_owner_address_field"
+                      id="new_owner_address_field"
+                      autoComplete="street-address"
                       required
                       className="ql-input-modern"
                       value={newOwnerForm.address}
@@ -5487,6 +5542,9 @@ export function AdminDashboard() {
                         </svg>
                         <input
                           type={showAddOwnerPassword ? "text" : "password"}
+                          name="new_owner_credential_password"
+                          id="new_owner_credential_password"
+                          autoComplete="new-password"
                           required
                           className="ql-input-modern"
                           style={{ paddingRight: "36px" }}
@@ -5506,15 +5564,15 @@ export function AdminDashboard() {
                         >
                           {showAddOwnerPassword ? (
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                              <circle cx="12" cy="12" r="3" />
-                            </svg>
-                          ) : (
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
                               <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
                               <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
                               <line x1="2" y1="22" x2="22" y2="2" />
+                            </svg>
+                          ) : (
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                              <circle cx="12" cy="12" r="3" />
                             </svg>
                           )}
                         </button>
@@ -5533,6 +5591,9 @@ export function AdminDashboard() {
                         </svg>
                         <input
                           type={showAddOwnerConfirmPassword ? "text" : "password"}
+                          name="new_owner_credential_confirm"
+                          id="new_owner_credential_confirm"
+                          autoComplete="new-password"
                           required
                           className="ql-input-modern"
                           style={{ paddingRight: "36px" }}
@@ -5552,15 +5613,15 @@ export function AdminDashboard() {
                         >
                           {showAddOwnerConfirmPassword ? (
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                              <circle cx="12" cy="12" r="3" />
-                            </svg>
-                          ) : (
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
                               <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
                               <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
                               <line x1="2" y1="22" x2="22" y2="2" />
+                            </svg>
+                          ) : (
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                              <circle cx="12" cy="12" r="3" />
                             </svg>
                           )}
                         </button>

@@ -5679,7 +5679,7 @@ html::-webkit-scrollbar {
 
 .ql-premium-modal-dialog {
   width: 100%;
-  max-width: 660px;
+  max-width: 680px;
   background: var(--admin-modal-bg, #ffffff);
   border-radius: 18px;
   box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.2);
@@ -5689,6 +5689,30 @@ html::-webkit-scrollbar {
   overflow: hidden !important;
   animation: qlModalScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
+}
+
+/* Disable native browser password reveal button in Edge / IE to prevent overlapping eye icons */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Prevent browser autofill background clash */
+input.ql-input-modern:-webkit-autofill,
+input.ql-input-modern:-webkit-autofill:hover, 
+input.ql-input-modern:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: var(--admin-text-main, #0f172a) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.ql-admin-dashboard.dark input.ql-input-modern:-webkit-autofill,
+.ql-admin-dashboard.dark input.ql-input-modern:-webkit-autofill:hover, 
+.ql-admin-dashboard.dark input.ql-input-modern:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #1e293b inset !important;
+  -webkit-text-fill-color: #f8fafc !important;
 }
 
 @keyframes qlModalScaleUp {
@@ -5895,8 +5919,10 @@ html::-webkit-scrollbar {
   right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  background: transparent;
-  border: none;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
   cursor: pointer;
   color: #94a3b8;
   display: flex;
@@ -5905,10 +5931,20 @@ html::-webkit-scrollbar {
   padding: 4px;
   border-radius: 4px;
   transition: color 0.15s ease;
+  z-index: 2;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .ql-input-eye-btn:hover {
   color: #2563eb;
+}
+
+.ql-input-eye-btn:focus,
+.ql-input-eye-btn:active {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 
 .ql-cred-footer-bar {
@@ -5916,8 +5952,7 @@ html::-webkit-scrollbar {
   align-items: center;
   gap: 12px;
   font-size: 11.5px;
-  flex-wrap: wrap;
-  padding-top: 2px;
+  padding-top: 3px;
 }
 
 .ql-cred-strength-wrap {
@@ -5925,6 +5960,7 @@ html::-webkit-scrollbar {
   align-items: center;
   gap: 8px;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .ql-cred-strength-lbl {
@@ -5940,7 +5976,7 @@ html::-webkit-scrollbar {
 }
 
 .ql-cred-strength-bar {
-  width: 20px;
+  width: 18px;
   height: 4px;
   border-radius: 2px;
   background-color: #cbd5e1;
@@ -5960,7 +5996,7 @@ html::-webkit-scrollbar {
   gap: 5px;
   font-size: 11px;
   color: #475569;
-  flex: 1;
+  line-height: 1.25;
 }
 
 .ql-cred-hint svg {
