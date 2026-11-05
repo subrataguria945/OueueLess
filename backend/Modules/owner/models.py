@@ -2,7 +2,6 @@ from datetime import datetime
 from pydantic import BaseModel, EmailStr
 
 class AddOwnerRequest(BaseModel):
-    admin_user_id: int
     fullname: str
     email: EmailStr
     password: str
