@@ -14,3 +14,6 @@ def add_owner(data: AddOwnerRequest):
 @router.get("/owners", response_model=list[OwnerDetail])
 def list_owners(_: int = Depends(require_admin)):
     return get_all_owners_details()
+
+
+
