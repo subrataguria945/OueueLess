@@ -106,6 +106,10 @@ const ADD_OWNER_API_URL =
   import.meta.env.VITE_ADD_OWNER_API_URL ||
   `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/owner/add`;
 
+const OWNER_STATUS_API_URL =
+  import.meta.env.VITE_OWNER_STATUS_API_URL ||
+  `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/owner/status`;
+
 export function mapApiOwnerToDashboard(apiOwner) {
   const id = Number(apiOwner.owner_id ?? apiOwner.id ?? 0);
   const name = (apiOwner.full_name || apiOwner.name || "").trim() || "Owner";
@@ -841,6 +845,15 @@ export function AdminDashboard() {
   const [ownerProfileTab, setOwnerProfileTab] = useState("overview"); // 'overview' | 'shops'
   const [isEditingOwner, setIsEditingOwner] = useState(false);
   const [editOwnerForm, setEditOwnerForm] = useState(null);
+  const [updatingOwnerStatusId, setUpdatingOwnerStatusId] = useState(null);
+  const [dashboardToast, setDashboardToast] = useState(null);
+
+  const showToast = (message, type = "success") => {
+    setDashboardToast({ message, type });
+    setTimeout(() => {
+      setDashboardToast((curr) => (curr?.message === message ? null : curr));
+    }, 3500);
+  };
   const [addOwnerModalOpen, setAddOwnerModalOpen] = useState(false);
   const [isAddingOwner, setIsAddingOwner] = useState(false);
   const [addOwnerError, setAddOwnerError] = useState("");
@@ -1466,29 +1479,119 @@ export function AdminDashboard() {
     window.location.href = "/login";
   };
 
-  const handleToggleOwnerStatus = (ownerId) => {
-    setOwnersData((prev) => {
-      const updated = prev.map((o) => {
-        if (o.id === ownerId) {
-          const nextStatus = o.status === "Active" ? "Suspended" : "Active";
-          const updatedObj = { ...o, status: nextStatus };
-          if (detailModalOwner && detailModalOwner.id === ownerId) {
-            setDetailModalOwner(updatedObj);
-          }
-          return updatedObj;
-        }
-        return o;
+  const handleToggleOwnerStatus = async (ownerId) => {
+    if (!ownerId && ownerId !== 0) return;
+    if (updatingOwnerStatusId !== null) return;
+
+    // Find the current status of the owner
+    const targetOwner =
+      ownersData.find((o) => Number(o.id) === Number(ownerId)) ||
+      (detailModalOwner && Number(detailModalOwner.id) === Number(ownerId) ? detailModalOwner : null);
+
+    const isCurrentlyActive = targetOwner ? targetOwner.status === "Active" : true;
+    const nextStatusBool = !isCurrentlyActive; // Active -> false (Suspended), Suspended -> true (Active)
+    const nextStatusStr = nextStatusBool ? "Active" : "Suspended";
+
+    setUpdatingOwnerStatusId(ownerId);
+
+    try {
+      const res = await authFetch(OWNER_STATUS_API_URL, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          owner_id: Number(ownerId),
+          new_status: nextStatusBool,
+        }),
       });
-      localStorage.setItem("ql_admin_owners_list", JSON.stringify(updated));
-      return updated;
-    });
-    setSettingsSavedToast(true);
-    setTimeout(() => setSettingsSavedToast(false), 3000);
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        let errorMsg = `Server error (${res.status})`;
+        if (typeof data?.detail === "string") {
+          errorMsg = data.detail;
+        } else if (Array.isArray(data?.detail) && data.detail[0]?.msg) {
+          errorMsg = `${data.detail[0].loc?.slice(-1)[0] || "Field"}: ${data.detail[0].msg}`;
+        } else if (data?.message) {
+          errorMsg = data.message;
+        }
+        throw new Error(errorMsg);
+      }
+
+      // Update state in ownersData
+      setOwnersData((prev) => {
+        const updated = prev.map((o) => {
+          if (Number(o.id) === Number(ownerId)) {
+            return { ...o, status: nextStatusStr };
+          }
+          return o;
+        });
+        try {
+          localStorage.setItem("ql_admin_owners_list", JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+
+      // Update state in detailModalOwner if open
+      if (detailModalOwner && Number(detailModalOwner.id) === Number(ownerId)) {
+        setDetailModalOwner((prev) => (prev ? { ...prev, status: nextStatusStr } : null));
+      }
+
+      // Also sync editOwnerForm if active
+      if (editOwnerForm && Number(editOwnerForm.id) === Number(ownerId)) {
+        setEditOwnerForm((prev) => (prev ? { ...prev, status: nextStatusStr } : null));
+      }
+
+      showToast(`Owner status changed to "${nextStatusStr}" successfully!`, "success");
+      setSettingsSavedToast(true);
+      setTimeout(() => setSettingsSavedToast(false), 3000);
+    } catch (err) {
+      console.error("Owner status update error:", err);
+      showToast(`Failed to update status: ${err.message || "Network error"}`, "error");
+    } finally {
+      setUpdatingOwnerStatusId(null);
+    }
   };
 
-  const handleSaveEditOwner = (e) => {
+  const handleSaveEditOwner = async (e) => {
     e.preventDefault();
     if (!editOwnerForm) return;
+
+    const originalOwner =
+      ownersData.find((o) => Number(o.id) === Number(editOwnerForm.id)) ||
+      detailModalOwner;
+    const statusChanged = originalOwner && originalOwner.status !== editOwnerForm.status;
+
+    if (statusChanged) {
+      const nextStatusBool = editOwnerForm.status === "Active";
+      try {
+        const res = await authFetch(OWNER_STATUS_API_URL, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            owner_id: Number(editOwnerForm.id),
+            new_status: nextStatusBool,
+          }),
+        });
+
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok) {
+          let errorMsg = `Server error ${res.status}`;
+          if (typeof data?.detail === "string") {
+            errorMsg = data.detail;
+          } else if (data?.message) {
+            errorMsg = data.message;
+          }
+          throw new Error(errorMsg);
+        }
+      } catch (err) {
+        console.error("Failed to update status in Edit Owner:", err);
+        showToast(`Failed to update owner status: ${err.message}`, "error");
+        return;
+      }
+    }
+
     setOwnersData((prev) => {
       const updated = prev.map((o) => (o.id === editOwnerForm.id ? editOwnerForm : o));
       localStorage.setItem("ql_admin_owners_list", JSON.stringify(updated));
@@ -1496,6 +1599,7 @@ export function AdminDashboard() {
     });
     setDetailModalOwner(editOwnerForm);
     setIsEditingOwner(false);
+    showToast("Owner profile updated successfully!", "success");
     setSettingsSavedToast(true);
     setTimeout(() => setSettingsSavedToast(false), 3000);
   };
@@ -2380,8 +2484,26 @@ export function AdminDashboard() {
                                       ? "expiring"
                                       : "suspended"
                                   }`}
+                                  style={{
+                                    cursor: updatingOwnerStatusId === owner.id ? "wait" : "pointer",
+                                    opacity: updatingOwnerStatusId === owner.id ? 0.6 : 1,
+                                    userSelect: "none",
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleToggleOwnerStatus(owner.id);
+                                  }}
+                                  title={
+                                    updatingOwnerStatusId === owner.id
+                                      ? "Updating status on server..."
+                                      : `Click to ${owner.status === "Active" ? "Suspend" : "Activate"} this owner`
+                                  }
                                 >
-                                  <span className="dot" />
+                                  {updatingOwnerStatusId === owner.id ? (
+                                    <span className="ql-btn-spinner" style={{ width: "9px", height: "9px", borderWidth: "1.5px" }} />
+                                  ) : (
+                                    <span className="dot" />
+                                  )}
                                   {owner.status}
                                 </span>
                               </td>
@@ -2518,8 +2640,31 @@ export function AdminDashboard() {
                       <div className="ql-owner-banner-meta">
                         <div className="ql-owner-banner-name-row">
                           <h3 className="ql-owner-banner-name">{detailModalOwner.name}</h3>
-                          <span className={`ql-owner-status-pill ${detailModalOwner.status === "Active" ? "active" : detailModalOwner.status === "Expiring Soon" ? "expiring" : "suspended"}`}>
-                            <span className="dot" />
+                          <span
+                            className={`ql-owner-status-pill ${
+                              detailModalOwner.status === "Active"
+                                ? "active"
+                                : detailModalOwner.status === "Expiring Soon"
+                                ? "expiring"
+                                : "suspended"
+                            }`}
+                            style={{
+                              cursor: updatingOwnerStatusId === detailModalOwner.id ? "wait" : "pointer",
+                              opacity: updatingOwnerStatusId === detailModalOwner.id ? 0.65 : 1,
+                              userSelect: "none",
+                            }}
+                            onClick={() => handleToggleOwnerStatus(detailModalOwner.id)}
+                            title={
+                              updatingOwnerStatusId === detailModalOwner.id
+                                ? "Updating status on server..."
+                                : `Click to ${detailModalOwner.status === "Active" ? "Suspend" : "Activate"} this account`
+                            }
+                          >
+                            {updatingOwnerStatusId === detailModalOwner.id ? (
+                              <span className="ql-btn-spinner" style={{ width: "9px", height: "9px", borderWidth: "1.5px" }} />
+                            ) : (
+                              <span className="dot" />
+                            )}
                             {detailModalOwner.status}
                           </span>
                         </div>
@@ -2757,14 +2902,37 @@ export function AdminDashboard() {
                       <div className="ql-owner-page-actions-bar">
                         <button
                           type="button"
-                          className="ql-owner-page-btn-suspend"
+                          className={detailModalOwner.status === "Active" ? "ql-owner-page-btn-suspend" : "ql-owner-page-btn-activate"}
+                          disabled={updatingOwnerStatusId === detailModalOwner.id}
                           onClick={() => handleToggleOwnerStatus(detailModalOwner.id)}
+                          title={
+                            updatingOwnerStatusId === detailModalOwner.id
+                              ? "Updating status on server..."
+                              : detailModalOwner.status === "Active"
+                              ? "Click to suspend account"
+                              : "Click to activate account"
+                          }
                         >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <rect x="6" y="4" width="4" height="16" rx="1" />
-                            <rect x="14" y="4" width="4" height="16" rx="1" />
-                          </svg>
-                          <span>{detailModalOwner.status === "Active" ? "Suspend Account" : "Activate Account"}</span>
+                          {updatingOwnerStatusId === detailModalOwner.id ? (
+                            <>
+                              <span className="ql-btn-spinner" />
+                              <span>Updating...</span>
+                            </>
+                          ) : (
+                            <>
+                              {detailModalOwner.status === "Active" ? (
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                  <rect x="6" y="4" width="4" height="16" rx="1" />
+                                  <rect x="14" y="4" width="4" height="16" rx="1" />
+                                </svg>
+                              ) : (
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                  <polygon points="5 3 19 12 5 21 5 3" fill="currentColor" />
+                                </svg>
+                              )}
+                              <span>{detailModalOwner.status === "Active" ? "Suspend Account" : "Activate Account"}</span>
+                            </>
+                          )}
                         </button>
 
                         <button
@@ -3079,8 +3247,26 @@ export function AdminDashboard() {
                                     ? "expiring"
                                     : "suspended"
                                 }`}
+                                style={{
+                                  cursor: updatingOwnerStatusId === owner.id ? "wait" : "pointer",
+                                  opacity: updatingOwnerStatusId === owner.id ? 0.6 : 1,
+                                  userSelect: "none",
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleToggleOwnerStatus(owner.id);
+                                }}
+                                title={
+                                  updatingOwnerStatusId === owner.id
+                                    ? "Updating status on server..."
+                                    : `Click to ${owner.status === "Active" ? "Suspend" : "Activate"} this owner`
+                                }
                               >
-                                <span className="dot" />
+                                {updatingOwnerStatusId === owner.id ? (
+                                  <span className="ql-btn-spinner" style={{ width: "9px", height: "9px", borderWidth: "1.5px" }} />
+                                ) : (
+                                  <span className="dot" />
+                                )}
                                 {owner.status}
                               </span>
                             </td>
@@ -5929,6 +6115,16 @@ export function AdminDashboard() {
         onClose={() => setCropModalOpen(false)}
         onCropComplete={handleCropComplete}
       />
+
+      {/* ── GLOBAL FLOATING TOAST NOTIFICATION ──────────────────── */}
+      {dashboardToast && (
+        <div className={`ql-floating-toast ${dashboardToast.type || "success"}`}>
+          <span className="ql-toast-icon">
+            {dashboardToast.type === "error" ? "⚠️" : "✓"}
+          </span>
+          <span className="ql-toast-text">{dashboardToast.message}</span>
+        </div>
+      )}
     </div>
   );
 }

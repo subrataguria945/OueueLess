@@ -4642,6 +4642,41 @@ html::-webkit-scrollbar {
   color: #f87171 !important;
 }
 
+.ql-owner-page-btn-activate {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  background: var(--admin-card-bg, #ffffff) !important;
+  border: 1.5px solid #86efac !important;
+  color: #16a34a !important;
+  padding: 8px 16px !important;
+  border-radius: 8px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+  font-family: inherit !important;
+}
+
+.ql-owner-page-btn-activate:hover {
+  background: #dcfce7 !important;
+  border-color: #22c55e !important;
+  transform: translateY(-1px) !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-page-btn-activate {
+  background: rgba(34, 197, 94, 0.12) !important;
+  border-color: rgba(34, 197, 94, 0.35) !important;
+  color: #4ade80 !important;
+}
+
+.ql-owner-page-btn-suspend:disabled,
+.ql-owner-page-btn-activate:disabled {
+  opacity: 0.65 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
 .ql-owner-page-btn-edit {
   display: inline-flex !important;
   align-items: center !important;
@@ -5033,6 +5068,16 @@ html::-webkit-scrollbar {
   }
 
   .ql-owner-page-btn-suspend {
+    flex: 1 1 45% !important;
+    order: 2 !important;
+    justify-content: center !important;
+    padding: 10px 8px !important;
+    font-size: 12px !important;
+    white-space: nowrap !important;
+    border-radius: 8px !important;
+  }
+
+  .ql-owner-page-btn-activate {
     flex: 1 1 45% !important;
     order: 2 !important;
     justify-content: center !important;
@@ -7926,5 +7971,89 @@ input.ql-input-modern:-webkit-autofill:focus {
   }
   .ql-subs-kpi-val {
     font-size: 16px !important;
+  }
+}
+
+/* Spinner for actions & buttons */
+@keyframes qlSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ql-btn-spinner {
+  width: 13px;
+  height: 13px;
+  border: 2px solid currentColor;
+  border-right-color: transparent !important;
+  border-radius: 50%;
+  display: inline-block;
+  animation: qlSpin 0.7s linear infinite;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* Global Floating Toast Notification */
+.ql-floating-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  animation: qlToastSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: auto;
+  max-width: 440px;
+  backdrop-filter: blur(8px);
+}
+
+@keyframes qlToastSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ql-floating-toast.success {
+  background: #065f46;
+  color: #ecfdf5;
+  border: 1px solid #10b981;
+}
+
+.ql-floating-toast.error {
+  background: #991b1b;
+  color: #fef2f2;
+  border: 1px solid #ef4444;
+}
+
+.ql-toast-icon {
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ql-toast-text {
+  line-height: 1.4;
+}
+
+@media (max-width: 640px) {
+  .ql-floating-toast {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    font-size: 12.5px;
+    padding: 10px 14px;
+    justify-content: center;
   }
 }
