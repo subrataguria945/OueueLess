@@ -1,10 +1,11 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-
-from Library.Owner.database import get_user_role_and_status
+import psycopg
+import os
 from Library.Security.JWT import decode_access_token
-
+from Modules.owner.database import get_user_role_and_status
 bearer_scheme = HTTPBearer(auto_error=False)
+
 
 
 def require_admin(

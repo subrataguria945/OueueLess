@@ -22,6 +22,5 @@ class OwnerDetail(BaseModel):
     shop_details: str
 
 class UpdateOwnerStatusRequest(BaseModel):
-    admin_id: int
     owner_id: int   
     new_status: bool
