@@ -1,6 +1,6 @@
 from fastapi import APIRouter , Depends
-from .models import UserLogin , RefreshTokenRequest , ForgetPassword, ChangePassword , ResetPassword , VerifyRegistrationOTP , InitiateUserRegister , UserRegisterGoogle,UpdateUserRequest
-from Library.Authentication.user.utility import login_user as login , change_password as change_pass, initiate_register , veriy_and_register_user , register_google_user , check_and_send_forget_password_link , reset_password as reset_pass , refresh_user_token, update_user as update_user_details
+from .models import UserLogin , RefreshTokenRequest , ForgetPassword, ChangePassword , ResetPassword , VerifyRegistrationOTP , InitiateUserRegister , UserRegisterGoogle, UpdateUserRequest
+from Library.Authentication.user.utility import login_user as login , change_password as change_pass, initiate_register , veriy_and_register_user , manage_google_user , check_and_send_forget_password_link , reset_password as reset_pass , refresh_user_token, update_user as update_user_details
 from Library.Security.gatekeeper import require_active_user
 router = APIRouter()
 
@@ -9,9 +9,9 @@ def login_user(data : UserLogin):
     response = login(data.model_dump())
     return response
 
-@router.post("/register/google")
+@router.post("/google")
 def register_google(data : UserRegisterGoogle):
-    response = register_google_user(data.model_dump())
+    response = manage_google_user(data.model_dump())
     return response
 
 @router.post("/register/initiate")

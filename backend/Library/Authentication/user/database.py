@@ -259,3 +259,61 @@ def update_refresh_token_indb(user_id : int , refresh_token : str):
     finally:
         if con:
             con.close()
+
+def check_google_account(email,google_id):
+    con = None
+    try:
+        con = psycopg.connect(
+            host=os.getenv("HOST"),
+            dbname=os.getenv("DATABASE"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            port=os.getenv("DB_PORT")
+        )
+        print("Database connection established successfully.")
+    except Exception as e:
+         print(f"Error in database connection: {e}")
+         return {"status" : 404 , "error" : "Error While Connecting DB"}
+    else:
+        with con.cursor() as cur:
+            try:
+                cur.execute(
+                    "CALL public.sp_check_google_user(%s, %s, NULL, NULL, NULL, NULL);",(email,google_id))
+                result = cur.fetchone()
+                if result:
+                    user_id, role_id, status_code, status_message = result
+                    print("User ID:", user_id)
+                    print("Role ID:", role_id)
+                    print("Status Code:", status_code)
+                    print("Message:", status_message)
+                    if status_code == "ALL_EXISTS":
+                        con.commit()
+                        return {
+                            "status": 200,
+                            "status_code": status_code,
+                            "user_id": user_id,
+                            "role_id": role_id,
+                            "message": status_message
+                        }
+                    elif status_code == "NOT_EXIST":
+                        return {
+                            "status": 404,
+                            "status_code": status_code,
+                            "message": status_message
+                        }
+                    else:
+                        con.rollback()
+                        return {
+                            "status": 400,
+                            "status_code": status_code,
+                            "error": status_message
+                        }
+                else:
+                    return {"status": 500, "error": "No response from database"}
+            except Exception as e:
+                con.rollback()
+                print(f"Error in database query: {e}")
+                return {"status": 500, "error": "Error while executing query"}
+    finally:
+        if con:
+            con.close()

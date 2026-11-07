@@ -1,4 +1,4 @@
-from Library.Authentication.user.database import update_user_indb, user_exists_indb, validate_login_indb , insert_user_indb , change_password_indb , update_refresh_token_indb
+from Library.Authentication.user.database import update_user_indb, user_exists_indb, validate_login_indb , insert_user_indb , change_password_indb , update_refresh_token_indb, check_google_account
 from Library.Security.JWT import generate_access_token , generate_forget_password_token, generate_signup_token , decode_access_token , decode_forget_password_token , decode_refresh_token , generate_refresh_token
 import secrets
 import hashlib
@@ -30,10 +30,24 @@ def login_user(input : dict ):
         }
 
 
-def register_google_user(input : dict ):
-    response = user_exists_indb(input.get("email"))
+def manage_google_user(input : dict ):
+    response = check_google_account(input.get("email"), input.get("google_id"))
     if response.get("status") == 200:
-        return login_user(input)
+        return {
+            "status" : "success",
+            "user_id": response.get("user_id"),
+            "user_role":response.get("user_role"),
+            "email": input.get("email"),
+            "message": response.get("message"),
+            "access_token": generate_access_token(response.get("user_id"),input.get("email")),
+            "refresh_token": generate_refresh_token(response.get("user_id"),input.get("email")),
+            "token_type" : "bearer"
+        }
+    elif response.get("status") == 404:
+        return {
+            "status" : "Registration Failed",
+            "message" : response.get("message")
+        }
 
     else:
         fullname = input.get("fullname")
@@ -91,6 +105,12 @@ def change_password(input : dict):
             }
             
 def initiate_register(input: dict):
+    response = user_exists_indb(input.get("email"))
+    if response.get("status") == 200:
+        return {
+            "status" : "Registration Failed",
+            "message" : "User already exists"
+        }
 
     otp = str(secrets.randbelow(900000) + 100000)
     otp_hash = hashlib.sha256(otp.encode()).hexdigest()
