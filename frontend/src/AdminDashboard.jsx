@@ -1172,8 +1172,31 @@ export function AdminDashboard() {
 
   const handleSaveAdminProfile = (e) => {
     if (e) e.preventDefault();
-    setAdminProfile(editAdminForm);
-    localStorage.setItem("ql_admin_profile", JSON.stringify(editAdminForm));
+    const updated = {
+      ...adminProfile,
+      ...editAdminForm,
+      email: adminProfile.email, // Official email is locked
+      department: editAdminForm.department || "",
+      bio: editAdminForm.bio || "",
+    };
+    setAdminProfile(updated);
+    // Locally store Department, Bio & other Admin profile details in localStorage
+    localStorage.setItem("ql_admin_profile", JSON.stringify(updated));
+
+    // Keep logged-in user in localStorage in sync locally
+    try {
+      const u = JSON.parse(localStorage.getItem("user") || "{}");
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          ...u,
+          name: updated.name,
+          fullname: updated.name,
+          phone: updated.phone,
+        })
+      );
+    } catch (err) {}
+
     setSettingsSavedToast(true);
     setEditAdminModalOpen(false);
     setTimeout(() => setSettingsSavedToast(false), 3000);
@@ -5193,12 +5216,18 @@ export function AdminDashboard() {
                   </div>
 
                   <div>
-                    <label className="ql-form-label">Department / Designation</label>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                      <label className="ql-form-label" style={{ margin: 0 }}>Department / Designation</label>
+                      <span style={{ fontSize: "11px", color: "var(--admin-text-muted, #64748b)", display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                        💾 Local
+                      </span>
+                    </div>
                     <input
                       type="text"
                       className="ql-form-input"
-                      value={editAdminForm.department}
+                      value={editAdminForm.department || ""}
                       onChange={(e) => setEditAdminForm({ ...editAdminForm, department: e.target.value })}
+                      placeholder="e.g. System Architecture & Operations"
                     />
                   </div>
 
@@ -5214,13 +5243,19 @@ export function AdminDashboard() {
                   </div>
 
                   <div style={{ gridColumn: "1 / -1" }}>
-                    <label className="ql-form-label">Administrator Bio & Responsibilities</label>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                      <label className="ql-form-label" style={{ margin: 0 }}>Administrator Bio & Responsibilities</label>
+                      <span style={{ fontSize: "11px", color: "var(--admin-text-muted, #64748b)", display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                        💾 Local
+                      </span>
+                    </div>
                     <textarea
                       rows={2}
                       className="ql-form-input"
                       style={{ resize: "vertical" }}
-                      value={editAdminForm.bio}
+                      value={editAdminForm.bio || ""}
                       onChange={(e) => setEditAdminForm({ ...editAdminForm, bio: e.target.value })}
+                      placeholder="Enter administrator responsibilities and bio..."
                     />
                   </div>
                 </div>
