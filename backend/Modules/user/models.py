@@ -1,4 +1,6 @@
 from pydantic import BaseModel , EmailStr 
+from datetime import datetime
+
 
 class UserLogin(BaseModel):
     email : EmailStr
@@ -19,11 +21,11 @@ class VerifyRegistrationOTP(BaseModel):
 class InitiateUserRegister(BaseModel):
     fullname : str
     email : EmailStr
-    phone : str
+    phone : str | None = None
 
   
 class ChangePassword(BaseModel):
-    email : EmailStr
+    email : EmailStr | None = None
     oldpassword : str
     newpassword : str
 
@@ -39,7 +41,19 @@ class RefreshTokenRequest(BaseModel):
     refresh_token : str
 
 class UpdateUserRequest(BaseModel):
-    fullname : str
-    phone : str
-    profile_image : str    
-    address : str
+    fullname : str | None = None
+    phone : str | None = None
+    profile_image : str | None = None    
+    address : str | None = None
+
+class UserDetail(BaseModel):
+    user_id: int
+    role :  str
+    full_name: str
+    profile_image: str | None = None
+    email: str
+    phone: str | None = None
+    address : str | None = None
+    email_verified : bool
+    account_status: bool
+    joined_date: datetime

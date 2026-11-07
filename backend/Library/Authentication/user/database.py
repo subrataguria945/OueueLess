@@ -19,18 +19,48 @@ def validate_login_indb(email,password):
     else:
         with con.cursor() as cur:
             try:
-                cur.execute("CALL public.sp_login(%s,%s,   NULL,  NULL,  NULL,NULL  );",(email,password))
+                cur.execute(
+                    "CALL public.sp_login(%s, %s, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);",
+                    (email, password)
+                )
                 result = cur.fetchone()
                 if result:
-                    user_id, user_role , status_code, status_message = result
+                    (
+                        user_id,
+                        user_role,
+                        full_name,
+                        user_email,
+                        phone,
+                        profile_image,
+                        address,
+                        joined_date,
+                        status_code,
+                        status_message,
+                    ) = result
                     print("User ID:", user_id)
-                    print("Role" , user_role)
+                    print("Role:", user_role)
                     print("Status Code:", status_code)
                     print("Message:", status_message)
 
                     if status_code == "SUCCESS":
                         print("Login Successfull.")
-                        return {"status": 200 , "user_id" : user_id, "user_role" : user_role , "message" : status_message}
+                        formatted_joined_date = (
+                            joined_date.isoformat()
+                            if hasattr(joined_date, "isoformat")
+                            else str(joined_date) if joined_date else None
+                        )
+                        return {
+                            "status": 200,
+                            "user_id": user_id,
+                            "user_role": user_role,
+                            "full_name": full_name,
+                            "email": user_email or email,
+                            "phone": phone,
+                            "profile_image": profile_image,
+                            "address": address,
+                            "joined_date": formatted_joined_date,
+                            "message": status_message,
+                        }
                     else:
                         print(f"Login Denied Reason : {status_message}")
                         return {"status" : 404 , "error" : status_code , "message" : status_message}
