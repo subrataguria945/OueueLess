@@ -2687,6 +2687,15 @@ html::-webkit-scrollbar {
   box-shadow: 0 0 0 2px rgba(25, 96, 247, 0.2);
 }
 
+.ql-form-input:disabled,
+.ql-form-input[readonly] {
+  background: var(--admin-hover-bg, #f8fafc) !important;
+  color: var(--admin-text-muted, #64748b) !important;
+  cursor: not-allowed !important;
+  border-color: var(--admin-border-subtle, #e2e8f0) !important;
+  opacity: 0.85;
+}
+
 /* Edit Photo Box in Edit Modal */
 .ql-edit-photo-box {
   display: flex;

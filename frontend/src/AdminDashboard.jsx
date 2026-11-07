@@ -5397,26 +5397,32 @@ export function AdminDashboard() {
                 />
               </div>
               <div className="ql-form-group">
-                <label className="ql-form-label">Official Email</label>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                  <label className="ql-form-label" style={{ margin: 0 }}>Official Email</label>
+                  <span style={{ fontSize: "11.5px", color: "var(--admin-text-muted, #64748b)", display: "inline-flex", alignItems: "center", gap: "4px", fontWeight: "600" }}>
+                    🔒 Read-only
+                  </span>
+                </div>
                 <input
                   type="email"
                   className="ql-form-input"
                   value={editOwnerForm.email}
-                  onChange={(e) => setEditOwnerForm({ ...editOwnerForm, email: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="ql-form-group">
-                <label className="ql-form-label">Phone Number</label>
-                <input
-                  type="text"
-                  className="ql-form-input"
-                  value={editOwnerForm.phone}
-                  onChange={(e) => setEditOwnerForm({ ...editOwnerForm, phone: e.target.value })}
-                  required
+                  readOnly
+                  disabled
+                  title="Official Email cannot be changed"
                 />
               </div>
               <div className="ql-modern-grid-2">
+                <div className="ql-form-group">
+                  <label className="ql-form-label">Phone Number</label>
+                  <input
+                    type="text"
+                    className="ql-form-input"
+                    value={editOwnerForm.phone}
+                    onChange={(e) => setEditOwnerForm({ ...editOwnerForm, phone: e.target.value })}
+                    required
+                  />
+                </div>
                 <div className="ql-form-group">
                   <label className="ql-form-label">Account Status</label>
                   <select
@@ -5425,20 +5431,7 @@ export function AdminDashboard() {
                     onChange={(e) => setEditOwnerForm({ ...editOwnerForm, status: e.target.value })}
                   >
                     <option value="Active">Active</option>
-                    <option value="Expiring Soon">Expiring Soon</option>
                     <option value="Suspended">Suspended</option>
-                  </select>
-                </div>
-                <div className="ql-form-group">
-                  <label className="ql-form-label">Plan Tier</label>
-                  <select
-                    className="ql-form-input"
-                    value={editOwnerForm.plan || "Enterprise Pro"}
-                    onChange={(e) => setEditOwnerForm({ ...editOwnerForm, plan: e.target.value })}
-                  >
-                    <option value="Enterprise Pro">Enterprise Pro</option>
-                    <option value="Business Standard">Business Standard</option>
-                    <option value="Starter Trial">Starter Trial</option>
                   </select>
                 </div>
               </div>
