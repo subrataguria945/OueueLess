@@ -1565,21 +1565,88 @@ export function AdminDashboard() {
     setIsSavingOwnerEdit(true);
 
     try {
-      // 1. Call PUT /user/update to update Full Name, Phone Number, Address, and Profile Image
+      const originalOwner =
+        ownersData.find((o) => Number(o.id) === Number(editOwnerForm.id)) ||
+        detailModalOwner;
+
+      // Extract values with guaranteed fallbacks to existing data for any untouched fields
+      const currentFullname = (
+        editOwnerForm.name ||
+        editOwnerForm.full_name ||
+        originalOwner?.name ||
+        originalOwner?.full_name ||
+        detailModalOwner?.name ||
+        ""
+      ).trim();
+
+      const currentEmail = (
+        editOwnerForm.email ||
+        originalOwner?.email ||
+        detailModalOwner?.email ||
+        ""
+      ).trim();
+
+      const currentPhone = (
+        editOwnerForm.phone ||
+        originalOwner?.phone ||
+        detailModalOwner?.phone ||
+        ""
+      ).trim();
+
+      const currentAddress = (
+        editOwnerForm.address ||
+        editOwnerForm.city ||
+        originalOwner?.address ||
+        originalOwner?.city ||
+        detailModalOwner?.address ||
+        detailModalOwner?.city ||
+        ""
+      ).trim();
+
+      const currentProfileImage =
+        editOwnerForm.avatarImg ||
+        editOwnerForm.profile_image ||
+        originalOwner?.avatarImg ||
+        originalOwner?.profile_image ||
+        detailModalOwner?.avatarImg ||
+        detailModalOwner?.profile_image ||
+        "";
+
+      // 1. Call PUT /user/update with current values (both edited and untouched ones)
       const updatePayload = {
-        fullname: (editOwnerForm.name || "").trim(),
-        phone: (editOwnerForm.phone || "").trim(),
-        profile_image: editOwnerForm.avatarImg || editOwnerForm.profile_image || "",
-        address: (editOwnerForm.address || editOwnerForm.city || "").trim(),
+        fullname: currentFullname,
+        phone: currentPhone,
+        address: currentAddress,
+        profile_image: currentProfileImage,
+        email: currentEmail,
       };
 
-      const userRes = await authFetch(USER_UPDATE_API_URL, {
+      let userRes = await authFetch(USER_UPDATE_API_URL, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatePayload),
       });
 
-      const userData = await userRes.json().catch(() => null);
+      let userData = await userRes.json().catch(() => null);
+
+      // If backend forbids extra fields (e.g. 422 for email), retry with base schema fields
+      if (userRes.status === 422 && Array.isArray(userData?.detail)) {
+        const hasExtraForbidden = userData.detail.some((d) => d?.type === "extra_forbidden");
+        if (hasExtraForbidden) {
+          const fallbackPayload = {
+            fullname: currentFullname,
+            phone: currentPhone,
+            address: currentAddress,
+            profile_image: currentProfileImage,
+          };
+          userRes = await authFetch(USER_UPDATE_API_URL, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(fallbackPayload),
+          });
+          userData = await userRes.json().catch(() => null);
+        }
+      }
 
       if (!userRes.ok) {
         let errorMsg = `Failed to update user profile (${userRes.status})`;
@@ -1594,9 +1661,6 @@ export function AdminDashboard() {
       }
 
       // 2. If status was changed, update account status via PUT /owner/status
-      const originalOwner =
-        ownersData.find((o) => Number(o.id) === Number(editOwnerForm.id)) ||
-        detailModalOwner;
       const statusChanged = originalOwner && originalOwner.status !== editOwnerForm.status;
 
       if (statusChanged) {
@@ -1625,9 +1689,24 @@ export function AdminDashboard() {
         }
       }
 
-      // 3. Update local state
+      // 3. Update local state ensuring full object integrity
+      const mergedOwnerData = {
+        ...(originalOwner || {}),
+        ...editOwnerForm,
+        name: currentFullname,
+        email: currentEmail,
+        phone: currentPhone,
+        address: currentAddress,
+        city: currentAddress,
+        avatarImg: currentProfileImage || originalOwner?.avatarImg,
+        profile_image: currentProfileImage || originalOwner?.profile_image,
+        status: editOwnerForm.status,
+      };
+
       setOwnersData((prev) => {
-        const updated = prev.map((o) => (Number(o.id) === Number(editOwnerForm.id) ? { ...o, ...editOwnerForm } : o));
+        const updated = prev.map((o) =>
+          Number(o.id) === Number(editOwnerForm.id) ? { ...o, ...mergedOwnerData } : o
+        );
         try {
           localStorage.setItem("ql_admin_owners_list", JSON.stringify(updated));
         } catch {}
@@ -1635,7 +1714,7 @@ export function AdminDashboard() {
       });
 
       if (detailModalOwner && Number(detailModalOwner.id) === Number(editOwnerForm.id)) {
-        setDetailModalOwner((prev) => (prev ? { ...prev, ...editOwnerForm } : null));
+        setDetailModalOwner((prev) => (prev ? { ...prev, ...mergedOwnerData } : null));
       }
 
       setIsEditingOwner(false);
