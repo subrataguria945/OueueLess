@@ -1,4 +1,4 @@
-from .database import insert_owner_indb, update_owner_status_indb
+from .database import delete_owner_indb, insert_owner_indb, update_owner_status_indb
 
 def register_owner(input: dict):
     admin_id = input.get("admin_id")
@@ -39,3 +39,19 @@ def update_owner_status(input: dict):
             "status" : "failed",
             "message" : response.get("error")
         }
+
+def delete_owner(input:dict):
+    admin_id = input.get("admin_user_id")
+    owner_id = input.get("owner_id")
+
+    response = delete_owner_indb(admin_id, owner_id)
+    if response.get("status") == 200:
+        return {
+            "status" : "success",
+            "message": response.get("message")
+        }
+    else:
+        return {
+            "status" : "failed",
+            "message" : response.get("error")
+        }  

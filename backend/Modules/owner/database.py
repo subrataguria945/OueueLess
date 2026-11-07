@@ -127,3 +127,52 @@ def update_owner_status_indb(admin_id,owner_id,new_status):
     finally:
        if con:
            con.close()
+
+def delete_owner_indb(admin_user_id,owner_id):
+    con=None
+    try: 
+        con = psycopg.connect(
+            host=os.getenv("HOST"),
+            dbname=os.getenv("DATABASE"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            port=os.getenv("DB_PORT")
+        )
+        print("Database connection established successfully.")
+    except Exception as e:
+        print(f"Error in database connection: {e}")
+        return {"status": 404, "error": "Error While Connecting DB"}
+    else:               
+       with con.cursor() as cur:
+          try:
+            cur.execute(
+                "CALL public.sp_delete_owner(%s, %s, NULL, NULL);",
+                (admin_user_id, owner_id, )
+            )
+            result = cur.fetchone()
+            if result:  
+                
+                status_code, status_message = result  
+                print("Status Code:", status_code)
+                print("Message:", status_message)
+
+                if status_code == "SUCCESS":
+                    con.commit()
+                    con.close()
+                    print("Owner  Deleted Successfully.")
+                    return {"status": 200, "message": status_message}
+                else:
+                    con.rollback()
+                    con.close()
+                    print(f"Owner Delete Failed Reason : {status_message}")
+                    return {"status": 404, "error": status_code, "message": status_message}
+            else:
+                return {"status": 404, "error": "No Response From DB"}
+                
+          except Exception as e:
+            print(f"Error in database query: {e}")
+            return {"status": 404, "error": "Error While Executing The Query"}
+                
+    finally:
+       if con:
+           con.close()           
