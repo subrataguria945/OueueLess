@@ -82,6 +82,19 @@ def generate_forget_password_token(email : str , user_id : int):
                         )
     return token
 
+def generate_owner_invite_token(email : str , user_id : int):
+    payload = {
+        "email" : email,
+        "user_id" : user_id,
+        "exp" : datetime.now(timezone.utc) + timedelta(hours=24),
+        "iat" : datetime.now(timezone.utc)
+    }
+    token = jwt.encode(payload , 
+                        key= os.getenv("FORGET_PASSWORD_SECRET_KEY"),
+                        algorithm="HS256"
+                        )
+    return token
+
 def decode_forget_password_token(token : str):
     if not token:
         return {"error": "Token is required."}

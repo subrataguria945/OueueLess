@@ -1,4 +1,6 @@
 from .database import insert_owner_indb, update_owner_status_indb
+from Library.Notification.email import send_owner_invite_email
+from Library.Security.JWT import generate_owner_invite_token
 
 def register_owner(input: dict):
     admin_id = input.get("admin_id")
@@ -11,11 +13,14 @@ def register_owner(input: dict):
 
     response = insert_owner_indb(admin_id, fullname, email, password, phone, max_shop_count, backup_id)
     if response.get("status") == 200:
+        new_user_id = response.get("new_user_id")
+        invite_token = generate_owner_invite_token(email, new_user_id)
+        send_owner_invite_email(fullname, email, invite_token)
         return {
             "status" : "success",
-            "new_owner_id": response.get("new_owner_id"),
-            "new_user_id": response.get("new_user_id"),
-            "message": response.get("message")
+            "owner_id": response.get("new_owner_id"),
+            "user_id": new_user_id,
+            "message": "Owner registered successfully. Invitation link sent to their email."
         }
     else:
         return {
