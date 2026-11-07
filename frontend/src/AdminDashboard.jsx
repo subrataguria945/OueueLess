@@ -110,10 +110,6 @@ const OWNER_STATUS_API_URL =
   import.meta.env.VITE_OWNER_STATUS_API_URL ||
   `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/owner/status`;
 
-const USER_UPDATE_API_URL =
-  import.meta.env.VITE_USER_UPDATE_API_URL ||
-  `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/user/update`;
-
 export function mapApiOwnerToDashboard(apiOwner) {
   const id = Number(apiOwner.owner_id ?? apiOwner.id ?? 0);
   const name = (apiOwner.full_name || apiOwner.name || "").trim() || "Owner";
@@ -1183,23 +1179,8 @@ export function AdminDashboard() {
     });
   };
 
-  const handleSaveAdminProfile = async (e) => {
+  const handleSaveAdminProfile = (e) => {
     if (e) e.preventDefault();
-    try {
-      const updatePayload = {
-        fullname: (editAdminForm.name || "").trim(),
-        phone: (editAdminForm.phone || "").trim(),
-        profile_image: editAdminForm.avatarImg || "",
-        address: (editAdminForm.address || editAdminForm.location || "").trim(),
-      };
-      await authFetch(USER_UPDATE_API_URL, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatePayload),
-      });
-    } catch (err) {
-      console.warn("Could not sync admin profile to backend:", err);
-    }
     setAdminProfile(editAdminForm);
     localStorage.setItem("ql_admin_profile", JSON.stringify(editAdminForm));
     setSettingsSavedToast(true);
