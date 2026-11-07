@@ -110,6 +110,10 @@ const OWNER_STATUS_API_URL =
   import.meta.env.VITE_OWNER_STATUS_API_URL ||
   `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/owner/status`;
 
+const USER_UPDATE_API_URL =
+  import.meta.env.VITE_USER_UPDATE_API_URL ||
+  `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/user/update`;
+
 export function mapApiOwnerToDashboard(apiOwner) {
   const id = Number(apiOwner.owner_id ?? apiOwner.id ?? 0);
   const name = (apiOwner.full_name || apiOwner.name || "").trim() || "Owner";
@@ -845,6 +849,7 @@ export function AdminDashboard() {
   const [ownerProfileTab, setOwnerProfileTab] = useState("overview"); // 'overview' | 'shops'
   const [isEditingOwner, setIsEditingOwner] = useState(false);
   const [editOwnerForm, setEditOwnerForm] = useState(null);
+  const [isSavingOwnerEdit, setIsSavingOwnerEdit] = useState(false);
   const [updatingOwnerStatusId, setUpdatingOwnerStatusId] = useState(null);
   const [dashboardToast, setDashboardToast] = useState(null);
 
@@ -1555,17 +1560,48 @@ export function AdminDashboard() {
 
   const handleSaveEditOwner = async (e) => {
     e.preventDefault();
-    if (!editOwnerForm) return;
+    if (!editOwnerForm || isSavingOwnerEdit) return;
 
-    const originalOwner =
-      ownersData.find((o) => Number(o.id) === Number(editOwnerForm.id)) ||
-      detailModalOwner;
-    const statusChanged = originalOwner && originalOwner.status !== editOwnerForm.status;
+    setIsSavingOwnerEdit(true);
 
-    if (statusChanged) {
-      const nextStatusBool = editOwnerForm.status === "Active";
-      try {
-        const res = await authFetch(OWNER_STATUS_API_URL, {
+    try {
+      // 1. Call PUT /user/update to update Full Name, Phone Number, Address, and Profile Image
+      const updatePayload = {
+        fullname: (editOwnerForm.name || "").trim(),
+        phone: (editOwnerForm.phone || "").trim(),
+        profile_image: editOwnerForm.avatarImg || editOwnerForm.profile_image || "",
+        address: (editOwnerForm.address || editOwnerForm.city || "").trim(),
+      };
+
+      const userRes = await authFetch(USER_UPDATE_API_URL, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatePayload),
+      });
+
+      const userData = await userRes.json().catch(() => null);
+
+      if (!userRes.ok) {
+        let errorMsg = `Failed to update user profile (${userRes.status})`;
+        if (typeof userData?.detail === "string") {
+          errorMsg = userData.detail;
+        } else if (Array.isArray(userData?.detail) && userData.detail[0]?.msg) {
+          errorMsg = `${userData.detail[0].loc?.slice(-1)[0] || "Field"}: ${userData.detail[0].msg}`;
+        } else if (userData?.message) {
+          errorMsg = userData.message;
+        }
+        throw new Error(errorMsg);
+      }
+
+      // 2. If status was changed, update account status via PUT /owner/status
+      const originalOwner =
+        ownersData.find((o) => Number(o.id) === Number(editOwnerForm.id)) ||
+        detailModalOwner;
+      const statusChanged = originalOwner && originalOwner.status !== editOwnerForm.status;
+
+      if (statusChanged) {
+        const nextStatusBool = editOwnerForm.status === "Active";
+        const statusRes = await authFetch(OWNER_STATUS_API_URL, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -1574,34 +1610,44 @@ export function AdminDashboard() {
           }),
         });
 
-        const data = await res.json().catch(() => null);
+        const statusData = await statusRes.json().catch(() => null);
 
-        if (!res.ok) {
-          let errorMsg = `Server error ${res.status}`;
-          if (typeof data?.detail === "string") {
-            errorMsg = data.detail;
-          } else if (data?.message) {
-            errorMsg = data.message;
+        if (!statusRes.ok) {
+          let errorMsg = `Failed to update owner status (${statusRes.status})`;
+          if (typeof statusData?.detail === "string") {
+            errorMsg = statusData.detail;
+          } else if (Array.isArray(statusData?.detail) && statusData.detail[0]?.msg) {
+            errorMsg = `${statusData.detail[0].loc?.slice(-1)[0] || "Field"}: ${statusData.detail[0].msg}`;
+          } else if (statusData?.message) {
+            errorMsg = statusData.message;
           }
           throw new Error(errorMsg);
         }
-      } catch (err) {
-        console.error("Failed to update status in Edit Owner:", err);
-        showToast(`Failed to update owner status: ${err.message}`, "error");
-        return;
       }
-    }
 
-    setOwnersData((prev) => {
-      const updated = prev.map((o) => (o.id === editOwnerForm.id ? editOwnerForm : o));
-      localStorage.setItem("ql_admin_owners_list", JSON.stringify(updated));
-      return updated;
-    });
-    setDetailModalOwner(editOwnerForm);
-    setIsEditingOwner(false);
-    showToast("Owner profile updated successfully!", "success");
-    setSettingsSavedToast(true);
-    setTimeout(() => setSettingsSavedToast(false), 3000);
+      // 3. Update local state
+      setOwnersData((prev) => {
+        const updated = prev.map((o) => (Number(o.id) === Number(editOwnerForm.id) ? { ...o, ...editOwnerForm } : o));
+        try {
+          localStorage.setItem("ql_admin_owners_list", JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+
+      if (detailModalOwner && Number(detailModalOwner.id) === Number(editOwnerForm.id)) {
+        setDetailModalOwner((prev) => (prev ? { ...prev, ...editOwnerForm } : null));
+      }
+
+      setIsEditingOwner(false);
+      showToast("Owner information updated successfully!", "success");
+      setSettingsSavedToast(true);
+      setTimeout(() => setSettingsSavedToast(false), 3000);
+    } catch (err) {
+      console.error("Failed to save owner edit:", err);
+      showToast(err.message || "Failed to update owner information", "error");
+    } finally {
+      setIsSavingOwnerEdit(false);
+    }
   };
 
   const handleDeleteOwner = (ownerId, ownerName) => {
@@ -5449,12 +5495,25 @@ export function AdminDashboard() {
                 <button
                   type="button"
                   className="ql-btn-secondary"
+                  disabled={isSavingOwnerEdit}
                   onClick={() => setIsEditingOwner(false)}
                 >
                   Cancel
                 </button>
-                <button type="submit" className="ql-btn-primary">
-                  Save Changes
+                <button
+                  type="submit"
+                  className="ql-btn-primary"
+                  disabled={isSavingOwnerEdit}
+                  style={{ display: "inline-flex", alignItems: "center", gap: "7px" }}
+                >
+                  {isSavingOwnerEdit ? (
+                    <>
+                      <span className="ql-btn-spinner" />
+                      <span>Saving Changes...</span>
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
                 </button>
               </div>
             </form>
