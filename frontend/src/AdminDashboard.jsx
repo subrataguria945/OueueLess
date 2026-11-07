@@ -114,6 +114,10 @@ const USER_UPDATE_API_URL =
   import.meta.env.VITE_USER_UPDATE_API_URL ||
   `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/user/update`;
 
+const ALL_USERS_API_URL =
+  import.meta.env.VITE_ALL_USERS_API_URL ||
+  `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/user/all`;
+
 export function mapApiOwnerToDashboard(apiOwner) {
   const id = Number(apiOwner.owner_id ?? apiOwner.id ?? 0);
   const name = (apiOwner.full_name || apiOwner.name || "").trim() || "Owner";
@@ -840,8 +844,93 @@ export function AdminDashboard() {
     }
   };
 
+  // Fetch Admin Profile from /user/all API
+  const fetchAdminProfile = async () => {
+    try {
+      const res = await authFetch(ALL_USERS_API_URL, {
+        method: "GET",
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (res.ok && Array.isArray(data)) {
+        let loggedUser = {};
+        try {
+          loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
+        } catch (e) {}
+
+        const adminFromApi = data.find(
+          (u) =>
+            (loggedUser.email && u.email?.toLowerCase() === loggedUser.email.toLowerCase()) ||
+            (loggedUser.id && (u.user_id === loggedUser.id || u.user_id === loggedUser.userid)) ||
+            (loggedUser.userid && (u.user_id === loggedUser.userid || u.user_id === loggedUser.id)) ||
+            u.role?.toLowerCase() === "admin" ||
+            u.role?.toLowerCase() === "super admin"
+        );
+
+        if (adminFromApi) {
+          const apiName = (adminFromApi.full_name || adminFromApi.fullname || "").trim();
+          const apiEmail = adminFromApi.email || loggedUser.email || "";
+          const apiPhone = adminFromApi.phone || "";
+          const apiAddress = adminFromApi.address || "";
+          const apiImage = adminFromApi.profile_image || null;
+
+          let formattedJoined = "Recently";
+          if (adminFromApi.joined_date) {
+            try {
+              const d = new Date(adminFromApi.joined_date);
+              if (!isNaN(d.getTime())) {
+                formattedJoined = d.toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                });
+              }
+            } catch {}
+          }
+
+          setAdminProfile((prev) => {
+            const updated = {
+              ...prev,
+              name: apiName || prev.name,
+              email: apiEmail || prev.email,
+              phone: apiPhone || prev.phone,
+              address: apiAddress || prev.address,
+              avatarImg: apiImage || prev.avatarImg,
+              joinedOn: formattedJoined !== "Recently" ? formattedJoined : prev.joinedOn,
+              status: adminFromApi.account_status !== undefined ? (adminFromApi.account_status ? "Active" : "Suspended") : prev.status,
+              role: adminFromApi.role || prev.role || "Super Admin",
+            };
+            localStorage.setItem("ql_admin_profile", JSON.stringify(updated));
+            return updated;
+          });
+
+          // Sync localStorage 'user' so all components have latest db info
+          try {
+            const updatedUser = {
+              ...loggedUser,
+              id: adminFromApi.user_id,
+              userid: adminFromApi.user_id,
+              fullname: apiName || loggedUser.fullname,
+              name: apiName || loggedUser.name,
+              email: apiEmail,
+              phone: apiPhone,
+              address: apiAddress,
+              profile_image: apiImage,
+              role: adminFromApi.role,
+            };
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+          } catch (err) {}
+        }
+      }
+    } catch (err) {
+      console.warn("Could not fetch admin details from /user/all:", err);
+    }
+  };
+
   useEffect(() => {
     fetchOwners();
+    fetchAdminProfile();
   }, []);
 
   // Modals & Forms State
@@ -1315,6 +1404,7 @@ export function AdminDashboard() {
       setSettingsSavedToast(true);
       setEditAdminModalOpen(false);
       setTimeout(() => setSettingsSavedToast(false), 3000);
+      fetchAdminProfile();
     } catch (err) {
       console.error("Admin profile update failed:", err);
       setAdminProfileError(err.message || "Failed to update administrator profile in database.");
