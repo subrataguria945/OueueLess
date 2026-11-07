@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
-from Library.Owner.database import get_all_owners_details
 from Library.Security.gatekeeper import require_admin
 from .models import AddOwnerRequest, OwnerDetail,UpdateOwnerStatusRequest
-from .utility import register_owner,update_owner_status
+from .utility import register_owner,update_owner_status as update_o_status
+from .database import get_all_owners_details
 
 router = APIRouter()
 
@@ -17,9 +17,9 @@ def add_owner(data: AddOwnerRequest, admin_id : int = Depends(require_admin)):
 def list_owners(_: int = Depends(require_admin)):
     return get_all_owners_details()
 
-@router.put("/update_owner_status")
+@router.put("/status")
 def update_owner_status(data: UpdateOwnerStatusRequest, admin_id: int = Depends(require_admin)):
     payload = data.model_dump()
     payload["admin_id"] = admin_id
-    response = update_owner_status(payload)
+    response = update_o_status(payload)
     return response
