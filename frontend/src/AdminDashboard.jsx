@@ -870,7 +870,7 @@ export function AdminDashboard() {
   const [isOwnersLoading, setIsOwnersLoading] = useState(true);
   const [ownersError, setOwnersError] = useState(null);
 
-  // Users List State (strictly real data from /user/all API — no mock data)
+  // Users List State (strictly real data from /user/all API — only regular users, excluding Owner and Admin)
   const [usersData, setUsersData] = useState(() => {
     const saved = localStorage.getItem("ql_admin_users_list");
     if (saved) {
@@ -885,7 +885,15 @@ export function AdminDashboard() {
               u.token === "QL-045"
           );
         if (!hasDemo && Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+          // Keep only regular users (exclude Admin and Owner)
+          return parsed.filter((u) => {
+            const r = (u.role || "").toLowerCase().trim();
+            return (
+              r === "user" ||
+              r === "customer" ||
+              (r !== "admin" && r !== "super admin" && r !== "owner")
+            );
+          });
         }
       } catch (e) {}
     }
@@ -939,7 +947,17 @@ export function AdminDashboard() {
       const data = await res.json().catch(() => null);
 
       if (res.ok && Array.isArray(data)) {
-        const mapped = data.map(mapApiUserToDashboard);
+        // Filter ONLY regular users (exclude Admin and Owner) for the Users directory
+        const onlyRegularUsers = data.filter((u) => {
+          const r = (u.role || "").toLowerCase().trim();
+          return (
+            r === "user" ||
+            r === "customer" ||
+            (r !== "admin" && r !== "super admin" && r !== "owner")
+          );
+        });
+
+        const mapped = onlyRegularUsers.map(mapApiUserToDashboard);
         setUsersData(mapped);
         localStorage.setItem("ql_admin_users_list", JSON.stringify(mapped));
 
@@ -1748,8 +1766,15 @@ export function AdminDashboard() {
     }));
   };
 
-  // Filter Users
+  // Filter Users (strictly only users with role "User" / "Customer", excluding Admin and Owner)
   const filteredUsers = usersData.filter((u) => {
+    const r = (u.role || "").toLowerCase().trim();
+    const isUserOnly =
+      r === "user" ||
+      r === "customer" ||
+      (r !== "admin" && r !== "super admin" && r !== "owner");
+    if (!isUserOnly) return false;
+
     const q = searchQuery.toLowerCase().trim();
     const matchSearch =
       !q ||
@@ -1761,10 +1786,7 @@ export function AdminDashboard() {
       (u.address && u.address.toLowerCase().includes(q)) ||
       (u.shop && u.shop.toLowerCase().includes(q));
 
-    const matchStatus =
-      userStatusFilter === "All" ||
-      u.status === userStatusFilter ||
-      (u.role && u.role.toLowerCase() === userStatusFilter.toLowerCase());
+    const matchStatus = userStatusFilter === "All" || u.status === userStatusFilter;
     return matchSearch && matchStatus;
   });
 
@@ -4603,9 +4625,9 @@ export function AdminDashboard() {
 
                 <div className="ql-tab-filter-bar">
                   <div className="ql-tab-filter-left">
-                    <span style={{ fontSize: "12px", fontWeight: "700", color: "var(--admin-text-muted)" }}>User Filter:</span>
+                    <span style={{ fontSize: "12px", fontWeight: "700", color: "var(--admin-text-muted)" }}>User Status:</span>
                     <div className="ql-filter-pill-group">
-                      {["All", "Active", "Suspended", "Admin", "Owner", "Customer"].map((st) => (
+                      {["All", "Active", "Suspended"].map((st) => (
                         <button
                           key={st}
                           type="button"
