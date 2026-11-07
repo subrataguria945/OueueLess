@@ -1,0 +1,168 @@
+# ১. `sp_get_all_owners_details()`
+
+## সহজ কথায় এর কাজ কী?
+Queueless অ্যাপ্লিকেশনের **Admin Dashboard**-এ সব Owner-এর সম্পূর্ণ তথ্য এবং তাদের অধীনে থাকা দোকানের (Shop) নামগুলো একসাথে সুন্দরভাবে দেখানোর জন্য এই ফাংশন ব্যবহার করা হয়।
+
+এটি `owners`, `users`, এবং `shops`—এই ৩টি টেবিল জয়েন করে পুরো ডেটা একসাথে একবারে রিটার্ন করে। ফলে ব্যাকএন্ড থেকে বারবার আলাদা আলাদা কুয়েরি চালানোর প্রয়োজন পড়ে না।
+
+---
+
+## ফাংশন কল করার নিয়ম (Calling Query)
+> **মনে রাখুন:** এটি প্রসিডিউর নয়, একটি **PostgreSQL Function**। তাই `CALL` না লিখে `SELECT` দিয়ে কল করতে হয়।
+
+### সব ডেটা একসাথে দেখতে:
+```sql
+SELECT * FROM public.sp_get_all_owners_details();
+```
+
+### নির্দিষ্ট কিছু কলাম দেখতে চাইলে:
+```sql
+SELECT
+    owner_id,
+    full_name,
+    email,
+    shop_count,
+    max_shop_count,
+    account_status,
+    shop_details
+FROM public.sp_get_all_owners_details();
+```
+
+---
+
+## ইনপুট (Inputs)
+* **কোনো ইনপুট প্যারামিটার নেই (`None`)**
+* এটি সরাসরি ডেটাবেস থেকে সব Owner-এর তালিকা তুলে আনে।
+* **নিরাপত্তা নোট:** ফাংশনের ভেতরে কোনো অ্যাডমিন ভ্যালিডেশন নেই; তাই FastAPI/Backend লেভেলে শুধুমাত্র অথেনটিকেটেড Admin-কেই এই এন্ডপয়েন্ট অ্যাক্সেস করার অনুমতি দিতে হবে।
+
+---
+
+## আউটপুট কলাম তালিকা (Outputs)
+
+| কলামের নাম | ডেটা টাইপ | সহজ ব্যাখ্যা |
+| :--- | :--- | :--- |
+| `owner_id` | `INTEGER` | Owner-এর ইউনিক আইডি |
+| `full_name` | `VARCHAR` | Owner-এর সম্পূর্ণ নাম |
+| `profile_image` | `VARCHAR` | প্রোফাইল ছবির লিংক / পাথ |
+| `email` | `VARCHAR` | ইমেইল অ্যাড্রেস |
+| `phone` | `VARCHAR` | মোবাইল নম্বর |
+| `shop_count` | `BIGINT` | Owner-এর মোট কতগুলো দোকান আছে |
+| `max_shop_count` | `INTEGER` | Owner সর্বোচ্চ কয়টি দোকান বানাতে পারবে |
+| `account_status` | `BOOLEAN` | অ্যাকাউন্ট চালু (`TRUE`) না বন্ধ (`FALSE`) |
+| `joined_date` | `TIMESTAMP` | অ্যাকাউন্ট তৈরির তারিখ ও সময় |
+| `shop_details` | `TEXT` | সব দোকানের নাম (কমা দিয়ে সাজানো) |
+
+### আউটপুটের নমুনা (Example Output)
+
+| owner_id | full_name | shop_count | max_shop_count | account_status | shop_details |
+| :---: | :--- | :---: | :---: | :---: | :--- |
+| `105` | Rahul Das | `3` | `5` | `TRUE` | Shop A, Shop B, Shop C |
+| `104` | Amit Roy | `1` | `3` | `TRUE` | Shop D |
+| `103` | Suman Paul | `0` | `2` | `FALSE` | *(খালি স্ট্রিং)* |
+
+---
+
+## গুরুত্বপূর্ণ টেকনিক্যাল বিষয়
+1. **`COUNT(s.shopid)`:** প্রতিটি Owner-এর মোট কয়টি বৈধ দোকান রয়েছে তা গুণে বের করে।
+2. **`STRING_AGG(s.shopname, ', ' ORDER BY s.shopname)`:** একই মালিকের একাধিক দোকানের নামকে কমা (`,`) দিয়ে একটি সুন্দর লাইনে জুড়ে দেয়।
+3. **`COALESCE(..., '')`:** কোনো Owner-এর যদি কোনো দোকান না থাকে, তবে `NULL`-এর বদলে পরিষ্কার ফাঁকা স্ট্রিং (`''`) দেখায়।
+4. **`ORDER BY o.ownerid DESC`:** সর্বশেষ যুক্ত হওয়া নতুন Owner-দের তালিকার একদম ওপরে দেখায়।
+
+---
+
+## সম্ভাব্য বিশেষ পরিস্থিতি (Edge Cases)
+
+| পরিস্থিতি | ফাংশনটি কী আচরণ করবে? |
+| :--- | :--- |
+| Owner-এর কোনো দোকান নেই | `shop_count = 0` এবং `shop_details = ''` আসবে। |
+| একাধিক দোকান থাকলে | সব দোকান সঠিকভাবে গণনা হবে এবং কমা দিয়ে একসাথে নাম আসবে। |
+| একাউন্ট বন্ধ (Inactive) | Owner আসবে, তবে `account_status = FALSE` থাকবে। |
+| ফোন বা ছবি না থাকলে | সেই ফিল্ডগুলো স্বাভাবিকভাবে `NULL` আসবে। |
+| কোনো Owner-ই নেই | খালি টেবিল (Empty Result Set) রিটার্ন করবে। |
+| ডুপ্লিকেট ইউজার সমস্যা | একই `ownerid`-তে যদি একাধিক User থাকে, তবে ডুপ্লিকেট রো আসতে পারে। তাই প্রতি Owner-এর একটিই ইউজার অ্যাকাউন্ট নিশ্চিত করা আবশ্যক। |
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+২. `fn_refresh_dashboard_stats()`
+
+## সহজ কথায় এর কাজ কী?
+যখনই ডেটাবেসে কোনো নতুন ইউজার, ওনার বা শপ তৈরি, ডিলিট অথবা স্ট্যাটাস পরিবর্তন হবে, তখন এই ফাংশন স্বয়ংক্রিয়ভাবে (Automatically) ড্যাশবোর্ডের জন্য প্রয়োজনীয় **৯টি প্রধান পরিসংখ্যান** নতুন করে হিসাব করে `DashboardStats` টেবিলে আপডেট করে দেয়।
+
+---
+
+## ফাংশন প্রোফাইল
+
+| সেকশন | বিবরণ |
+| :--- | :--- |
+| **ফাংশন নাম** | `fn_refresh_dashboard_stats()` |
+| **ধরন** | Trigger Function |
+| **রিটার্ন টাইপ** | `TRIGGER` |
+| **ল্যাঙ্গুয়েজ** | `PL/pgSQL` |
+| **টার্গেট টেবিল** | `public.DashboardStats` (row `statsid = 1`) |
+| **কাজ** | মোট ও সক্রিয়/নিষ্ক্রিয় ইউজার, ওনার এবং শপ সংখ্যা গণনা করে রিফ্রেশ করা |
+
+---
+
+## ৯টি পরিসংখ্যান যেভাবে হিসাব হয়
+
+| পরিসংখ্যান (Metric) | হিসাব করার লজিক (Calculation Logic) |
+| :--- | :--- |
+| **১. Total Users** | `COUNT(*) FROM users` |
+| **২. Total Owners** | `COUNT(*) FROM owners` |
+| **৩. Total Shops** | `COUNT(*) FROM shops` |
+| **৪. Active Users** | `users` যেখানে `status = TRUE` |
+| **৫. Inactive Users** | `users` যেখানে `status = FALSE` |
+| **৬. Active Owners** | `owners` যাদের ইউজারের `roleid = 2` এবং `status = TRUE` |
+| **৭. Inactive Owners** | `owners` যাদের ইউজারের `roleid = 2` এবং `status = FALSE` |
+| **৮. Active Shops** | `shops` যেখানে `isactive = TRUE` |
+| **৯. Inactive Shops** | `shops` যেখানে `isactive = FALSE` |
+
+---
+
+## ট্রিগার সেটআপ স্ক্রিপ্ট (Trigger Setup)
+এই ফাংশন নিজে একা কাজ করতে পারে না। ৩টি টেবিলে ট্রিগার লাগিয়ে দিতে হয়, যাতে ডেটা বদলালেই এটি সক্রিয় হয়:
+
+```sql
+-- ১. Users টেবিলের ট্রিগার
+CREATE TRIGGER trg_users_dashboard_stats
+AFTER INSERT OR DELETE OR UPDATE OF status, roleid, ownerid
+ON public.users
+FOR EACH STATEMENT
+EXECUTE FUNCTION public.fn_refresh_dashboard_stats();
+
+-- ২. Owners টেবিলের ট্রিগার
+CREATE TRIGGER trg_owners_dashboard_stats
+AFTER INSERT OR DELETE
+ON public.owners
+FOR EACH STATEMENT
+EXECUTE FUNCTION public.fn_refresh_dashboard_stats();
+
+-- ৩. Shops টেবিলের ট্রিগার
+CREATE TRIGGER trg_shops_dashboard_stats
+AFTER INSERT OR DELETE OR UPDATE OF isactive
+ON public.shops
+FOR EACH STATEMENT
+EXECUTE FUNCTION public.fn_refresh_dashboard_stats();
+```
+
+---
+
+## কল করার নিয়ম
+* **ম্যানুয়ালি কল করার দরকার নেই (`No Direct Call`)**
+* যখনই কোনো কুয়েরি (যেমন: `INSERT INTO users`, `UPDATE shops`, অথবা `sp_add_owner`) সম্পন্ন হবে, PostgreSQL ট্রিগার নিজ থেকেই ফাংশনটি এক্সিকিউট করে দেবে।
+
+---
+
+## `DashboardStats` টেবিল ডেটার নমুনা (Output)
+
+```sql
+SELECT * FROM public.DashboardStats WHERE statsid = 1;
+```
+
+| statsid | totalusers | totalowners | totalshops | activeusers | inactiveusers | activeowners | inactiveowners | activeshops | inactiveshops | updatedat |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| `1` | 150 | 20 | 45 | 120 | 30 | 15 | 5 | 35 | 10 | *বর্তমান টাইমস্ট্যাম্প* |
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
