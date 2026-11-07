@@ -110,6 +110,10 @@ const OWNER_STATUS_API_URL =
   import.meta.env.VITE_OWNER_STATUS_API_URL ||
   `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/owner/status`;
 
+const USER_UPDATE_API_URL =
+  import.meta.env.VITE_USER_UPDATE_API_URL ||
+  `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/user/update`;
+
 export function mapApiOwnerToDashboard(apiOwner) {
   const id = Number(apiOwner.owner_id ?? apiOwner.id ?? 0);
   const name = (apiOwner.full_name || apiOwner.name || "").trim() || "Owner";
@@ -1032,6 +1036,7 @@ export function AdminDashboard() {
       username: loggedUser.username || "admin",
       email: loggedUser.email || "admin@queueless.com",
       phone: loggedUser.phone || "+91 98765 43210",
+      address: loggedUser.address || "Kolkata, WB",
       role: loggedUser.role || "Super Admin",
       joinedOn: "12 Jan 2026",
       status: "Active",
@@ -1040,7 +1045,7 @@ export function AdminDashboard() {
       bio: "Master administrator for QueueLess platform, token moderation, shop subscriptions & system configuration.",
       avatarBg: "#1960f7",
       avatarColor: "#ffffff",
-      avatarImg: null, // Base64 uploaded image URL
+      avatarImg: loggedUser.profile_image || null, // Base64 uploaded image URL or avatar
       twoFactor: "Enabled (Authenticator App)",
       lastLogin: "Today, 12:45 AM (Local IP)",
     };
@@ -1061,6 +1066,8 @@ export function AdminDashboard() {
   });
 
   const [editAdminForm, setEditAdminForm] = useState(adminProfile);
+  const [isSavingAdminProfile, setIsSavingAdminProfile] = useState(false);
+  const [adminProfileError, setAdminProfileError] = useState("");
 
   const handleAvatarFileSelect = (e) => {
     const file = e.target.files && e.target.files[0];
@@ -1170,36 +1177,89 @@ export function AdminDashboard() {
     });
   };
 
-  const handleSaveAdminProfile = (e) => {
+  const handleSaveAdminProfile = async (e) => {
     if (e) e.preventDefault();
-    const updated = {
-      ...adminProfile,
-      ...editAdminForm,
-      email: adminProfile.email, // Official email is locked
-      department: editAdminForm.department || "",
-      bio: editAdminForm.bio || "",
-    };
-    setAdminProfile(updated);
-    // Locally store Department, Bio & other Admin profile details in localStorage
-    localStorage.setItem("ql_admin_profile", JSON.stringify(updated));
+    if (isSavingAdminProfile) return;
 
-    // Keep logged-in user in localStorage in sync locally
+    setIsSavingAdminProfile(true);
+    setAdminProfileError("");
+
+    const currentName = (editAdminForm.name || adminProfile.name || "").trim();
+    const currentPhone = (editAdminForm.phone || adminProfile.phone || "").trim();
+    const currentAddress = (editAdminForm.address || adminProfile.address || "").trim();
+    const currentImage = editAdminForm.avatarImg || adminProfile.avatarImg || "";
+
     try {
-      const u = JSON.parse(localStorage.getItem("user") || "{}");
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          ...u,
-          name: updated.name,
-          fullname: updated.name,
-          phone: updated.phone,
-        })
-      );
-    } catch (err) {}
+      // 1. Call backend PUT /user/update API
+      const updatePayload = {
+        fullname: currentName,
+        phone: currentPhone,
+        address: currentAddress,
+        profile_image: currentImage,
+      };
 
-    setSettingsSavedToast(true);
-    setEditAdminModalOpen(false);
-    setTimeout(() => setSettingsSavedToast(false), 3000);
+      const res = await authFetch(USER_UPDATE_API_URL, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatePayload),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        let errorMsg = `Server error (${res.status})`;
+        if (typeof data?.detail === "string") {
+          errorMsg = data.detail;
+        } else if (Array.isArray(data?.detail) && data.detail[0]?.msg) {
+          errorMsg = `${data.detail[0].loc?.slice(-1)[0] || "Field"}: ${data.detail[0].msg}`;
+        } else if (data?.message) {
+          errorMsg = data.message;
+        }
+        throw new Error(errorMsg);
+      }
+
+      // 2. Locally store updated profile, Department & Bio
+      const updated = {
+        ...adminProfile,
+        ...editAdminForm,
+        name: currentName,
+        phone: currentPhone,
+        address: currentAddress,
+        avatarImg: currentImage || null,
+        email: adminProfile.email, // Official email is locked
+        department: editAdminForm.department || "",
+        bio: editAdminForm.bio || "",
+      };
+      setAdminProfile(updated);
+      localStorage.setItem("ql_admin_profile", JSON.stringify(updated));
+
+      // Keep logged-in user in localStorage in sync locally
+      try {
+        const u = JSON.parse(localStorage.getItem("user") || "{}");
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            ...u,
+            name: currentName,
+            fullname: currentName,
+            phone: currentPhone,
+            address: currentAddress,
+            profile_image: currentImage,
+          })
+        );
+      } catch (err) {}
+
+      showToast("Administrator profile updated successfully!", "success");
+      setSettingsSavedToast(true);
+      setEditAdminModalOpen(false);
+      setTimeout(() => setSettingsSavedToast(false), 3000);
+    } catch (err) {
+      console.error("Admin profile update failed:", err);
+      setAdminProfileError(err.message || "Failed to update administrator profile.");
+      showToast(`Profile update failed: ${err.message || "Server error"}`, "error");
+    } finally {
+      setIsSavingAdminProfile(false);
+    }
   };
 
   // Settings State
@@ -4875,8 +4935,8 @@ export function AdminDashboard() {
                     </div>
 
                     <div className="ql-admin-info-item">
-                      <span className="ql-admin-info-label">Username</span>
-                      <span className="ql-admin-info-value">@{adminProfile.username}</span>
+                      <span className="ql-admin-info-label">Address / Location</span>
+                      <span className="ql-admin-info-value">{adminProfile.address || "Kolkata, WB"}</span>
                     </div>
 
                     <div className="ql-admin-info-item">
@@ -5029,8 +5089,8 @@ export function AdminDashboard() {
 
               <div className="ql-admin-profile-compact-grid">
                 <div className="ql-profile-info-card">
-                  <span className="info-lbl">Username</span>
-                  <span className="info-val">@{adminProfile.username}</span>
+                  <span className="info-lbl">Address</span>
+                  <span className="info-val" title={adminProfile.address || "Kolkata, WB"}>{adminProfile.address || "Kolkata, WB"}</span>
                 </div>
                 <div className="ql-profile-info-card">
                   <span className="info-lbl">Official Email</span>
@@ -5209,9 +5269,20 @@ export function AdminDashboard() {
                     <input
                       type="tel"
                       className="ql-form-input"
-                      value={editAdminForm.phone}
+                      value={editAdminForm.phone || ""}
                       onChange={(e) => setEditAdminForm({ ...editAdminForm, phone: e.target.value })}
                       required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="ql-form-label">Address / Location</label>
+                    <input
+                      type="text"
+                      className="ql-form-input"
+                      value={editAdminForm.address || ""}
+                      onChange={(e) => setEditAdminForm({ ...editAdminForm, address: e.target.value })}
+                      placeholder="e.g. Kolkata, WB"
                     />
                   </div>
 
@@ -5259,6 +5330,27 @@ export function AdminDashboard() {
                     />
                   </div>
                 </div>
+
+                {adminProfileError && (
+                  <div
+                    style={{
+                      marginTop: "14px",
+                      padding: "10px 14px",
+                      borderRadius: "8px",
+                      background: "rgba(239, 68, 68, 0.1)",
+                      border: "1px solid rgba(239, 68, 68, 0.3)",
+                      color: "#ef4444",
+                      fontSize: "13px",
+                      fontWeight: "600",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <span>⚠️</span>
+                    <span>{adminProfileError}</span>
+                  </div>
+                )}
               </div>
 
               <div className="ql-modal-footer" style={{ gap: "10px" }}>
@@ -5266,11 +5358,24 @@ export function AdminDashboard() {
                   type="button"
                   className="ql-btn-close"
                   onClick={() => setEditAdminModalOpen(false)}
+                  disabled={isSavingAdminProfile}
                 >
                   Cancel
                 </button>
-                <button type="submit" className="ql-btn-primary">
-                  💾 Save Profile & Photo
+                <button
+                  type="submit"
+                  className="ql-btn-primary"
+                  disabled={isSavingAdminProfile}
+                  style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
+                >
+                  {isSavingAdminProfile ? (
+                    <>
+                      <span className="ql-btn-spinner" />
+                      <span>Saving Changes...</span>
+                    </>
+                  ) : (
+                    <>💾 Save Profile & Photo</>
+                  )}
                 </button>
               </div>
             </form>
