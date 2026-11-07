@@ -189,6 +189,65 @@ export function mapApiOwnerToDashboard(apiOwner) {
   };
 }
 
+export function mapApiUserToDashboard(apiUser) {
+  const id = Number(apiUser.user_id ?? apiUser.userid ?? apiUser.id ?? 0);
+  const name = (apiUser.full_name || apiUser.fullname || apiUser.name || "").trim() || "User";
+  const initial = name ? name.charAt(0).toUpperCase() : "U";
+  const avatarImg = apiUser.profile_image || apiUser.profileimage || apiUser.avatarImg || null;
+  const email = apiUser.email || "";
+  const phone = apiUser.phone || "N/A";
+  const address = apiUser.address || "N/A";
+  const role = apiUser.role || "User";
+  const isActive =
+    apiUser.account_status !== undefined
+      ? Boolean(apiUser.account_status)
+      : apiUser.status !== undefined
+      ? (typeof apiUser.status === "boolean" ? apiUser.status : apiUser.status === "Active")
+      : true;
+  const status = isActive ? "Active" : "Suspended";
+
+  let joinedOn = "Recently";
+  if (apiUser.joined_date || apiUser.createdat || apiUser.joinedOn) {
+    try {
+      const d = new Date(apiUser.joined_date || apiUser.createdat || apiUser.joinedOn);
+      if (!isNaN(d.getTime())) {
+        joinedOn = d.toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+      }
+    } catch {}
+  }
+
+  const token = `USR-${String(id).padStart(4, "0")}`;
+
+  return {
+    id,
+    token,
+    name,
+    initial,
+    avatarImg,
+    email,
+    phone,
+    address,
+    city: address,
+    role,
+    shop: role,
+    counter: "General Desk",
+    serviceType: apiUser.email_verified || apiUser.isemailverified ? "Verified Member" : "Registered User",
+    position: 0,
+    approxWait: status === "Active" ? "Active Now" : "Inactive",
+    status,
+    bookedAt: joinedOn,
+    joinedOn,
+    joinedVia: "QueueLess App / Web Portal",
+    notes: `Registered as ${role} in QueueLess system.`,
+    emailVerified: Boolean(apiUser.email_verified || apiUser.isemailverified),
+    rawUser: apiUser,
+  };
+}
+
 const RECENT_OWNERS = [];
 
 const ALL_SHOPS_DATA = [
@@ -811,6 +870,30 @@ export function AdminDashboard() {
   const [isOwnersLoading, setIsOwnersLoading] = useState(true);
   const [ownersError, setOwnersError] = useState(null);
 
+  // Users List State (strictly real data from /user/all API — no mock data)
+  const [usersData, setUsersData] = useState(() => {
+    const saved = localStorage.getItem("ql_admin_users_list");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        const hasDemo =
+          Array.isArray(parsed) &&
+          parsed.some(
+            (u) =>
+              u.name === "Sourav Ganguly" ||
+              u.email === "sourav.ganguly@email.com" ||
+              u.token === "QL-045"
+          );
+        if (!hasDemo && Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      } catch (e) {}
+    }
+    return [];
+  });
+  const [isUsersLoading, setIsUsersLoading] = useState(true);
+  const [usersError, setUsersError] = useState(null);
+
   // Fetch all owners from backend API (with automatic token refresh on 401)
   const fetchOwners = async () => {
     setIsOwnersLoading(true);
@@ -844,8 +927,10 @@ export function AdminDashboard() {
     }
   };
 
-  // Fetch Admin Profile from /user/all API
-  const fetchAdminProfile = async () => {
+  // Fetch All Users & Admin Profile from /user/all API
+  const fetchUsers = async () => {
+    setIsUsersLoading(true);
+    setUsersError(null);
     try {
       const res = await authFetch(ALL_USERS_API_URL, {
         method: "GET",
@@ -854,6 +939,10 @@ export function AdminDashboard() {
       const data = await res.json().catch(() => null);
 
       if (res.ok && Array.isArray(data)) {
+        const mapped = data.map(mapApiUserToDashboard);
+        setUsersData(mapped);
+        localStorage.setItem("ql_admin_users_list", JSON.stringify(mapped));
+
         let loggedUser = {};
         try {
           loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -922,15 +1011,29 @@ export function AdminDashboard() {
             localStorage.setItem("user", JSON.stringify(updatedUser));
           } catch (err) {}
         }
+      } else if (res.status === 401 || res.status === 403) {
+        console.warn("User API auth restriction:", data?.detail || res.statusText);
+        setUsersError(data?.detail || "Admin authentication required to view users list.");
+        setUsersData([]);
+      } else {
+        console.warn("User API failed:", data);
+        setUsersError(data?.detail || data?.message || "Failed to load users from database.");
+        setUsersData([]);
       }
     } catch (err) {
-      console.warn("Could not fetch admin details from /user/all:", err);
+      console.error("fetchUsers error:", err);
+      setUsersError("Could not connect to server. Please check your internet connection.");
+      setUsersData([]);
+    } finally {
+      setIsUsersLoading(false);
     }
   };
 
+  const fetchAdminProfile = fetchUsers;
+
   useEffect(() => {
     fetchOwners();
-    fetchAdminProfile();
+    fetchUsers();
   }, []);
 
   // Modals & Forms State
@@ -1025,15 +1128,6 @@ export function AdminDashboard() {
 
   // Users Directory & Details State
   const [selectedUserDetail, setSelectedUserDetail] = useState(null);
-  const [usersData, setUsersData] = useState(() => {
-    const saved = localStorage.getItem("ql_admin_users_list");
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {}
-    }
-    return ALL_USERS_DATA;
-  });
 
   // Subscriptions Hub State
   const [subscriptionPlans, setSubscriptionPlans] = useState(() => {
@@ -1659,12 +1753,18 @@ export function AdminDashboard() {
     const q = searchQuery.toLowerCase().trim();
     const matchSearch =
       !q ||
-      u.name.toLowerCase().includes(q) ||
-      u.phone.includes(q) ||
-      u.shop.toLowerCase().includes(q) ||
-      u.token.toLowerCase().includes(q);
+      (u.name && u.name.toLowerCase().includes(q)) ||
+      (u.email && u.email.toLowerCase().includes(q)) ||
+      (u.phone && String(u.phone).includes(q)) ||
+      (u.role && u.role.toLowerCase().includes(q)) ||
+      (u.token && u.token.toLowerCase().includes(q)) ||
+      (u.address && u.address.toLowerCase().includes(q)) ||
+      (u.shop && u.shop.toLowerCase().includes(q));
 
-    const matchStatus = userStatusFilter === "All" || u.status === userStatusFilter;
+    const matchStatus =
+      userStatusFilter === "All" ||
+      u.status === userStatusFilter ||
+      (u.role && u.role.toLowerCase() === userStatusFilter.toLowerCase());
     return matchSearch && matchStatus;
   });
 
@@ -2370,9 +2470,13 @@ export function AdminDashboard() {
                         <div className="ql-stat-label">{item.label}</div>
                         <div className="ql-stat-number">
                           {item.id === "owners"
-                            ? isOwnersLoading
+                            ? isOwnersLoading && ownersData.length === 0
                               ? "..."
                               : String(ownersData.length)
+                            : item.id === "users"
+                            ? isUsersLoading && usersData.length === 0
+                              ? "..."
+                              : String(usersData.length)
                             : item.value}
                         </div>
                       </div>
@@ -3971,7 +4075,7 @@ export function AdminDashboard() {
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                         <circle cx="12" cy="7" r="4" />
                       </svg>
-                      <h2>Visitor & Queue Details</h2>
+                      <h2>User & Profile Details</h2>
                     </div>
                     <div className="ql-user-breadcrumbs">
                       <span className="crumb-home">🏠</span>
@@ -4003,25 +4107,48 @@ export function AdminDashboard() {
                 {/* 2. Hero Profile Banner */}
                 <div className="ql-user-hero-card">
                   <div className="ql-user-hero-left">
-                    <div className="ql-user-avatar-circle">
-                      {selectedUserDetail.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()}
+                    <div className="ql-user-avatar-circle" style={{ overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      {selectedUserDetail.avatarImg ? (
+                        <img src={selectedUserDetail.avatarImg} alt={selectedUserDetail.name} className="ql-avatar-fill-img" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ) : (
+                        selectedUserDetail.name ? selectedUserDetail.name.trim().charAt(0).toUpperCase() : (selectedUserDetail.initial || "U")
+                      )}
                     </div>
                     <div className="ql-user-hero-info">
                       <div className="ql-user-hero-title-row">
                         <h3 className="ql-user-hero-name">{selectedUserDetail.name}</h3>
                         <span
                           className={`ql-badge-pill ${
-                            selectedUserDetail.status === "Serving Now"
+                            selectedUserDetail.status === "Active" || selectedUserDetail.status === "Completed" || selectedUserDetail.status === "Serving Now"
                               ? "active"
                               : selectedUserDetail.status === "Waiting"
                               ? "expiring"
-                              : selectedUserDetail.status === "Completed"
-                              ? "active"
                               : "suspended"
                           }`}
                         >
                           <span className="dot" />
                           {selectedUserDetail.status}
+                        </span>
+                        <span
+                          className="ql-badge-pill"
+                          style={{
+                            background:
+                              selectedUserDetail.role?.toLowerCase() === "admin" || selectedUserDetail.role?.toLowerCase() === "super admin"
+                                ? "#fef3c7"
+                                : selectedUserDetail.role?.toLowerCase() === "owner"
+                                ? "#e0e7ff"
+                                : "#f1f5f9",
+                            color:
+                              selectedUserDetail.role?.toLowerCase() === "admin" || selectedUserDetail.role?.toLowerCase() === "super admin"
+                                ? "#b45309"
+                                : selectedUserDetail.role?.toLowerCase() === "owner"
+                                ? "#4338ca"
+                                : "#475569",
+                            fontWeight: "700",
+                            textTransform: "capitalize",
+                          }}
+                        >
+                          {selectedUserDetail.role || "User"}
                         </span>
                       </div>
                       <div className="ql-user-hero-meta-row">
@@ -4444,11 +4571,41 @@ export function AdminDashboard() {
               </div>
             ) : (
               <div className="ql-tab-view">
+                {usersError && (
+                  <div
+                    className="ql-admin-banner-alert"
+                    style={{
+                      background: "#fef2f2",
+                      border: "1px solid #fecaca",
+                      color: "#991b1b",
+                      padding: "10px 16px",
+                      borderRadius: "8px",
+                      marginBottom: "14px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px" }}>
+                      <span>⚠️</span>
+                      <span>{usersError}</span>
+                    </div>
+                    <button
+                      type="button"
+                      className="ql-btn-secondary"
+                      style={{ padding: "4px 10px", fontSize: "12px", background: "#fff" }}
+                      onClick={fetchUsers}
+                    >
+                      ↻ Retry
+                    </button>
+                  </div>
+                )}
+
                 <div className="ql-tab-filter-bar">
                   <div className="ql-tab-filter-left">
-                    <span style={{ fontSize: "12px", fontWeight: "700", color: "var(--admin-text-muted)" }}>Queue Status:</span>
+                    <span style={{ fontSize: "12px", fontWeight: "700", color: "var(--admin-text-muted)" }}>User Filter:</span>
                     <div className="ql-filter-pill-group">
-                      {["All", "Waiting", "Serving Now", "Completed", "Cancelled"].map((st) => (
+                      {["All", "Active", "Suspended", "Admin", "Owner", "Customer"].map((st) => (
                         <button
                           key={st}
                           type="button"
@@ -4461,9 +4618,35 @@ export function AdminDashboard() {
                     </div>
                   </div>
 
-                  <span style={{ fontSize: "12px", fontWeight: "700", color: "var(--admin-text-muted)" }}>
-                    Total Queued Visitors: {filteredUsers.length}
-                  </span>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <span style={{ fontSize: "12px", fontWeight: "700", color: "var(--admin-text-muted)" }}>
+                      Total Users: {filteredUsers.length}
+                    </span>
+                    <button
+                      type="button"
+                      className="ql-btn-secondary"
+                      style={{ padding: "5px 10px", fontSize: "12px", display: "flex", alignItems: "center", gap: "5px" }}
+                      onClick={fetchUsers}
+                      disabled={isUsersLoading}
+                      title="Refresh users from server"
+                    >
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{ animation: isUsersLoading ? "spin 1s linear infinite" : "none" }}
+                      >
+                        <path d="M23 4v6h-6" />
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                      </svg>
+                      <span>{isUsersLoading ? "Loading..." : "Refresh"}</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="ql-card" style={{ flex: 1, minHeight: "350px" }}>
@@ -4471,63 +4654,132 @@ export function AdminDashboard() {
                     <table className="ql-owners-table">
                       <thead>
                         <tr>
+                          <th style={{ width: "40px" }}>#</th>
                           <th>User Name</th>
+                          <th>Email Address</th>
                           <th>Contact Number</th>
-                          <th>Store Queue</th>
-                          <th style={{ textAlign: "center" }}>Token #</th>
-                          <th style={{ textAlign: "center" }}>Queue Pos</th>
+                          <th>Role</th>
+                          <th style={{ textAlign: "center" }}>User ID</th>
+                          <th>Address</th>
                           <th>Status</th>
-                          <th>Booking Time</th>
+                          <th>Joined Date</th>
                           <th style={{ textAlign: "center" }}>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredUsers.map((user) => (
-                          <tr key={user.id}>
-                            <td
-                              style={{ fontWeight: "700", cursor: "pointer", color: "var(--admin-blue)" }}
-                              onClick={() => setSelectedUserDetail(user)}
-                              title="Click to view full user details"
-                            >
-                              {user.name}
-                            </td>
-                            <td>{user.phone}</td>
-                            <td style={{ color: "var(--admin-blue)", fontWeight: "600" }}>{user.shop}</td>
-                            <td style={{ textAlign: "center", fontWeight: "900" }}>{user.token}</td>
-                            <td style={{ textAlign: "center" }}>
-                              {user.position === 0 ? "—" : `#${user.position}`}
-                            </td>
-                            <td>
-                              <span
-                                className={`ql-badge-pill ${
-                                  user.status === "Serving Now"
-                                    ? "active"
-                                    : user.status === "Waiting"
-                                    ? "expiring"
-                                    : user.status === "Completed"
-                                    ? "active"
-                                    : "suspended"
-                                }`}
-                              >
-                                <span className="dot" />
-                                {user.status}
-                              </span>
-                            </td>
-                            <td>{user.bookedAt}</td>
-                            <td>
-                              <div className="ql-row-actions">
-                                <button
-                                  type="button"
-                                  className="ql-action-icon blue"
-                                  title="View User Details"
-                                  onClick={() => setSelectedUserDetail(user)}
-                                >
-                                  👁️
-                                </button>
+                        {isUsersLoading && usersData.length === 0 ? (
+                          <tr>
+                            <td colSpan="10" style={{ textAlign: "center", padding: "48px 0" }}>
+                              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
+                                <div className="ql-btn-spinner" style={{ width: "24px", height: "24px", borderWidth: "2.5px" }} />
+                                <span style={{ color: "var(--admin-text-muted)", fontSize: "14px", fontWeight: "600" }}>
+                                  Fetching users from database...
+                                </span>
                               </div>
                             </td>
                           </tr>
-                        ))}
+                        ) : filteredUsers.length === 0 ? (
+                          <tr>
+                            <td colSpan="10" style={{ textAlign: "center", padding: "48px 0" }}>
+                              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", color: "var(--admin-text-muted)" }}>
+                                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                  <circle cx="9" cy="7" r="4" />
+                                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                </svg>
+                                <span style={{ fontWeight: "700", fontSize: "15px", color: "var(--admin-text-main)" }}>No Users Found</span>
+                                <span style={{ fontSize: "13px" }}>There are currently no users matching your filter or search.</span>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : (
+                          filteredUsers.map((user, index) => (
+                            <tr key={user.id}>
+                              <td>{index + 1}</td>
+                              <td>
+                                <div
+                                  className="ql-owner-info"
+                                  style={{ cursor: "pointer" }}
+                                  onClick={() => setSelectedUserDetail(user)}
+                                  title="Click to view full user profile"
+                                >
+                                  <span
+                                    className="ql-owner-avatar"
+                                    style={{
+                                      backgroundColor: "#eff6ff",
+                                      color: "#2563eb",
+                                      overflow: "hidden",
+                                    }}
+                                  >
+                                    {user.avatarImg ? (
+                                      <img src={user.avatarImg} alt={user.name} className="ql-avatar-fill-img" />
+                                    ) : (
+                                      user.name ? user.name.trim().charAt(0).toUpperCase() : (user.initial || "U")
+                                    )}
+                                  </span>
+                                  <span className="ql-owner-name">{user.name}</span>
+                                </div>
+                              </td>
+                              <td style={{ color: "var(--admin-text-muted)" }}>{user.email || "—"}</td>
+                              <td>{user.phone || "—"}</td>
+                              <td>
+                                <span
+                                  className="ql-badge-pill"
+                                  style={{
+                                    background:
+                                      user.role?.toLowerCase() === "admin" || user.role?.toLowerCase() === "super admin"
+                                        ? "#fef3c7"
+                                        : user.role?.toLowerCase() === "owner"
+                                        ? "#e0e7ff"
+                                        : "#f1f5f9",
+                                    color:
+                                      user.role?.toLowerCase() === "admin" || user.role?.toLowerCase() === "super admin"
+                                        ? "#b45309"
+                                        : user.role?.toLowerCase() === "owner"
+                                        ? "#4338ca"
+                                        : "#475569",
+                                    fontWeight: "700",
+                                    textTransform: "capitalize",
+                                  }}
+                                >
+                                  {user.role || "User"}
+                                </span>
+                              </td>
+                              <td style={{ textAlign: "center", fontWeight: "800" }}>{user.token}</td>
+                              <td style={{ maxWidth: "160px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={user.address}>
+                                {user.address || "—"}
+                              </td>
+                              <td>
+                                <span
+                                  className={`ql-badge-pill ${
+                                    user.status === "Active" || user.status === "Completed" || user.status === "Serving Now"
+                                      ? "active"
+                                      : user.status === "Waiting"
+                                      ? "expiring"
+                                      : "suspended"
+                                  }`}
+                                >
+                                  <span className="dot" />
+                                  {user.status}
+                                </span>
+                              </td>
+                              <td>{user.joinedOn || user.bookedAt}</td>
+                              <td>
+                                <div className="ql-row-actions">
+                                  <button
+                                    type="button"
+                                    className="ql-action-icon blue"
+                                    title="View User Details"
+                                    onClick={() => setSelectedUserDetail(user)}
+                                  >
+                                    👁️
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </table>
                   </div>
