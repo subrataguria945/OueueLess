@@ -1031,12 +1031,18 @@ export function AdminDashboard() {
       loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
     } catch (e) {}
 
+    const realName = loggedUser.fullname || loggedUser.name || "Sujit Kar";
+    const realPhone = loggedUser.phone && loggedUser.phone !== "+91 98765 43210" ? loggedUser.phone : "";
+    const realEmail = loggedUser.email || "admin@gmail.com";
+    const realAddress = loggedUser.address || "";
+    const realImage = loggedUser.profile_image || null;
+
     const defaultProfile = {
-      name: loggedUser.name || loggedUser.fullname || "Super Admin",
+      name: realName,
       username: loggedUser.username || "admin",
-      email: loggedUser.email || "admin@queueless.com",
-      phone: loggedUser.phone || "+91 98765 43210",
-      address: loggedUser.address || "Kolkata, WB",
+      email: realEmail,
+      phone: realPhone,
+      address: realAddress,
       role: loggedUser.role || "Super Admin",
       joinedOn: "12 Jan 2026",
       status: "Active",
@@ -1045,7 +1051,7 @@ export function AdminDashboard() {
       bio: "Master administrator for QueueLess platform, token moderation, shop subscriptions & system configuration.",
       avatarBg: "#1960f7",
       avatarColor: "#ffffff",
-      avatarImg: loggedUser.profile_image || null, // Base64 uploaded image URL or avatar
+      avatarImg: realImage,
       twoFactor: "Enabled (Authenticator App)",
       lastLogin: "Today, 12:45 AM (Local IP)",
     };
@@ -1056,7 +1062,11 @@ export function AdminDashboard() {
         return {
           ...defaultProfile,
           ...parsed,
-          email: loggedUser.email || parsed.email || defaultProfile.email,
+          name: loggedUser.fullname || loggedUser.name || (parsed.name !== "Super Admin" ? parsed.name : defaultProfile.name),
+          phone: loggedUser.phone || (parsed.phone !== "+91 98765 43210" ? parsed.phone : defaultProfile.phone),
+          email: loggedUser.email || defaultProfile.email,
+          address: loggedUser.address ?? (parsed.address !== "Kolkata, WB" ? parsed.address : defaultProfile.address),
+          avatarImg: loggedUser.profile_image || parsed.avatarImg || defaultProfile.avatarImg,
           role: "Super Admin",
           accessLevel: "Root Clearance",
         };
@@ -1068,6 +1078,30 @@ export function AdminDashboard() {
   const [editAdminForm, setEditAdminForm] = useState(adminProfile);
   const [isSavingAdminProfile, setIsSavingAdminProfile] = useState(false);
   const [adminProfileError, setAdminProfileError] = useState("");
+
+  const handleOpenEditAdminModal = () => {
+    let loggedUser = {};
+    try {
+      loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    } catch (e) {}
+
+    const realName = loggedUser.fullname || loggedUser.name || (adminProfile.name !== "Super Admin" ? adminProfile.name : "Sujit Kar");
+    const realPhone = loggedUser.phone || (adminProfile.phone !== "+91 98765 43210" ? adminProfile.phone : "") || "";
+    const realEmail = loggedUser.email || adminProfile.email || "admin@gmail.com";
+    const realAddress = loggedUser.address !== undefined && loggedUser.address !== null ? loggedUser.address : (adminProfile.address || "");
+    const realImage = loggedUser.profile_image || adminProfile.avatarImg || null;
+
+    setEditAdminForm({
+      ...adminProfile,
+      name: realName,
+      phone: realPhone,
+      email: realEmail,
+      address: realAddress,
+      avatarImg: realImage,
+    });
+    setAdminProfileError("");
+    setEditAdminModalOpen(true);
+  };
 
   const handleAvatarFileSelect = (e) => {
     const file = e.target.files && e.target.files[0];
@@ -1184,21 +1218,54 @@ export function AdminDashboard() {
     setIsSavingAdminProfile(true);
     setAdminProfileError("");
 
-    const currentName = (editAdminForm.name || adminProfile.name || "").trim();
-    const currentPhone = (editAdminForm.phone || adminProfile.phone || "").trim();
-    const currentAddress = (editAdminForm.address || adminProfile.address || "").trim();
-    const currentImage = editAdminForm.avatarImg || adminProfile.avatarImg || "";
+    let loggedUser = {};
+    try {
+      loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    } catch (err) {}
+
+    // Exactly preserve whatever fields the user didn't change:
+    const finalName = (
+      editAdminForm.name?.trim() ||
+      loggedUser.fullname ||
+      loggedUser.name ||
+      adminProfile.name ||
+      "Sujit Kar"
+    ).trim();
+
+    const finalPhone = (
+      editAdminForm.phone?.trim() ||
+      loggedUser.phone ||
+      (adminProfile.phone !== "+91 98765 43210" ? adminProfile.phone : "") ||
+      ""
+    ).trim();
+
+    const finalAddress = (
+      editAdminForm.address !== undefined
+        ? editAdminForm.address.trim()
+        : (loggedUser.address || adminProfile.address || "")
+    ).trim();
+
+    const finalImage =
+      editAdminForm.avatarImg ||
+      loggedUser.profile_image ||
+      adminProfile.avatarImg ||
+      "";
 
     try {
-      // 1. Call backend PUT /user/update API
+      // 1. Prepare exact UpdateUserRequest payload
       const updatePayload = {
-        fullname: currentName,
-        phone: currentPhone,
-        address: currentAddress,
-        profile_image: currentImage,
+        fullname: finalName,
+        phone: finalPhone,
+        address: finalAddress,
+        profile_image: finalImage,
       };
 
-      const res = await authFetch(USER_UPDATE_API_URL, {
+      // Call PUT /user/update (with user_id query param if loggedUser.id is available)
+      const targetUrl = loggedUser?.id
+        ? `${USER_UPDATE_API_URL}?user_id=${loggedUser.id}`
+        : USER_UPDATE_API_URL;
+
+      const res = await authFetch(targetUrl, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatePayload),
@@ -1218,44 +1285,39 @@ export function AdminDashboard() {
         throw new Error(errorMsg);
       }
 
-      // 2. Locally store updated profile, Department & Bio
-      const updated = {
+      // 2. On success, update localStorage 'user' so all app components stay synced with the database
+      const updatedUser = {
+        ...loggedUser,
+        fullname: finalName,
+        name: finalName,
+        phone: finalPhone,
+        address: finalAddress,
+        profile_image: finalImage,
+      };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+
+      // 3. Update adminProfile & local storage
+      const updatedProfile = {
         ...adminProfile,
         ...editAdminForm,
-        name: currentName,
-        phone: currentPhone,
-        address: currentAddress,
-        avatarImg: currentImage || null,
-        email: adminProfile.email, // Official email is locked
+        name: finalName,
+        phone: finalPhone,
+        address: finalAddress,
+        avatarImg: finalImage || null,
+        email: adminProfile.email,
         department: editAdminForm.department || "",
         bio: editAdminForm.bio || "",
       };
-      setAdminProfile(updated);
-      localStorage.setItem("ql_admin_profile", JSON.stringify(updated));
+      setAdminProfile(updatedProfile);
+      localStorage.setItem("ql_admin_profile", JSON.stringify(updatedProfile));
 
-      // Keep logged-in user in localStorage in sync locally
-      try {
-        const u = JSON.parse(localStorage.getItem("user") || "{}");
-        localStorage.setItem(
-          "user",
-          JSON.stringify({
-            ...u,
-            name: currentName,
-            fullname: currentName,
-            phone: currentPhone,
-            address: currentAddress,
-            profile_image: currentImage,
-          })
-        );
-      } catch (err) {}
-
-      showToast("Administrator profile updated successfully!", "success");
+      showToast("Administrator profile updated successfully in database!", "success");
       setSettingsSavedToast(true);
       setEditAdminModalOpen(false);
       setTimeout(() => setSettingsSavedToast(false), 3000);
     } catch (err) {
       console.error("Admin profile update failed:", err);
-      setAdminProfileError(err.message || "Failed to update administrator profile.");
+      setAdminProfileError(err.message || "Failed to update administrator profile in database.");
       showToast(`Profile update failed: ${err.message || "Server error"}`, "error");
     } finally {
       setIsSavingAdminProfile(false);
@@ -2125,8 +2187,7 @@ export function AdminDashboard() {
                     type="button"
                     className="ql-dropdown-item"
                     onClick={() => {
-                      setEditAdminForm(adminProfile);
-                      setEditAdminModalOpen(true);
+                      handleOpenEditAdminModal();
                       setProfileDropdownOpen(false);
                     }}
                   >
@@ -4917,8 +4978,7 @@ export function AdminDashboard() {
                           type="button"
                           className="ql-photo-edit-modal-btn"
                           onClick={() => {
-                            setEditAdminForm(adminProfile);
-                            setEditAdminModalOpen(true);
+                            handleOpenEditAdminModal();
                           }}
                         >
                           ✏️ Edit Profile Details
@@ -5139,9 +5199,8 @@ export function AdminDashboard() {
                 className="ql-btn-primary"
                 style={{ background: "var(--admin-blue-light)", color: "var(--admin-blue)", border: "1px solid var(--admin-blue)" }}
                 onClick={() => {
-                  setEditAdminForm(adminProfile);
                   setAdminProfileModalOpen(false);
-                  setEditAdminModalOpen(true);
+                  handleOpenEditAdminModal();
                 }}
               >
                 ✏️ Edit Profile & Photo
