@@ -13,3 +13,4 @@ class OwnerDetail(BaseModel):
     account_status: bool
     joined_date: datetime
     shop_details: str
+    address: str | None = None
