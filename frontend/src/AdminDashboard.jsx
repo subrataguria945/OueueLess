@@ -248,8 +248,6 @@ export function mapApiUserToDashboard(apiUser) {
   };
 }
 
-const RECENT_OWNERS = [];
-
 const ALL_SHOPS_DATA = [
   {
     id: "shop-1",
@@ -411,111 +409,6 @@ const getShopCategoryVisuals = (category) => {
     ),
   };
 };
-
-const ALL_USERS_DATA = [
-  {
-    id: 101,
-    name: "Sourav Ganguly",
-    email: "sourav.ganguly@email.com",
-    phone: "+91 98301 23456",
-    shop: "Coffee Hub",
-    token: "QL-045",
-    counter: "Counter 2 (Brew & Espresso)",
-    serviceType: "Dine-In Order & Pickup",
-    position: 3,
-    approxWait: "12 mins",
-    status: "Waiting",
-    bookedAt: "10 mins ago",
-    joinedVia: "QR Scan (Table #4)",
-    city: "Kolkata, WB",
-    notes: "Customer requested oat milk latte and extra sugar.",
-  },
-  {
-    id: 102,
-    name: "Rimi Mukherjee",
-    email: "rimi.mukherjee@email.com",
-    phone: "+91 98302 34567",
-    shop: "Quick Care Clinic",
-    token: "QC-018",
-    counter: "Doctor Cabin 1 (General OPD)",
-    serviceType: "Physician Consultation",
-    position: 0,
-    approxWait: "Currently Serving",
-    status: "Serving Now",
-    bookedAt: "25 mins ago",
-    joinedVia: "Mobile App Booking",
-    city: "Kolkata, WB",
-    notes: "Follow-up consultation with prior medical report.",
-  },
-  {
-    id: 103,
-    name: "Debashis Banerjee",
-    email: "debashis.b@email.com",
-    phone: "+91 98303 45678",
-    shop: "Tasty Bites Restaurant",
-    token: "TB-072",
-    counter: "Main Dining Hall (Table Queue)",
-    serviceType: "Dinner Table (4 Guests)",
-    position: 5,
-    approxWait: "20 mins",
-    status: "Waiting",
-    bookedAt: "8 mins ago",
-    joinedVia: "Kiosk Counter #1",
-    city: "Salt Lake, Kolkata",
-    notes: "Requires high-chair for toddler.",
-  },
-  {
-    id: 104,
-    name: "Tanmoy Sarkar",
-    email: "tanmoy.sarkar@email.com",
-    phone: "+91 98304 56789",
-    shop: "The Book Nook Store",
-    token: "BN-030",
-    counter: "Billing Desk A",
-    serviceType: "Checkout & Gift Packaging",
-    position: 0,
-    approxWait: "Completed",
-    status: "Completed",
-    bookedAt: "42 mins ago",
-    joinedVia: "Store Entry Tablet",
-    city: "Howrah, WB",
-    notes: "Membership discount applied, gift wrapped.",
-  },
-  {
-    id: 105,
-    name: "Mousumi Dutta",
-    email: "mousumi.dutta@email.com",
-    phone: "+91 98305 67890",
-    shop: "Coffee Hub",
-    token: "QL-039",
-    counter: "Counter 1 (Bakery & Snacks)",
-    serviceType: "Takeaway Breakfast",
-    position: 0,
-    approxWait: "Completed",
-    status: "Completed",
-    bookedAt: "50 mins ago",
-    joinedVia: "Web Online Token",
-    city: "Kolkata, WB",
-    notes: "Order fulfilled and receipt emailed.",
-  },
-  {
-    id: 106,
-    name: "Rohit Verma",
-    email: "rohit.verma@email.com",
-    phone: "+91 98306 78901",
-    shop: "Tasty Bites Restaurant",
-    token: "TB-065",
-    counter: "Takeaway Counter",
-    serviceType: "Parcel Pickup",
-    position: 0,
-    approxWait: "Cancelled",
-    status: "Cancelled",
-    bookedAt: "1 hour ago",
-    joinedVia: "Mobile App Booking",
-    city: "New Town, Kolkata",
-    notes: "Customer cancelled due to schedule delay.",
-  },
-];
 
 const SUBSCRIPTION_PLANS = [
   {
@@ -1560,88 +1453,13 @@ export function AdminDashboard() {
     return matchSearch && matchCat;
   });
 
-  // Helper to generate / retrieve live queue tokens for a shop
+  // Helper to retrieve live queue tokens for a shop
   const getOrInitQueueTokens = (shop) => {
     if (!shop) return [];
     if (queueTokensState[shop.id]) {
       return queueTokensState[shop.id];
     }
-    const prefix = shop.currentServing ? shop.currentServing.split("-")[0] : "QL";
-    const numPart = shop.currentServing ? parseInt(shop.currentServing.split("-")[1], 10) : 42;
-    const currentNum = isNaN(numPart) ? 42 : numPart;
-
-    const list = [
-      {
-        id: `${shop.id}-now`,
-        name: "Sourav Ganguly",
-        phone: "+91 98301 23456",
-        token: `${prefix}-${String(currentNum).padStart(3, "0")}`,
-        position: 0,
-        status: "Serving Now",
-        bookedAt: "5 mins ago",
-        joinedAt: "10:00 AM",
-      },
-      {
-        id: `${shop.id}-w1`,
-        name: "Anupam Roy",
-        phone: "+91 98302 44321",
-        token: `${prefix}-${String(currentNum + 1).padStart(3, "0")}`,
-        position: 1,
-        status: "Waiting",
-        bookedAt: "11 mins ago",
-        joinedAt: "10:02 AM",
-      },
-      {
-        id: `${shop.id}-w2`,
-        name: "Pooja Banerjee",
-        phone: "+91 98304 99887",
-        token: `${prefix}-${String(currentNum + 2).padStart(3, "0")}`,
-        position: 2,
-        status: "Waiting",
-        bookedAt: "15 mins ago",
-        joinedAt: "10:04 AM",
-      },
-      {
-        id: `${shop.id}-w3`,
-        name: "Subhashree Ray",
-        phone: "+91 98308 11223",
-        token: `${prefix}-${String(currentNum + 3).padStart(3, "0")}`,
-        position: 3,
-        status: "Waiting",
-        bookedAt: "21 mins ago",
-        joinedAt: "10:06 AM",
-      },
-      {
-        id: `${shop.id}-w4`,
-        name: "Rohan Chatterjee",
-        phone: "+91 98309 66554",
-        token: `${prefix}-${String(currentNum + 4).padStart(3, "0")}`,
-        position: 4,
-        status: "Waiting",
-        bookedAt: "27 mins ago",
-        joinedAt: "10:08 AM",
-      },
-      {
-        id: `${shop.id}-c1`,
-        name: "Tanmay Sen",
-        phone: "+91 98307 77889",
-        token: `${prefix}-${String(Math.max(1, currentNum - 1)).padStart(3, "0")}`,
-        position: 0,
-        status: "Completed",
-        bookedAt: "38 mins ago",
-      },
-      {
-        id: `${shop.id}-c2`,
-        name: "Mousumi Dutta",
-        phone: "+91 98305 67890",
-        token: `${prefix}-${String(Math.max(1, currentNum - 2)).padStart(3, "0")}`,
-        position: 0,
-        status: "Completed",
-        bookedAt: "51 mins ago",
-      },
-    ];
-
-    return list;
+    return [];
   };
 
   const handleCallNextToken = (shop) => {
@@ -3775,52 +3593,60 @@ export function AdminDashboard() {
                             </tr>
                           </thead>
                           <tbody>
-                            {filteredTokens.map((tok, idx) => {
-                              const isNow = tok.status === "Serving Now" || tok.status === "Serving";
-                              const isWait = tok.status === "Waiting";
-                              return (
-                                <tr key={tok.id || idx} className={isNow ? "row-serving" : ""}>
-                                  <td style={{ padding: "9px 12px" }}>
-                                    <span className="ql-queue-token-chip">{tok.token}</span>
-                                  </td>
-                                  <td style={{ padding: "9px 12px" }}>
-                                    <div style={{ fontWeight: "700", color: "var(--admin-text-main)", fontSize: "13px" }}>
-                                      {tok.name}
-                                    </div>
-                                    <div style={{ fontSize: "11px", color: "var(--admin-text-muted)", marginTop: "1px" }}>
-                                      {tok.phone}
-                                    </div>
-                                  </td>
-                                  <td style={{ textAlign: "center", padding: "9px 12px" }}>
-                                    <span className={`ql-queue-pos-badge ${isNow ? "now" : ""}`}>
-                                      {isNow ? "NOW" : tok.position > 0 ? `#${tok.position}` : "--"}
-                                    </span>
-                                  </td>
-                                  <td style={{ padding: "9px 12px" }}>
-                                    <span style={{ fontSize: "12px", color: "var(--admin-text-muted)", fontWeight: "500" }}>
-                                      {tok.bookedAt || tok.joinedAt || "5 mins ago"}
-                                    </span>
-                                  </td>
-                                  <td style={{ textAlign: "right", padding: "9px 12px" }}>
-                                    <span
-                                      className={`ql-queue-status-chip ${
-                                        isNow ? "serving" : isWait ? "waiting" : tok.status === "Completed" ? "completed" : "cancelled"
-                                      }`}
-                                    >
+                            {filteredTokens.length === 0 ? (
+                              <tr>
+                                <td colSpan="5" style={{ textAlign: "center", padding: "32px 0", color: "var(--admin-text-muted)", fontSize: "13px" }}>
+                                  No active queue tokens for this counter.
+                                </td>
+                              </tr>
+                            ) : (
+                              filteredTokens.map((tok, idx) => {
+                                const isNow = tok.status === "Serving Now" || tok.status === "Serving";
+                                const isWait = tok.status === "Waiting";
+                                return (
+                                  <tr key={tok.id || idx} className={isNow ? "row-serving" : ""}>
+                                    <td style={{ padding: "9px 12px" }}>
+                                      <span className="ql-queue-token-chip">{tok.token}</span>
+                                    </td>
+                                    <td style={{ padding: "9px 12px" }}>
+                                      <div style={{ fontWeight: "700", color: "var(--admin-text-main)", fontSize: "13px" }}>
+                                        {tok.name}
+                                      </div>
+                                      <div style={{ fontSize: "11px", color: "var(--admin-text-muted)", marginTop: "1px" }}>
+                                        {tok.phone}
+                                      </div>
+                                    </td>
+                                    <td style={{ textAlign: "center", padding: "9px 12px" }}>
+                                      <span className={`ql-queue-pos-badge ${isNow ? "now" : ""}`}>
+                                        {isNow ? "NOW" : tok.position > 0 ? `#${tok.position}` : "--"}
+                                      </span>
+                                    </td>
+                                    <td style={{ padding: "9px 12px" }}>
+                                      <span style={{ fontSize: "12px", color: "var(--admin-text-muted)", fontWeight: "500" }}>
+                                        {tok.bookedAt || tok.joinedAt || "5 mins ago"}
+                                      </span>
+                                    </td>
+                                    <td style={{ textAlign: "right", padding: "9px 12px" }}>
                                       <span
-                                        style={{
-                                          width: "6px",
-                                          height: "6px",
-                                          borderRadius: "50%",
-                                          background: isNow ? "#0066ff" : isWait ? "#ea580c" : tok.status === "Completed" ? "#10b981" : "#ef4444",
-                                        }}
-                                      />
-                                      {tok.status}
-                                    </span>
-                                  </td>
-                                </tr>
-                              );
-                            })}
+                                        className={`ql-queue-status-chip ${
+                                          isNow ? "serving" : isWait ? "waiting" : tok.status === "Completed" ? "completed" : "cancelled"
+                                        }`}
+                                      >
+                                        <span
+                                          style={{
+                                            width: "6px",
+                                            height: "6px",
+                                            borderRadius: "50%",
+                                            background: isNow ? "#0066ff" : isWait ? "#ea580c" : tok.status === "Completed" ? "#10b981" : "#ef4444",
+                                          }}
+                                        />
+                                        {tok.status}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                );
+                              })
+                            )}
                           </tbody>
                         </table>
                       </div>
