@@ -1183,8 +1183,23 @@ export function AdminDashboard() {
     });
   };
 
-  const handleSaveAdminProfile = (e) => {
+  const handleSaveAdminProfile = async (e) => {
     if (e) e.preventDefault();
+    try {
+      const updatePayload = {
+        fullname: (editAdminForm.name || "").trim(),
+        phone: (editAdminForm.phone || "").trim(),
+        profile_image: editAdminForm.avatarImg || "",
+        address: (editAdminForm.address || editAdminForm.location || "").trim(),
+      };
+      await authFetch(USER_UPDATE_API_URL, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatePayload),
+      });
+    } catch (err) {
+      console.warn("Could not sync admin profile to backend:", err);
+    }
     setAdminProfile(editAdminForm);
     localStorage.setItem("ql_admin_profile", JSON.stringify(editAdminForm));
     setSettingsSavedToast(true);
@@ -1569,7 +1584,7 @@ export function AdminDashboard() {
         ownersData.find((o) => Number(o.id) === Number(editOwnerForm.id)) ||
         detailModalOwner;
 
-      // Extract values with guaranteed fallbacks to existing data for any untouched fields
+      // Extract values with guaranteed fallbacks to existing owner data
       const currentFullname = (
         editOwnerForm.name ||
         editOwnerForm.full_name ||
@@ -1579,6 +1594,7 @@ export function AdminDashboard() {
         ""
       ).trim();
 
+      // Ensure the owner's original email is always preserved
       const currentEmail = (
         editOwnerForm.email ||
         originalOwner?.email ||
@@ -1612,55 +1628,7 @@ export function AdminDashboard() {
         detailModalOwner?.profile_image ||
         "";
 
-      // 1. Call PUT /user/update with current values (both edited and untouched ones)
-      const updatePayload = {
-        fullname: currentFullname,
-        phone: currentPhone,
-        address: currentAddress,
-        profile_image: currentProfileImage,
-        email: currentEmail,
-      };
-
-      let userRes = await authFetch(USER_UPDATE_API_URL, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatePayload),
-      });
-
-      let userData = await userRes.json().catch(() => null);
-
-      // If backend forbids extra fields (e.g. 422 for email), retry with base schema fields
-      if (userRes.status === 422 && Array.isArray(userData?.detail)) {
-        const hasExtraForbidden = userData.detail.some((d) => d?.type === "extra_forbidden");
-        if (hasExtraForbidden) {
-          const fallbackPayload = {
-            fullname: currentFullname,
-            phone: currentPhone,
-            address: currentAddress,
-            profile_image: currentProfileImage,
-          };
-          userRes = await authFetch(USER_UPDATE_API_URL, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(fallbackPayload),
-          });
-          userData = await userRes.json().catch(() => null);
-        }
-      }
-
-      if (!userRes.ok) {
-        let errorMsg = `Failed to update user profile (${userRes.status})`;
-        if (typeof userData?.detail === "string") {
-          errorMsg = userData.detail;
-        } else if (Array.isArray(userData?.detail) && userData.detail[0]?.msg) {
-          errorMsg = `${userData.detail[0].loc?.slice(-1)[0] || "Field"}: ${userData.detail[0].msg}`;
-        } else if (userData?.message) {
-          errorMsg = userData.message;
-        }
-        throw new Error(errorMsg);
-      }
-
-      // 2. If status was changed, update account status via PUT /owner/status
+      // 1. If status was changed, update account status via PUT /owner/status
       const statusChanged = originalOwner && originalOwner.status !== editOwnerForm.status;
 
       if (statusChanged) {
@@ -1689,7 +1657,7 @@ export function AdminDashboard() {
         }
       }
 
-      // 3. Update local state ensuring full object integrity
+      // 2. Update local state ensuring full object integrity and preserving the owner's email
       const mergedOwnerData = {
         ...(originalOwner || {}),
         ...editOwnerForm,
