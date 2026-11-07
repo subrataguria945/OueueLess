@@ -157,6 +157,9 @@ export function EmailOtpModal({
         style={{
           width: "100%",
           maxWidth: "430px",
+          maxHeight: "92vh",
+          overflowY: "auto",
+          WebkitOverflowScrolling: "touch",
           backgroundColor: "#ffffff",
           borderRadius: "22px",
           padding: "32px 26px 28px",

@@ -3280,8 +3280,28 @@ html::-webkit-scrollbar {
 /* ── 5. EXTRA SMALL MOBILE PHONES (<= 480px) ─────────────────────────────── */
 @media (max-width: 480px) {
   .ql-stats-grid {
-    grid-template-columns: 1fr !important;
-    gap: 8px !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  .ql-stat-card:last-child {
+    grid-column: 1 / -1 !important;
+  }
+
+  .ql-stat-card {
+    padding: 6px 8px !important;
+  }
+
+  .ql-stat-number {
+    font-size: 16px !important;
+  }
+
+  .ql-stat-label {
+    font-size: 9.5px !important;
+  }
+
+  .ql-stat-context {
+    display: none !important;
   }
 
   .ql-topbar-search {
@@ -3669,15 +3689,11 @@ html::-webkit-scrollbar {
 }
 
 .ql-queue-details-modal .ql-modal-body {
-  overflow: hidden !important;
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  max-height: calc(90vh - 120px) !important;
   padding: 14px 18px !important;
   gap: 12px !important;
-}
-
-.ql-queue-details-modal .ql-modal-body::-webkit-scrollbar {
-  display: none !important;
 }
 
 .ql-queue-stat-grid {
@@ -5939,17 +5955,40 @@ html::-webkit-scrollbar {
   .ql-shop-hero-card {
     flex-direction: column !important;
     align-items: flex-start !important;
+    gap: 12px !important;
   }
   .ql-shop-hero-left {
     flex-direction: column !important;
     align-items: flex-start !important;
+    gap: 12px !important;
+    width: 100% !important;
   }
   .ql-shop-hero-img-wrap {
     width: 100% !important;
-    height: 160px !important;
+    height: 150px !important;
+  }
+  .ql-shop-hero-right {
+    width: 100% !important;
+  }
+  .ql-shop-view-public-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 10px 14px !important;
   }
   .ql-shop-kpis-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .ql-shop-kpi-card {
+    padding: 10px 12px !important;
+    gap: 10px !important;
+  }
+  .ql-shop-kpi-icon {
+    width: 36px !important;
+    height: 36px !important;
+  }
+  .ql-shop-kpi-text .val {
+    font-size: 18px !important;
   }
 }
 
@@ -7776,6 +7815,68 @@ input.ql-input-modern:-webkit-autofill:focus {
   .ql-modern-grid-3 {
     grid-template-columns: 1fr !important;
     gap: 10px !important;
+  }
+
+  /* Live Queue Details Modal on Mobile */
+  .ql-queue-details-modal {
+    width: 96vw !important;
+    max-height: 94vh !important;
+    border-radius: 14px !important;
+  }
+
+  .ql-queue-details-modal .ql-modal-body {
+    padding: 12px 12px !important;
+    gap: 10px !important;
+  }
+
+  .ql-queue-stat-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
+  }
+
+  .ql-queue-stat-pill {
+    padding: 6px 8px !important;
+  }
+
+  .ql-queue-stat-pill .val {
+    font-size: 15px !important;
+  }
+
+  .ql-queue-ctrl-row {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    padding: 6px 10px !important;
+  }
+
+  .ql-queue-table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .ql-queue-table {
+    min-width: 440px !important;
+  }
+
+  /* Global Tab Stats Bar on Mobile */
+  .ql-tab-stats-bar {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .ql-tab-stat-pill {
+    padding: 8px 10px !important;
+  }
+
+  .ql-tab-stat-pill .val {
+    font-size: 15px !important;
+  }
+
+  .ql-tab-stat-pill .lbl {
+    font-size: 9.5px !important;
+  }
+
+  .ql-tab-stat-pill:last-child:nth-child(odd) {
+    grid-column: 1 / -1 !important;
   }
 }
 

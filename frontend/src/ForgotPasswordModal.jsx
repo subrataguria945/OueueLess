@@ -214,6 +214,9 @@ export function ForgotPasswordModal({ isOpen, onClose }) {
         style={{
           width: "100%",
           maxWidth: "400px",
+          maxHeight: "92vh",
+          overflowY: "auto",
+          WebkitOverflowScrolling: "touch",
           backgroundColor: "#ffffff",
           borderRadius: "20px",
           padding: "28px 24px 22px",
