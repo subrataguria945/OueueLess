@@ -5287,12 +5287,7 @@ export function AdminDashboard() {
                   </div>
 
                   <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                      <label className="ql-form-label" style={{ margin: 0 }}>Department / Designation</label>
-                      <span style={{ fontSize: "11px", color: "var(--admin-text-muted, #64748b)", display: "inline-flex", alignItems: "center", gap: "3px" }}>
-                        💾 Local
-                      </span>
-                    </div>
+                    <label className="ql-form-label">Department / Designation</label>
                     <input
                       type="text"
                       className="ql-form-input"
@@ -5314,12 +5309,7 @@ export function AdminDashboard() {
                   </div>
 
                   <div style={{ gridColumn: "1 / -1" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                      <label className="ql-form-label" style={{ margin: 0 }}>Administrator Bio & Responsibilities</label>
-                      <span style={{ fontSize: "11px", color: "var(--admin-text-muted, #64748b)", display: "inline-flex", alignItems: "center", gap: "3px" }}>
-                        💾 Local
-                      </span>
-                    </div>
+                    <label className="ql-form-label">Administrator Bio & Responsibilities</label>
                     <textarea
                       rows={2}
                       className="ql-form-input"
