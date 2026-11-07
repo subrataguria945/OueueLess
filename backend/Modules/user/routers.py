@@ -1,7 +1,9 @@
 from fastapi import APIRouter , Depends
-from .models import UserLogin , RefreshTokenRequest , ForgetPassword, ChangePassword , ResetPassword , VerifyRegistrationOTP , InitiateUserRegister , UserRegisterGoogle, UpdateUserRequest
+from .models import UserLogin , RefreshTokenRequest , ForgetPassword, ChangePassword , ResetPassword , VerifyRegistrationOTP , UserDetail , InitiateUserRegister , UserRegisterGoogle, UpdateUserRequest
 from Library.Authentication.user.utility import login_user as login , change_password as change_pass, initiate_register , veriy_and_register_user , manage_google_user , check_and_send_forget_password_link , reset_password as reset_pass , refresh_user_token, update_user as update_user_details
-from Library.Security.gatekeeper import require_active_user
+from Library.Security.gatekeeper import require_active_user,require_admin
+from .database import get_all_users_details
+
 router = APIRouter()
 
 @router.post("/login")
@@ -52,4 +54,9 @@ def update_user(data: UpdateUserRequest, user_id: int = Depends(require_active_u
     payload = data.model_dump()
     payload["user_id"] = user_id
     response = update_user_details(payload)
+    return response
+
+@router.get("/all",response_model=list[UserDetail])
+def get_all_users(_: int = Depends(require_admin)):
+    response = get_all_users_details()
     return response
