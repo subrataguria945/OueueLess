@@ -110,10 +110,6 @@ const OWNER_STATUS_API_URL =
   import.meta.env.VITE_OWNER_STATUS_API_URL ||
   `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/owner/status`;
 
-const USER_UPDATE_API_URL =
-  import.meta.env.VITE_USER_UPDATE_API_URL ||
-  `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/user/update`;
-
 export function mapApiOwnerToDashboard(apiOwner) {
   const id = Number(apiOwner.owner_id ?? apiOwner.id ?? 0);
   const name = (apiOwner.full_name || apiOwner.name || "").trim() || "Owner";
@@ -847,9 +843,6 @@ export function AdminDashboard() {
   // Modals & Forms State
   const [detailModalOwner, setDetailModalOwner] = useState(null);
   const [ownerProfileTab, setOwnerProfileTab] = useState("overview"); // 'overview' | 'shops'
-  const [isEditingOwner, setIsEditingOwner] = useState(false);
-  const [editOwnerForm, setEditOwnerForm] = useState(null);
-  const [isSavingOwnerEdit, setIsSavingOwnerEdit] = useState(false);
   const [updatingOwnerStatusId, setUpdatingOwnerStatusId] = useState(null);
   const [dashboardToast, setDashboardToast] = useState(null);
 
@@ -1123,9 +1116,6 @@ export function AdminDashboard() {
           if (detailModalOwner && detailModalOwner.id === ownerId) {
             setDetailModalOwner(updatedOwner);
           }
-          if (editOwnerForm && editOwnerForm.id === ownerId) {
-            setEditOwnerForm(updatedOwner);
-          }
           return updatedOwner;
         }
         return o;
@@ -1146,9 +1136,6 @@ export function AdminDashboard() {
             const updatedOwner = { ...o, avatarImg: croppedBase64, avatarRemoved: false };
             if (detailModalOwner && detailModalOwner.id === ownerId) {
               setDetailModalOwner(updatedOwner);
-            }
-            if (editOwnerForm && editOwnerForm.id === ownerId) {
-              setEditOwnerForm(updatedOwner);
             }
             return updatedOwner;
           }
@@ -1542,11 +1529,6 @@ export function AdminDashboard() {
         setDetailModalOwner((prev) => (prev ? { ...prev, status: nextStatusStr } : null));
       }
 
-      // Also sync editOwnerForm if active
-      if (editOwnerForm && Number(editOwnerForm.id) === Number(ownerId)) {
-        setEditOwnerForm((prev) => (prev ? { ...prev, status: nextStatusStr } : null));
-      }
-
       showToast(`Owner status changed to "${nextStatusStr}" successfully!`, "success");
       setSettingsSavedToast(true);
       setTimeout(() => setSettingsSavedToast(false), 3000);
@@ -1555,189 +1537,6 @@ export function AdminDashboard() {
       showToast(`Failed to update status: ${err.message || "Network error"}`, "error");
     } finally {
       setUpdatingOwnerStatusId(null);
-    }
-  };
-
-  const handleSaveEditOwner = async (e) => {
-    e.preventDefault();
-    if (!editOwnerForm || isSavingOwnerEdit) return;
-
-    setIsSavingOwnerEdit(true);
-
-    try {
-      const originalOwner =
-        ownersData.find((o) => Number(o.id) === Number(editOwnerForm.id)) ||
-        detailModalOwner;
-
-      // Extract values with guaranteed fallbacks to existing owner data
-      const currentFullname = (
-        editOwnerForm.name ||
-        editOwnerForm.full_name ||
-        originalOwner?.name ||
-        originalOwner?.full_name ||
-        detailModalOwner?.name ||
-        ""
-      ).trim();
-
-      // Ensure the owner's original email is always preserved
-      const currentEmail = (
-        editOwnerForm.email ||
-        originalOwner?.email ||
-        detailModalOwner?.email ||
-        ""
-      ).trim();
-
-      const currentPhone = (
-        editOwnerForm.phone ||
-        originalOwner?.phone ||
-        detailModalOwner?.phone ||
-        ""
-      ).trim();
-
-      const currentAddress = (
-        editOwnerForm.address ||
-        editOwnerForm.city ||
-        originalOwner?.address ||
-        originalOwner?.city ||
-        detailModalOwner?.address ||
-        detailModalOwner?.city ||
-        ""
-      ).trim();
-
-      const currentProfileImage =
-        editOwnerForm.avatarImg ||
-        editOwnerForm.profile_image ||
-        originalOwner?.avatarImg ||
-        originalOwner?.profile_image ||
-        detailModalOwner?.avatarImg ||
-        detailModalOwner?.profile_image ||
-        "";
-
-      // Check which profile fields actually changed
-      const nameChanged = editOwnerForm.name && editOwnerForm.name.trim() !== (originalOwner?.name || "").trim();
-      const phoneChanged = editOwnerForm.phone && editOwnerForm.phone.trim() !== (originalOwner?.phone || "").trim();
-      const addressChanged = (editOwnerForm.address || editOwnerForm.city || "").trim() !== (originalOwner?.address || originalOwner?.city || "").trim();
-      const anyFieldChanged = nameChanged || phoneChanged || addressChanged;
-
-      // 1. Call PUT /user/update if any field changed
-      if (anyFieldChanged) {
-        const updatePayload = {
-          fullname: currentFullname,
-          phone: currentPhone,
-          address: currentAddress,
-          profile_image: currentProfileImage,
-          owner_id: Number(editOwnerForm.id),
-          user_id: Number(editOwnerForm.id),
-        };
-
-        const targetUrl = `${USER_UPDATE_API_URL}?user_id=${Number(editOwnerForm.id)}&owner_id=${Number(editOwnerForm.id)}`;
-
-        let userRes = await authFetch(targetUrl, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatePayload),
-        });
-
-        let userData = await userRes.json().catch(() => null);
-
-        // Fallback retry if backend strictly rejects extra fields in body
-        if (userRes.status === 422 && Array.isArray(userData?.detail)) {
-          const hasExtraForbidden = userData.detail.some((d) => d?.type === "extra_forbidden");
-          if (hasExtraForbidden) {
-            const strictPayload = {
-              fullname: currentFullname,
-              phone: currentPhone,
-              address: currentAddress,
-              profile_image: currentProfileImage,
-            };
-            userRes = await authFetch(targetUrl, {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(strictPayload),
-            });
-            userData = await userRes.json().catch(() => null);
-          }
-        }
-
-        if (!userRes.ok) {
-          let errorMsg = `Failed to update user profile (${userRes.status})`;
-          if (typeof userData?.detail === "string") {
-            errorMsg = userData.detail;
-          } else if (Array.isArray(userData?.detail) && userData.detail[0]?.msg) {
-            errorMsg = `${userData.detail[0].loc?.slice(-1)[0] || "Field"}: ${userData.detail[0].msg}`;
-          } else if (userData?.message) {
-            errorMsg = userData.message;
-          }
-          throw new Error(errorMsg);
-        }
-      }
-
-      // 2. If status was changed, update account status via PUT /owner/status
-      const statusChanged = originalOwner && originalOwner.status !== editOwnerForm.status;
-
-      if (statusChanged) {
-        const nextStatusBool = editOwnerForm.status === "Active";
-        const statusRes = await authFetch(OWNER_STATUS_API_URL, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            owner_id: Number(editOwnerForm.id),
-            new_status: nextStatusBool,
-          }),
-        });
-
-        const statusData = await statusRes.json().catch(() => null);
-
-        if (!statusRes.ok) {
-          let errorMsg = `Failed to update owner status (${statusRes.status})`;
-          if (typeof statusData?.detail === "string") {
-            errorMsg = statusData.detail;
-          } else if (Array.isArray(statusData?.detail) && statusData.detail[0]?.msg) {
-            errorMsg = `${statusData.detail[0].loc?.slice(-1)[0] || "Field"}: ${statusData.detail[0].msg}`;
-          } else if (statusData?.message) {
-            errorMsg = statusData.message;
-          }
-          throw new Error(errorMsg);
-        }
-      }
-
-      // 2. Update local state ensuring full object integrity and preserving the owner's email
-      const mergedOwnerData = {
-        ...(originalOwner || {}),
-        ...editOwnerForm,
-        name: currentFullname,
-        email: currentEmail,
-        phone: currentPhone,
-        address: currentAddress,
-        city: currentAddress,
-        avatarImg: currentProfileImage || originalOwner?.avatarImg,
-        profile_image: currentProfileImage || originalOwner?.profile_image,
-        status: editOwnerForm.status,
-      };
-
-      setOwnersData((prev) => {
-        const updated = prev.map((o) =>
-          Number(o.id) === Number(editOwnerForm.id) ? { ...o, ...mergedOwnerData } : o
-        );
-        try {
-          localStorage.setItem("ql_admin_owners_list", JSON.stringify(updated));
-        } catch {}
-        return updated;
-      });
-
-      if (detailModalOwner && Number(detailModalOwner.id) === Number(editOwnerForm.id)) {
-        setDetailModalOwner((prev) => (prev ? { ...prev, ...mergedOwnerData } : null));
-      }
-
-      setIsEditingOwner(false);
-      showToast("Owner information updated successfully!", "success");
-      setSettingsSavedToast(true);
-      setTimeout(() => setSettingsSavedToast(false), 3000);
-    } catch (err) {
-      console.error("Failed to save owner edit:", err);
-      showToast(err.message || "Failed to update owner information", "error");
-    } finally {
-      setIsSavingOwnerEdit(false);
     }
   };
 
@@ -1755,7 +1554,6 @@ export function AdminDashboard() {
 
     if (detailModalOwner && detailModalOwner.id === ownerId) {
       setDetailModalOwner(null);
-      setIsEditingOwner(false);
     }
 
     setSettingsSavedToast(true);
@@ -2296,7 +2094,6 @@ export function AdminDashboard() {
                     className="crumb-link"
                     onClick={() => {
                       setDetailModalOwner(null);
-                      setIsEditingOwner(false);
                     }}
                   >
                     Owners
@@ -2310,7 +2107,6 @@ export function AdminDashboard() {
                 className="ql-back-to-owners-btn"
                 onClick={() => {
                   setDetailModalOwner(null);
-                  setIsEditingOwner(false);
                 }}
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
@@ -2584,7 +2380,6 @@ export function AdminDashboard() {
                                   onClick={() => {
                                     setActiveTab("owners");
                                     setDetailModalOwner(owner);
-                                    setIsEditingOwner(false);
                                     setOwnerProfileTab("overview");
                                   }}
                                   title="Click to view Owner Profile & Details"
@@ -2654,7 +2449,6 @@ export function AdminDashboard() {
                                     onClick={() => {
                                       setActiveTab("owners");
                                       setDetailModalOwner(owner);
-                                      setIsEditingOwner(false);
                                       setOwnerProfileTab("overview");
                                     }}
                                   >
@@ -3074,20 +2868,6 @@ export function AdminDashboard() {
 
                         <button
                           type="button"
-                          className="ql-owner-page-btn-edit"
-                          onClick={() => {
-                            setEditOwnerForm({ ...detailModalOwner });
-                            setIsEditingOwner(true);
-                          }}
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
-                          </svg>
-                          <span>Edit Owner</span>
-                        </button>
-
-                        <button
-                          type="button"
                           className="ql-owner-page-btn-delete"
                           onClick={() => handleDeleteOwner(detailModalOwner.id, detailModalOwner.name)}
                         >
@@ -3350,7 +3130,6 @@ export function AdminDashboard() {
                                 style={{ cursor: "pointer" }}
                                 onClick={() => {
                                   setDetailModalOwner(owner);
-                                  setIsEditingOwner(false);
                                   setOwnerProfileTab("overview");
                                 }}
                                 title="Click to view Owner Profile & Details"
@@ -3416,7 +3195,6 @@ export function AdminDashboard() {
                                   title="View Details"
                                   onClick={() => {
                                     setDetailModalOwner(owner);
-                                    setIsEditingOwner(false);
                                     setOwnerProfileTab("overview");
                                   }}
                                 >
@@ -5510,109 +5288,6 @@ export function AdminDashboard() {
           </div>
         </div>
       )}
-
-      {/* ── EDIT OWNER MODAL ────────────────────────────────────── */}
-      {isEditingOwner && editOwnerForm && (
-        <div className="ql-modal-backdrop" onClick={() => setIsEditingOwner(false)}>
-          <div className="ql-detail-modal" style={{ maxWidth: "520px" }} onClick={(e) => e.stopPropagation()}>
-            <div className="ql-modal-header" style={{ padding: "16px 20px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span style={{ fontSize: "18px" }}>✏️</span>
-                <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "800", color: "var(--admin-text-main)" }}>Edit Owner Information</h3>
-              </div>
-              <button type="button" className="ql-modal-close-btn" onClick={() => setIsEditingOwner(false)}>✕</button>
-            </div>
-            <form onSubmit={handleSaveEditOwner} className="ql-edit-owner-form" style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: "12px", overflowY: "auto", flex: 1 }}>
-              <div className="ql-form-group">
-                <label className="ql-form-label">Full Name</label>
-                <input
-                  type="text"
-                  className="ql-form-input"
-                  value={editOwnerForm.name}
-                  onChange={(e) => setEditOwnerForm({ ...editOwnerForm, name: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="ql-form-group">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                  <label className="ql-form-label" style={{ margin: 0 }}>Official Email</label>
-                  <span style={{ fontSize: "11.5px", color: "var(--admin-text-muted, #64748b)", display: "inline-flex", alignItems: "center", gap: "4px", fontWeight: "600" }}>
-                    🔒 Read-only
-                  </span>
-                </div>
-                <input
-                  type="email"
-                  className="ql-form-input"
-                  value={editOwnerForm.email}
-                  readOnly
-                  disabled
-                  title="Official Email cannot be changed"
-                />
-              </div>
-              <div className="ql-modern-grid-2">
-                <div className="ql-form-group">
-                  <label className="ql-form-label">Phone Number</label>
-                  <input
-                    type="text"
-                    className="ql-form-input"
-                    value={editOwnerForm.phone}
-                    onChange={(e) => setEditOwnerForm({ ...editOwnerForm, phone: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="ql-form-group">
-                  <label className="ql-form-label">Account Status</label>
-                  <select
-                    className="ql-form-input"
-                    value={editOwnerForm.status}
-                    onChange={(e) => setEditOwnerForm({ ...editOwnerForm, status: e.target.value })}
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Suspended">Suspended</option>
-                  </select>
-                </div>
-              </div>
-              <div className="ql-form-group">
-                <label className="ql-form-label">Address</label>
-                <input
-                  type="text"
-                  className="ql-form-input"
-                  value={editOwnerForm.address || editOwnerForm.city || ""}
-                  placeholder="e.g. 12, Park Street, Kolkata, WB"
-                  onChange={(e) => setEditOwnerForm({ ...editOwnerForm, address: e.target.value, city: e.target.value })}
-                />
-              </div>
-              <div className="ql-edit-owner-footer-btns" style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "8px" }}>
-                <button
-                  type="button"
-                  className="ql-btn-secondary"
-                  disabled={isSavingOwnerEdit}
-                  onClick={() => setIsEditingOwner(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="ql-btn-primary"
-                  disabled={isSavingOwnerEdit}
-                  style={{ display: "inline-flex", alignItems: "center", gap: "7px" }}
-                >
-                  {isSavingOwnerEdit ? (
-                    <>
-                      <span className="ql-btn-spinner" />
-                      <span>Saving Changes...</span>
-                    </>
-                  ) : (
-                    "Save Changes"
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-
 
       {/* ── ADD OWNER MODAL (PREMIUM REDESIGN) ─────────────────── */}
       {addOwnerModalOpen && (
