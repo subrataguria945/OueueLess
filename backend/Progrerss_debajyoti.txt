@@ -1,0 +1,257 @@
+# `sp_AddOwner`
+
+## SP-এর আসল কাজ কী?
+
+নতুন Owner তৈরি করা। শুধু একজন Active Admin নতুন Owner যোগ করতে পারবে। প্রথমে `public.owners` টেবিলে Owner-এর তথ্য insert হবে এবং সেখান থেকে নতুন `ownerid` পাওয়া যাবে। এরপর সেই `ownerid` ব্যবহার করে `public.users` টেবিলে Owner-এর login account তৈরি হবে।
+
+Owner-এর account তৈরি হওয়ার সময় পাসওয়ার্ড `pgcrypto` এক্সটেনশনের `crypt()` ও `gen_salt('bf')` দিয়ে hash করে রাখা হবে এবং `refreshtoken`-এর মান `NULL` থাকবে। Owner প্রথমবার সফলভাবে লগইন করলে backend refresh token জেনারেট করে সংরক্ষণ করবে। দুটি টেবিলে insertion একই transaction-এর আওতায় সম্পন্ন হবে; অর্থাৎ `users` টেবিলে insertion ব্যর্থ হলে `owners` টেবিলের পরিবর্তনও স্বয়ংক্রিয়ভাবে rollback হয়ে যাবে।
+
+---
+
+## SP Calling Query
+
+```sql
+CALL public.sp_add_owner(
+    -- Input parameters
+    p_admin_user_id,
+    p_fullname,
+    p_email,
+    p_password,
+    p_phone,
+    p_max_shop_count,
+    p_backup_id,
+
+    -- Output parameters
+    p_status_code,
+    p_status_message,
+    p_new_owner_id,
+    p_new_user_id
+);
+```
+
+---
+
+## Inputs
+
+| Input Parameter | Data Type | Description |
+| :--- | :--- | :--- |
+| `p_admin_user_id` | `INTEGER` | Owner যোগ করতে চাওয়া Admin-এর User ID |
+| `p_fullname` | `VARCHAR` | Owner-এর সম্পূর্ণ নাম (Full Name) |
+| `p_email` | `VARCHAR` | Owner-এর ইমেইল অ্যাড্রেস |
+| `p_password` | `TEXT` | Owner-এর লগইন পাসওয়ার্ড (Plain Text) |
+| `p_phone` | `VARCHAR` | Owner-এর ফোন নম্বর (Optional) |
+| `p_max_shop_count` | `INTEGER` | Owner সর্বোচ্চ কতটি Shop তৈরি করতে পারবে |
+| `p_backup_id` | `INTEGER` | Backup ID (Optional) |
+
+---
+
+## Outputs
+
+| Output Parameter | Data Type | Description |
+| :--- | :--- | :--- |
+| `p_status_code` | `TEXT` | অপারেশনটির Result Code |
+| `p_status_message` | `TEXT` | Result-এর বিস্তারিত বিবরণ বা মেসেজ |
+| `p_new_owner_id` | `INTEGER` | নতুনভাবে তৈরি হওয়া `ownerid` |
+| `p_new_user_id` | `INTEGER` | নতুনভাবে তৈরি হওয়া `userid` |
+
+---
+
+## Possible Output
+
+| Output Code | অর্থ |
+| :--- | :--- |
+| `SUCCESS` | Owner সফলভাবে তৈরি হয়েছে |
+| `ERR_INVALID_ADMIN` | Admin User ID অবৈধ বা সিস্টেমে বিদ্যমান নেই |
+| `ERR_UNAUTHORIZED` | Active Admin ছাড়া অন্য কেউ Owner যোগ করতে চেয়েছে |
+| `ERR_REQUIRED_FIELDS` | প্রয়োজনীয় তথ্য (Name, Email, Password ইত্যাদি) প্রদান করা হয়নি |
+| `ERR_DUPLICATE_EMAIL` | এই Email দিয়ে আগেই একাউন্ট খোলা রয়েছে |
+| `ERR_INVALID_SHOP_COUNT` | Maximum Shop Count অবশ্যই ১ থেকে ৫-এর মধ্যে হতে হবে |
+| `ERR_DUPLICATE` | অন্য কোনো ইউনিক ফিল্ড ডুপ্লিকেট হয়েছে |
+| `ERR_FOREIGN_KEY` | রেফারেন্স করা কোনো রেকর্ড খুঁজে পাওয়া যায়নি |
+| `ERR_SYSTEM` | ডেটাবেসে অপ্রত্যাশিত কোনো ত্রুটি ঘটেছে |
+
+---
+
+## Any Critical Scenario
+
+- **Admin ভ্যালিডেশন:** শুধু `status = TRUE` এবং `roleid = 1` থাকা সক্রিয় Admin-ই নতুন Owner তৈরি করতে পারবে।
+- **Email ইউনিকনেস:** একই Email দিয়ে একাধিক User অ্যাকাউন্ট খোলা যাবে না।
+- **নির্দিষ্ট Role:** নতুন তৈরি হওয়া Owner-এর `roleid` বাধ্যতামূলকভাবে `2` হবে।
+- **আইডি ম্যাপিং ও চেইনিং:** প্রথমে `owners` টেবিলে রেকর্ড প্রবেশ করে নতুন `ownerid` তৈরি হবে, তারপর সেই আইডিটি `users.ownerid`-তে ম্যাপ করা হবে।
+- **অ্যাটমিক ট্রানজ্যাকশন (Rollback):** `users` টেবিলে ডেটা ঢোকার সময় কোনো ত্রুটি দেখা দিলে `owners` টেবিলের নতুন রেকর্ড স্বয়ংক্রিয়ভাবে rollback হয়ে যাবে।
+- **নিরাপদ পাসওয়ার্ড:** পাসওয়ার্ড কখনোই plain text হিসেবে জমা রাখা হবে না; `crypt(p_password, gen_salt('bf'))` ব্যবহার করে bcrypt ফরম্যাটে হ্যাশ করতে হবে।
+- **রিফ্রেশ টোকেন স্টেটাস:** অ্যাকাউন্ট তৈরির সময় `refreshtoken = NULL` থাকবে; পরবর্তীতে প্রথম সফল লগইনের পর backend থেকে টোকেন জেনারেট হয়ে আপডেট হবে।
+- **ডিফল্ট স্টেটাস মান:** নতুন Owner-এর `isemailverified = FALSE` এবং `status = TRUE` সেট থাকবে।
+- **ঐচ্ছিক ফিল্ডস:** `p_phone` এবং `p_backup_id` ফাঁকা (`NULL`) রাখা যেতে পারে।
+- **শপ লিমিট রেঞ্জ:** `p_max_shop_count`-এর মান সর্বনিম্ন ১ এবং সর্বোচ্চ ৫ হতে হবে।
+- **আউটপুট রিটার্ন:** সফল অপারেশনের ক্ষেত্রে সরাসরি `p_new_owner_id` এবং `p_new_user_id` রিটার্ন করবে।
+- **ট্রিগার ইন্টিগ্রেশন:** টেবিলগুলোতে INSERT ট্রিগার কনফিগার করা থাকলে তা ফায়ার হয়ে ড্যাশবোর্ডের প্রয়োজনীয় পরিসংখ্যান স্বয়ংক্রিয়ভাবে আপডেট করবে।
+
+---
+
+## Tables Used
+
+1. `public.users`
+2. `public.owners`
+------------------------------------------------------------------------
+
+# 2. `sp_UpdateUser`
+
+## SP-এর আসল কাজ কী?
+
+আগে থেকে থাকা User-এর ব্যক্তিগত তথ্য পরিবর্তন করা। যেমন User নিজের নাম,
+Phone Number বা Profile Picture পরিবর্তন করতে পারবে।
+
+## SP Calling Query
+
+``` sql
+CALL public.sp_update_user(
+    10,                         -- User ID
+    'Rahul Jana',               -- Full Name
+    '9876543210',               -- Phone
+    'profile-image-url',        -- Profile Image
+    NULL,
+    NULL
+);
+```
+
+## Inputs
+
+-   User ID
+-   Full Name
+-   Phone Number (Optional)
+-   Profile Image (Optional)
+
+## Possible Output
+
+  Output                 অর্থ
+  ---------------------- ----------------------------
+  `SUCCESS`              User-এর তথ্য পরিবর্তন হয়েছে
+  `ERR_INVALID_USER`     User ID সঠিক নয়
+  `ERR_USER_NOT_FOUND`   এই User পাওয়া যায়নি
+  `ERR_INVALID_NAME`     নাম দেওয়া হয়নি
+  `ERR_PHONE_LENGTH`     Phone Number-এর দৈর্ঘ্য বেশি
+  `ERR_SYSTEM`           Database-এ সমস্যা হয়েছে
+
+## Any Critical Scenario
+
+-   যে User login করেছে, সে শুধু নিজের তথ্য পরিবর্তন করতে পারবে।
+-   অন্য User-এর ID দিয়ে তার তথ্য পরিবর্তন করা যাবে না।
+-   Email, Password, Role ID এবং Owner ID এই procedure দিয়ে পরিবর্তন করা
+    যাবে না।
+-   Password পরিবর্তনের জন্য আলাদা `sp_manage_password` ব্যবহার হবে।
+-   তথ্য পরিবর্তনের সময় `updatedat` স্বয়ংক্রিয়ভাবে update হবে।
+
+------------------------------------------------------------------------
+
+# 3. `sp_UpdateOwnerStatus`
+
+## SP-এর আসল কাজ কী?
+
+কোনো Owner-এর Account Active অথবা Inactive করা।
+
+যদি Admin কোনো Owner-কে সাময়িকভাবে বন্ধ করতে চায়, তাহলে তার Status
+Inactive করবে। আবার প্রয়োজন হলে Active করতে পারবে।
+
+## SP Calling Query
+
+``` sql
+CALL public.sp_update_owner_status(
+    1,       -- Admin User ID
+    10,      -- Owner ID
+    FALSE,   -- New Status
+    NULL,
+    NULL
+);
+```
+
+এখানে:
+
+-   `TRUE` = Active
+-   `FALSE` = Inactive
+
+## Inputs
+
+-   Admin User ID
+-   Owner ID
+-   New Status (`TRUE` / `FALSE`)
+
+## Possible Output
+
+  Output                  অর্থ
+  ----------------------- -------------------------------
+  `SUCCESS`               Owner-এর Status পরিবর্তন হয়েছে
+  `ERR_UNAUTHORIZED`      Admin অনুমতি নেই
+  `ERR_OWNER_NOT_FOUND`   Owner পাওয়া যায়নি
+  `ERR_INVALID_STATUS`    Status সঠিক নয়
+  `ERR_SYSTEM`            Database-এ সমস্যা হয়েছে
+
+## Any Critical Scenario
+
+-   শুধু Active Admin Owner-এর Status পরিবর্তন করতে পারবে।
+-   Owner ID সঠিক হতে হবে।
+-   একই Status আবার দিতে চাইলে অপ্রয়োজনীয় update না করাই ভালো।
+-   Owner Inactive হলে তার account দিয়ে login বা Owner-এর কাজ করা যাবে
+    না।
+-   Owner-এর Shop-গুলোর Status স্বয়ংক্রিয়ভাবে পরিবর্তন হবে কি না, সেটা আলাদা
+    business rule হিসেবে ঠিক করতে হবে।
+-   Owner-এর Status পরিবর্তন করলে সংশ্লিষ্ট `Users.status`-এর সঙ্গেও সামঞ্জস্য
+    রাখতে হবে।
+
+------------------------------------------------------------------------
+
+# 4. `sp_DeleteOwner`
+
+## SP-এর আসল কাজ কী?
+
+কোনো Owner-কে সম্পূর্ণভাবে Database থেকে Delete করা। এই কাজ শুধু Admin করতে
+পারবে।
+
+প্রথমে পরীক্ষা করবে Owner-এর অধীনে কোনো Shop আছে কি না। Shop থাকলে Owner
+Delete করা যাবে না। Shop না থাকলে সংশ্লিষ্ট `Users` record এবং `Owners`
+record delete হবে।
+
+## SP Calling Query
+
+``` sql
+CALL public.sp_delete_owner(
+    1,       -- Admin User ID
+    10,      -- Owner ID
+    NULL,
+    NULL
+);
+```
+
+## Inputs
+
+-   Admin User ID
+-   Owner ID
+
+## Possible Output
+
+  Output                       অর্থ
+  ---------------------------- ----------------------------------------
+  `SUCCESS`                    Owner সফলভাবে Delete হয়েছে
+  `ERR_UNAUTHORIZED`           শুধু Admin Delete করতে পারবে
+  `ERR_INVALID_OWNER`          Owner ID সঠিক নয়
+  `ERR_OWNER_NOT_FOUND`        Owner পাওয়া যায়নি
+  `ERR_OWNER_HAS_SHOPS`        Owner-এর অধীনে Shop আছে
+  `ERR_OWNER_USER_NOT_FOUND`   Owner-এর User record পাওয়া যায়নি
+  `ERR_OWNER_REFERENCED`       অন্য কোনো Table Owner-কে Reference করছে
+  `ERR_SYSTEM`                 Database-এ সমস্যা হয়েছে
+
+## Any Critical Scenario
+
+-   শুধু Active Admin Owner Delete করতে পারবে।
+-   Owner-এর অধীনে একটি Shop থাকলেও Delete করা যাবে না।
+-   Shop reference থাকলে উপযুক্ত Error Message দেখাবে।
+-   Owner-এর সঙ্গে যুক্ত `Users` record-ও Delete করতে হবে।
+-   প্রথমে `Users` থেকে এবং তারপর `Owners` থেকে Delete করতে হবে, কারণ
+    `Users.ownerid` হলো `Owners.ownerid`-এর Foreign Key।
+-   কোনো একটি Delete ব্যর্থ হলে দুটো Delete-ই Rollback হবে।
+-   অন্য কোনো Table থেকে Owner reference করা থাকলেও Delete আটকাতে হবে।
+-   Owner-এর `backupid` অন্য Owner-কে reference করলে সেটিও পরীক্ষা করতে
+    হবে।
+
+------------------------------------------------------------------------
+
