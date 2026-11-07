@@ -1,3 +1,4 @@
+import profile
 from pydantic import BaseModel , EmailStr 
 from typing import Literal
 
@@ -5,13 +6,11 @@ class UserLogin(BaseModel):
     email : EmailStr
     password : str  
 
+# normal user ee google diye login korte parbe only 
 class UserRegisterGoogle(BaseModel):
     fullname : str
     email : EmailStr
-    password : str 
-    confirm_password : str
-    user_role: Literal[2, 3]
-    
+    google_id : str
 
 
 class VerifyRegistrationOTP(BaseModel):
