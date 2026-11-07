@@ -1,4 +1,4 @@
-from .database import insert_owner_indb
+from .database import insert_owner_indb, update_owner_status_indb
 
 def register_owner(input: dict):
     admin_id = input.get("admin_id")
@@ -15,6 +15,23 @@ def register_owner(input: dict):
             "status" : "success",
             "new_owner_id": response.get("new_owner_id"),
             "new_user_id": response.get("new_user_id"),
+            "message": response.get("message")
+        }
+    else:
+        return {
+            "status" : "failed",
+            "message" : response.get("error")
+        }
+
+def update_owner_status(input: dict):
+    admin_id = input.get("admin_id")
+    owner_id = input.get("owner_id")
+    new_status = input.get("new_status")
+
+    response = update_owner_status_indb(admin_id, owner_id, new_status)
+    if response.get("status") == 200:
+        return {
+            "status" : "success",
             "message": response.get("message")
         }
     else:
