@@ -31,56 +31,23 @@ def login_user(input : dict ):
 
 
 def manage_google_user(input : dict ):
-    response = check_google_account(input.get("email"), input.get("google_id"))
-    if response.get("status") == 200:
+    response = check_google_account(input.get("fullname"),input.get("email"), input.get("google_id"))
+    if response.get("status") == 200:   
+        access_token = generate_access_token(response.get("user_id"),input.get("email"))
+        refresh_token = generate_refresh_token(response.get("user_id"),input.get("email"))
+        update_refresh_token_indb(response.get("user_id"),refresh_token)
         return {
             "status" : "success",
             "user_id": response.get("user_id"),
-            "user_role":response.get("user_role"),
+            "user_role":response.get("role_id"),
             "email": input.get("email"),
             "message": response.get("message"),
-            "access_token": generate_access_token(response.get("user_id"),input.get("email")),
-            "refresh_token": generate_refresh_token(response.get("user_id"),input.get("email")),
+            "access_token": access_token,
+            "refresh_token":refresh_token,
             "token_type" : "bearer"
         }
-    elif response.get("status") == 404:
-        return {
-            "status" : "Registration Failed",
-            "message" : response.get("message")
-        }
-
     else:
-        fullname = input.get("fullname")
-        email = input.get("email")
-        password = input.get("password")
-        confirm_password = input.get("confirm_password")
-        if password != confirm_password:
-            return {
-                "status" : "Registration Failed",
-                "message" : "Password and Confirm Password are not same"
-            }
-        role_id = input.get("user_role")
-        phone = None
-        response = insert_user_indb(fullname,email,phone,password,role_id)
-        if response.get("status") == 200:
-            access_token = generate_access_token(response.get("user_id"),email)
-            refresh_token = generate_refresh_token(response.get("user_id"),email)
-            update_refresh_token_indb(response.get("user_id"),refresh_token)
-            return {
-                "status" : "success",
-                "user_id": response.get("user_id"),
-                "user_role": role_id,
-                "email": email,
-                "message": response.get("message"),
-                "access_token": access_token,
-                "refresh_token": refresh_token,
-                "token_type" : "bearer"
-            }
-        else:
-            return {
-                "status" : "Registration Failed",
-                "message" : response.get("error")
-            }
+        return response
     
 def change_password(input : dict):
     userid = input.get("userid")
@@ -149,9 +116,8 @@ def veriy_and_register_user(input : dict ):
     full_name = user_data.get("fullname")
     email = user_data.get("email")
     phone = user_data.get("phone")
-    role_id = user_data.get("user_role")
 
-    response = insert_user_indb(full_name,email,phone,password,role_id)
+    response = insert_user_indb(full_name,email,phone,password)
     if response.get("status") == 200:
         token = generate_access_token(response.get("user_id"),email)
         refresh_token = generate_refresh_token(response.get("user_id"),email)
@@ -159,7 +125,7 @@ def veriy_and_register_user(input : dict ):
         return {
             "status" : "success",
             "user_id": response.get("user_id"),
-            "user_role": role_id,
+            "user_role": response.get("role_id"),
             "email": email,
             "message": response.get("message"),
             "access_token": token,

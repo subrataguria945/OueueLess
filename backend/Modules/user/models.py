@@ -1,6 +1,4 @@
-import profile
 from pydantic import BaseModel , EmailStr 
-from typing import Literal
 
 class UserLogin(BaseModel):
     email : EmailStr
@@ -22,7 +20,6 @@ class InitiateUserRegister(BaseModel):
     fullname : str
     email : EmailStr
     phone : str
-    user_role: Literal[2, 3]
 
   
 class ChangePassword(BaseModel):
@@ -37,15 +34,6 @@ class ResetPassword(BaseModel):
 
 class ForgetPassword(BaseModel):
     email : EmailStr
-
-class AddOwnerRequest(BaseModel):
-    admin_user_id: int
-    fullname: str
-    email: EmailStr
-    password: str
-    phone: str
-    max_shop_count: int
-    backup_id:int   
 
 class RefreshTokenRequest(BaseModel):
     refresh_token : str
