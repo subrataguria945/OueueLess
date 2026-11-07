@@ -20,3 +20,7 @@ class OwnerDetail(BaseModel):
     account_status: bool
     joined_date: datetime
     shop_details: str
+
+class UpdateOwnerStatusRequest(BaseModel):
+    owner_id: int   
+    new_status: bool

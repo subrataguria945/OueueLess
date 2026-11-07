@@ -50,3 +50,9 @@ class AddOwnerRequest(BaseModel):
 
 class RefreshTokenRequest(BaseModel):
     refresh_token : str
+
+class UpdateUserRequest(BaseModel):
+    fullname : str
+    phone : str
+    profile_image : str    
+    address : str

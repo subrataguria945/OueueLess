@@ -1,4 +1,4 @@
-from Library.Authentication.user.database import user_exists_indb, validate_login_indb , insert_user_indb , change_password_indb
+from Library.Authentication.user.database import update_user_indb, user_exists_indb, validate_login_indb , insert_user_indb , change_password_indb , update_refresh_token_indb
 from Library.Security.JWT import generate_access_token , generate_forget_password_token, generate_signup_token , decode_access_token , decode_forget_password_token , decode_refresh_token , generate_refresh_token
 import secrets
 import hashlib
@@ -12,6 +12,7 @@ def login_user(input : dict ):
     if response.get("status") == 200:
         access_token = generate_access_token(response.get("user_id"),email)
         refresh_token = generate_refresh_token(response.get("user_id"),email)
+        update_refresh_token_indb(response.get("user_id"),refresh_token)
         return {
             "status" : "success",
             "user_id": response.get("user_id"),
@@ -50,6 +51,7 @@ def register_google_user(input : dict ):
         if response.get("status") == 200:
             access_token = generate_access_token(response.get("user_id"),email)
             refresh_token = generate_refresh_token(response.get("user_id"),email)
+            update_refresh_token_indb(response.get("user_id"),refresh_token)
             return {
                 "status" : "success",
                 "user_id": response.get("user_id"),
@@ -133,6 +135,7 @@ def veriy_and_register_user(input : dict ):
     if response.get("status") == 200:
         token = generate_access_token(response.get("user_id"),email)
         refresh_token = generate_refresh_token(response.get("user_id"),email)
+        update_refresh_token_indb(response.get("user_id"),refresh_token)
         return {
             "status" : "success",
             "user_id": response.get("user_id"),
@@ -215,3 +218,21 @@ def refresh_user_token(input: dict):
         "access_token": new_access_token,
         "token_type": "bearer"
     }
+
+def update_user(input:dict):
+    user_id = input.get("user_id")
+    fullname = input.get("fullname")
+    phone = input.get("phone")
+    profile_image = input.get("profile_image")
+    address = input.get("address")
+    response = update_user_indb(user_id, fullname, phone, profile_image,address)
+    if response.get("status") == 200:
+        return {
+            "status": "success",
+            "message": response.get("message")
+        }
+    else:
+        return {
+            "status": "failed",
+            "message": response.get("error")
+        }
