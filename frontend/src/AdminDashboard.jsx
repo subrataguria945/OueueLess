@@ -110,6 +110,10 @@ const OWNER_STATUS_API_URL =
   import.meta.env.VITE_OWNER_STATUS_API_URL ||
   `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/owner/status`;
 
+const USER_UPDATE_API_URL =
+  import.meta.env.VITE_USER_UPDATE_API_URL ||
+  `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/user/update`;
+
 export function mapApiOwnerToDashboard(apiOwner) {
   const id = Number(apiOwner.owner_id ?? apiOwner.id ?? 0);
   const name = (apiOwner.full_name || apiOwner.name || "").trim() || "Owner";
@@ -1609,7 +1613,66 @@ export function AdminDashboard() {
         detailModalOwner?.profile_image ||
         "";
 
-      // 1. If status was changed, update account status via PUT /owner/status
+      // Check which profile fields actually changed
+      const nameChanged = editOwnerForm.name && editOwnerForm.name.trim() !== (originalOwner?.name || "").trim();
+      const phoneChanged = editOwnerForm.phone && editOwnerForm.phone.trim() !== (originalOwner?.phone || "").trim();
+      const addressChanged = (editOwnerForm.address || editOwnerForm.city || "").trim() !== (originalOwner?.address || originalOwner?.city || "").trim();
+      const anyFieldChanged = nameChanged || phoneChanged || addressChanged;
+
+      // 1. Call PUT /user/update if any field changed
+      if (anyFieldChanged) {
+        const updatePayload = {
+          fullname: currentFullname,
+          phone: currentPhone,
+          address: currentAddress,
+          profile_image: currentProfileImage,
+          owner_id: Number(editOwnerForm.id),
+          user_id: Number(editOwnerForm.id),
+        };
+
+        const targetUrl = `${USER_UPDATE_API_URL}?user_id=${Number(editOwnerForm.id)}&owner_id=${Number(editOwnerForm.id)}`;
+
+        let userRes = await authFetch(targetUrl, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatePayload),
+        });
+
+        let userData = await userRes.json().catch(() => null);
+
+        // Fallback retry if backend strictly rejects extra fields in body
+        if (userRes.status === 422 && Array.isArray(userData?.detail)) {
+          const hasExtraForbidden = userData.detail.some((d) => d?.type === "extra_forbidden");
+          if (hasExtraForbidden) {
+            const strictPayload = {
+              fullname: currentFullname,
+              phone: currentPhone,
+              address: currentAddress,
+              profile_image: currentProfileImage,
+            };
+            userRes = await authFetch(targetUrl, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(strictPayload),
+            });
+            userData = await userRes.json().catch(() => null);
+          }
+        }
+
+        if (!userRes.ok) {
+          let errorMsg = `Failed to update user profile (${userRes.status})`;
+          if (typeof userData?.detail === "string") {
+            errorMsg = userData.detail;
+          } else if (Array.isArray(userData?.detail) && userData.detail[0]?.msg) {
+            errorMsg = `${userData.detail[0].loc?.slice(-1)[0] || "Field"}: ${userData.detail[0].msg}`;
+          } else if (userData?.message) {
+            errorMsg = userData.message;
+          }
+          throw new Error(errorMsg);
+        }
+      }
+
+      // 2. If status was changed, update account status via PUT /owner/status
       const statusChanged = originalOwner && originalOwner.status !== editOwnerForm.status;
 
       if (statusChanged) {
