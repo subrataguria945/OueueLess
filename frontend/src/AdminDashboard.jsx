@@ -5165,24 +5165,19 @@ export function AdminDashboard() {
                   </div>
 
                   <div>
-                    <label className="ql-form-label">Username</label>
-                    <input
-                      type="text"
-                      className="ql-form-input"
-                      value={editAdminForm.username}
-                      onChange={(e) => setEditAdminForm({ ...editAdminForm, username: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="ql-form-label">Official Email Address</label>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                      <label className="ql-form-label" style={{ margin: 0 }}>Official Email Address</label>
+                      <span style={{ fontSize: "11px", color: "var(--admin-text-muted, #64748b)", display: "inline-flex", alignItems: "center", gap: "3px", fontWeight: "600" }}>
+                        🔒 Read-only
+                      </span>
+                    </div>
                     <input
                       type="email"
                       className="ql-form-input"
                       value={editAdminForm.email}
-                      onChange={(e) => setEditAdminForm({ ...editAdminForm, email: e.target.value })}
-                      required
+                      readOnly
+                      disabled
+                      title="Official Email Address cannot be changed"
                     />
                   </div>
 
