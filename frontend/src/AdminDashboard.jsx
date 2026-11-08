@@ -1872,8 +1872,7 @@ export function AdminDashboard() {
       });
       setShowAddOwnerPassword(false);
       setShowAddOwnerConfirmPassword(false);
-      setSettingsSavedToast(true);
-      setTimeout(() => setSettingsSavedToast(false), 3000);
+      showToast("New owner registered successfully in database!", "success");
     } catch (err) {
       setIsAddingOwner(false);
       setAddOwnerError(err?.message || "Could not connect to the backend server. Please try again.");
