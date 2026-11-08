@@ -8,10 +8,11 @@ def register_owner(input: dict):
     email = input.get("email")
     password = input.get("password")
     phone = input.get("phone")
+    address = input.get("address")
     max_shop_count = input.get("max_shop_count")
     backup_id = input.get("backup_id")
 
-    response = insert_owner_indb(admin_id, fullname, email, password, phone, max_shop_count, backup_id)
+    response = insert_owner_indb(admin_id, fullname, email, password, phone,address, max_shop_count, backup_id)
     if response.get("status") == 200:
         new_user_id = response.get("new_user_id")
         invite_token = generate_owner_invite_token(email, new_user_id)
