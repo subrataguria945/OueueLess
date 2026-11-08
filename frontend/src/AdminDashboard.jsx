@@ -781,11 +781,7 @@ export function AdminDashboard() {
           // Keep only regular users (exclude Admin and Owner)
           return parsed.filter((u) => {
             const r = (u.role || "").toLowerCase().trim();
-            return (
-              r === "user" ||
-              r === "customer" ||
-              (r !== "admin" && r !== "super admin" && r !== "owner")
-            );
+            return r === "user" || r === "customer";
           });
         }
       } catch (e) {}
@@ -840,14 +836,10 @@ export function AdminDashboard() {
       const data = await res.json().catch(() => null);
 
       if (res.ok && Array.isArray(data)) {
-        // Filter ONLY regular users (exclude Admin and Owner) for the Users directory
+        // Filter ONLY regular users (strictly role "user" / "customer", excluding Admin and Owner)
         const onlyRegularUsers = data.filter((u) => {
           const r = (u.role || "").toLowerCase().trim();
-          return (
-            r === "user" ||
-            r === "customer" ||
-            (r !== "admin" && r !== "super admin" && r !== "owner")
-          );
+          return r === "user" || r === "customer";
         });
 
         const mapped = onlyRegularUsers.map(mapApiUserToDashboard);
@@ -901,7 +893,6 @@ export function AdminDashboard() {
               status: adminFromApi.account_status !== undefined ? (adminFromApi.account_status ? "Active" : "Suspended") : prev.status,
               role: adminFromApi.role || prev.role || "Super Admin",
             };
-            localStorage.setItem("ql_admin_profile", JSON.stringify(updated));
             return updated;
           });
 
@@ -1125,13 +1116,35 @@ export function AdminDashboard() {
       loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
     } catch (e) {}
 
+    // Only Department, Role Clearance, and Bio are persisted locally
+    let localCustomFields = {
+      department: "System Architecture & Operations",
+      accessLevel: "Role Clearance (System Enforced)",
+      bio: "Master administrator for QueueLess platform, token moderation, shop subscriptions & system configuration.",
+    };
+
+    const saved = localStorage.getItem("ql_admin_profile");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === "object") {
+          localCustomFields = {
+            department: parsed.department || localCustomFields.department,
+            accessLevel: parsed.accessLevel || localCustomFields.accessLevel,
+            bio: parsed.bio !== undefined ? parsed.bio : localCustomFields.bio,
+          };
+        }
+      } catch (e) {}
+    }
+
+    // ALL other profile fields come strictly from the database / logged-in user session
     const realName = loggedUser.fullname || loggedUser.name || "Sujit Kar";
     const realPhone = loggedUser.phone && loggedUser.phone !== "+91 98765 43210" ? loggedUser.phone : "";
     const realEmail = loggedUser.email || "admin@gmail.com";
     const realAddress = loggedUser.address || "";
     const realImage = loggedUser.profile_image || null;
 
-    const defaultProfile = {
+    return {
       name: realName,
       username: loggedUser.username || "admin",
       email: realEmail,
@@ -1140,33 +1153,15 @@ export function AdminDashboard() {
       role: loggedUser.role || "Super Admin",
       joinedOn: "12 Jan 2026",
       status: "Active",
-      department: "System Architecture & Operations",
-      accessLevel: "Root Clearance",
-      bio: "Master administrator for QueueLess platform, token moderation, shop subscriptions & system configuration.",
+      department: localCustomFields.department,
+      accessLevel: localCustomFields.accessLevel,
+      bio: localCustomFields.bio,
       avatarBg: "#1960f7",
       avatarColor: "#ffffff",
       avatarImg: realImage,
       twoFactor: "Enabled (Authenticator App)",
       lastLogin: "Today, 12:45 AM (Local IP)",
     };
-    const saved = localStorage.getItem("ql_admin_profile");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return {
-          ...defaultProfile,
-          ...parsed,
-          name: loggedUser.fullname || loggedUser.name || (parsed.name !== "Super Admin" ? parsed.name : defaultProfile.name),
-          phone: loggedUser.phone || (parsed.phone !== "+91 98765 43210" ? parsed.phone : defaultProfile.phone),
-          email: loggedUser.email || defaultProfile.email,
-          address: loggedUser.address ?? (parsed.address !== "Kolkata, WB" ? parsed.address : defaultProfile.address),
-          avatarImg: loggedUser.profile_image || parsed.avatarImg || defaultProfile.avatarImg,
-          role: "Super Admin",
-          accessLevel: "Root Clearance",
-        };
-      } catch (e) {}
-    }
-    return defaultProfile;
   });
 
   const [editAdminForm, setEditAdminForm] = useState(adminProfile);
@@ -1327,27 +1322,19 @@ export function AdminDashboard() {
     }
 
     setEditAdminForm((prev) => ({ ...prev, avatarImg: croppedBase64 }));
-    setAdminProfile((prev) => {
-      const updated = { ...prev, avatarImg: croppedBase64 };
-      localStorage.setItem("ql_admin_profile", JSON.stringify(updated));
-      return updated;
-    });
+    setAdminProfile((prev) => ({ ...prev, avatarImg: croppedBase64 }));
     setSettingsSavedToast(true);
     setCropModalOpen(false);
     setTimeout(() => setSettingsSavedToast(false), 3000);
 
-    // Persist new photo directly to database
+    // Persist new photo directly to database (not locally)
     syncAdminProfileImageToDb(croppedBase64);
   };
 
   const handleRemoveAvatar = () => {
     setEditAdminForm((prev) => ({ ...prev, avatarImg: null }));
-    setAdminProfile((prev) => {
-      const updated = { ...prev, avatarImg: null };
-      localStorage.setItem("ql_admin_profile", JSON.stringify(updated));
-      return updated;
-    });
-    // Persist removal directly to database
+    setAdminProfile((prev) => ({ ...prev, avatarImg: null }));
+    // Persist removal directly to database (not locally)
     syncAdminProfileImageToDb("");
   };
 
@@ -1436,7 +1423,7 @@ export function AdminDashboard() {
       };
       localStorage.setItem("user", JSON.stringify(updatedUser));
 
-      // 3. Update adminProfile & local storage
+      // 3. Update adminProfile state (database fields will refresh from fetchAdminProfile)
       const updatedProfile = {
         ...adminProfile,
         ...editAdminForm,
@@ -1445,11 +1432,21 @@ export function AdminDashboard() {
         address: finalAddress,
         avatarImg: finalImage || null,
         email: adminProfile.email,
-        department: editAdminForm.department || "",
+        department: editAdminForm.department || "System Architecture & Operations",
+        accessLevel: editAdminForm.accessLevel || "Role Clearance (System Enforced)",
         bio: editAdminForm.bio || "",
       };
       setAdminProfile(updatedProfile);
-      localStorage.setItem("ql_admin_profile", JSON.stringify(updatedProfile));
+
+      // Strictly ONLY Department, Role Clearance, and Bio are persisted locally
+      localStorage.setItem(
+        "ql_admin_profile",
+        JSON.stringify({
+          department: editAdminForm.department || "System Architecture & Operations",
+          accessLevel: editAdminForm.accessLevel || "Role Clearance (System Enforced)",
+          bio: editAdminForm.bio || "",
+        })
+      );
 
       showToast("Administrator profile updated successfully in database!", "success");
       setSettingsSavedToast(true);
@@ -1633,10 +1630,7 @@ export function AdminDashboard() {
   // Filter Users (strictly only users with role "User" / "Customer", excluding Admin and Owner)
   const filteredUsers = usersData.filter((u) => {
     const r = (u.role || "").toLowerCase().trim();
-    const isUserOnly =
-      r === "user" ||
-      r === "customer" ||
-      (r !== "admin" && r !== "super admin" && r !== "owner");
+    const isUserOnly = r === "user" || r === "customer";
     if (!isUserOnly) return false;
 
     const q = searchQuery.toLowerCase().trim();
@@ -1841,6 +1835,7 @@ export function AdminDashboard() {
           email,
           password,
           phone: cleanPhone.length === 10 ? cleanPhone : cleanPhone.slice(-10),
+          address,
           max_shop_count: maxShops,
           backup_id: 1,
         }),
