@@ -1795,8 +1795,13 @@ export function AdminDashboard() {
       setAddOwnerError("Please enter a valid Email Address.");
       return;
     }
-    if (!cleanPhone || cleanPhone.length < 10) {
-      setAddOwnerError("Please enter a valid 10-digit Phone Number.");
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      setAddOwnerError("Phone number must be exactly 10 digits.");
+      return;
+    }
+    const today = new Date().toISOString().split("T")[0];
+    if (newOwnerForm.joinedDate && newOwnerForm.joinedDate > today) {
+      setAddOwnerError("Joined Date cannot be in the future (cannot exceed today).");
       return;
     }
     if (!address) {
@@ -1807,8 +1812,8 @@ export function AdminDashboard() {
       setAddOwnerError("Please enter a Password.");
       return;
     }
-    if (password.length < 8) {
-      setAddOwnerError("Password must contain at least 8 characters.");
+    if (getOwnerPasswordStrength(password) < 4) {
+      setAddOwnerError("Password must be Strong before registering (at least 8 characters, uppercase, lowercase, number, and special character).");
       return;
     }
     if (!confirmPassword) {
@@ -5824,10 +5829,12 @@ export function AdminDashboard() {
                         className="ql-input-modern"
                         value={newOwnerForm.phone}
                         onChange={(e) => {
-                          setNewOwnerForm({ ...newOwnerForm, phone: e.target.value });
+                          const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 10);
+                          setNewOwnerForm({ ...newOwnerForm, phone: digitsOnly });
                           if (addOwnerError) setAddOwnerError("");
                         }}
-                        placeholder="e.g. +91 98765 43210"
+                        placeholder="e.g. 9876543210"
+                        maxLength={10}
                       />
                     </div>
                   </div>
@@ -5851,7 +5858,17 @@ export function AdminDashboard() {
                         required
                         className="ql-input-modern"
                         value={newOwnerForm.joinedDate}
-                        onChange={(e) => setNewOwnerForm({ ...newOwnerForm, joinedDate: e.target.value })}
+                        max={new Date().toISOString().split("T")[0]}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const today = new Date().toISOString().split("T")[0];
+                          if (val && val > today) {
+                            setAddOwnerError("Joined Date cannot be in the future (cannot exceed today).");
+                            return;
+                          }
+                          setNewOwnerForm({ ...newOwnerForm, joinedDate: val });
+                          if (addOwnerError) setAddOwnerError("");
+                        }}
                       />
                     </div>
                   </div>
@@ -6002,7 +6019,7 @@ export function AdminDashboard() {
 
                   {/* Password Strength & Policy Hint */}
                   <div className="ql-cred-footer-bar">
-                    <div className="ql-cred-strength-wrap">
+                    <div className="ql-cred-strength-wrap" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <span className="ql-cred-strength-lbl">Password Strength:</span>
                       <div className="ql-cred-strength-bars">
                         {[1, 2, 3, 4].map((step) => {
@@ -6024,6 +6041,14 @@ export function AdminDashboard() {
                           );
                         })}
                       </div>
+                      {(() => {
+                        const strength = getOwnerPasswordStrength(newOwnerForm.password);
+                        if (!newOwnerForm.password) return null;
+                        if (strength <= 1) return <span style={{ color: "#ef4444", fontSize: "11px", fontWeight: "700" }}>Weak</span>;
+                        if (strength === 2) return <span style={{ color: "#f97316", fontSize: "11px", fontWeight: "700" }}>Fair</span>;
+                        if (strength === 3) return <span style={{ color: "#eab308", fontSize: "11px", fontWeight: "700" }}>Good</span>;
+                        return <span style={{ color: "#16a34a", fontSize: "11px", fontWeight: "700" }}>Strong ✓</span>;
+                      })()}
                     </div>
 
                     <div className="ql-cred-divider" />
@@ -6034,7 +6059,11 @@ export function AdminDashboard() {
                         <line x1="12" y1="16" x2="12" y2="12" />
                         <line x1="12" y1="8" x2="12.01" y2="8" />
                       </svg>
-                      <span>Password must contain at least 8 characters, including uppercase, lowercase, number and special character.</span>
+                      <span>
+                        {getOwnerPasswordStrength(newOwnerForm.password) === 4
+                          ? "✓ Strong password set. Register button is unlocked."
+                          : "Register button is locked until password is Strong (min 8 chars, uppercase, lowercase, number, and special character)."}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -6060,37 +6089,51 @@ export function AdminDashboard() {
                   >
                     Cancel
                   </button>
-                  <button
-                    type="submit"
-                    className="ql-btn-primary-modern"
-                    disabled={isAddingOwner}
-                    style={{ opacity: isAddingOwner ? 0.7 : 1, cursor: isAddingOwner ? "wait" : "pointer" }}
-                  >
-                    {isAddingOwner ? (
-                      <>
-                        <span
-                          style={{
-                            display: "inline-block",
-                            width: "14px",
-                            height: "14px",
-                            border: "2px solid rgba(255,255,255,0.4)",
-                            borderTopColor: "#ffffff",
-                            borderRadius: "50%",
-                            animation: "qlModalSpin 0.7s linear infinite",
-                          }}
-                        />
-                        <span>Registering on Server...</span>
-                      </>
-                    ) : (
-                      <>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <line x1="12" y1="5" x2="12" y2="19" />
-                          <line x1="5" y1="12" x2="19" y2="12" />
-                        </svg>
-                        <span>Register Owner</span>
-                      </>
-                    )}
-                  </button>
+                  {(() => {
+                    const isPasswordStrong = getOwnerPasswordStrength(newOwnerForm.password) === 4;
+                    const canSubmit = !isAddingOwner && isPasswordStrong;
+                    return (
+                      <button
+                        type="submit"
+                        className="ql-btn-primary-modern"
+                        disabled={!canSubmit}
+                        style={{
+                          opacity: canSubmit ? 1 : 0.55,
+                          cursor: isAddingOwner ? "wait" : !isPasswordStrong ? "not-allowed" : "pointer",
+                        }}
+                        title={
+                          !isPasswordStrong
+                            ? "Password must be Strong before you can register"
+                            : "Click to register owner"
+                        }
+                      >
+                        {isAddingOwner ? (
+                          <>
+                            <span
+                              style={{
+                                display: "inline-block",
+                                width: "14px",
+                                height: "14px",
+                                border: "2px solid rgba(255,255,255,0.4)",
+                                borderTopColor: "#ffffff",
+                                borderRadius: "50%",
+                                animation: "qlModalSpin 0.7s linear infinite",
+                              }}
+                            />
+                            <span>Registering on Server...</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <line x1="12" y1="5" x2="12" y2="19" />
+                              <line x1="5" y1="12" x2="19" y2="12" />
+                            </svg>
+                            <span>Register Owner</span>
+                          </>
+                        )}
+                      </button>
+                    );
+                  })()}
                 </div>
               </div>
             </form>
