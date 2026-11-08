@@ -1262,6 +1262,47 @@ export function AdminDashboard() {
     setTimeout(() => setSettingsSavedToast(false), 3000);
   };
 
+  // Auto-sync cropped or removed profile image directly to database via PUT /user/update
+  const syncAdminProfileImageToDb = async (newImage) => {
+    let loggedUser = {};
+    try {
+      loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    } catch (e) {}
+
+    const payload = {
+      fullname: loggedUser.fullname || loggedUser.name || adminProfile.name || "Sujit Kar",
+      phone: (loggedUser.phone && loggedUser.phone !== "+91 98765 43210" ? loggedUser.phone : adminProfile.phone) || "",
+      address: loggedUser.address || adminProfile.address || "",
+      profile_image: newImage || "",
+    };
+
+    try {
+      const targetUrl = loggedUser?.id
+        ? `${USER_UPDATE_API_URL}?user_id=${loggedUser.id}`
+        : USER_UPDATE_API_URL;
+
+      const res = await authFetch(targetUrl, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        showToast("Profile image updated in database successfully!", "success");
+        try {
+          const updatedUser = { ...loggedUser, profile_image: newImage || null };
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+        } catch (e) {}
+        fetchAdminProfile();
+      } else {
+        const data = await res.json().catch(() => null);
+        console.warn("Could not sync profile image to database:", data);
+      }
+    } catch (err) {
+      console.warn("syncAdminProfileImageToDb error:", err);
+    }
+  };
+
   const handleCropComplete = (croppedBase64) => {
     if (cropTarget?.type === "owner") {
       const ownerId = cropTarget.ownerId;
@@ -1294,6 +1335,9 @@ export function AdminDashboard() {
     setSettingsSavedToast(true);
     setCropModalOpen(false);
     setTimeout(() => setSettingsSavedToast(false), 3000);
+
+    // Persist new photo directly to database
+    syncAdminProfileImageToDb(croppedBase64);
   };
 
   const handleRemoveAvatar = () => {
@@ -1303,6 +1347,8 @@ export function AdminDashboard() {
       localStorage.setItem("ql_admin_profile", JSON.stringify(updated));
       return updated;
     });
+    // Persist removal directly to database
+    syncAdminProfileImageToDb("");
   };
 
   const handleSaveAdminProfile = async (e) => {
