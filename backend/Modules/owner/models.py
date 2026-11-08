@@ -5,7 +5,8 @@ class AddOwnerRequest(BaseModel):
     fullname: str
     email: EmailStr
     password: str
-    phone: str
+    phone: str | None = None
+    address : str | None = None
     max_shop_count: int
     backup_id: int
 

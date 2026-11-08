@@ -1,6 +1,8 @@
 from dotenv import load_dotenv
 from Modules.user.routers import router as user_router
 from Modules.owner.routers import router as owner_router
+from Modules.DashboardStats.routers import router as dashboard_router
+
 load_dotenv()
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,3 +26,6 @@ app.include_router(user_router, prefix="/user", tags=["Users"])
 
 # Owner routes
 app.include_router(owner_router, prefix="/owner", tags=["Owner"])
+
+# Dashboard routes
+app.include_router(dashboard_router, prefix="/dashboard", tags=["Dashboard"])
