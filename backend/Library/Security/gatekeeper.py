@@ -1,10 +1,11 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-
-from Library.Owner.database import get_user_role_and_status
-from Library.Security.JWT import decode_token
-
+import psycopg
+import os
+from Library.Security.JWT import decode_access_token
+from Modules.owner.database import get_user_role_and_status
 bearer_scheme = HTTPBearer(auto_error=False)
+
 
 
 def require_admin(
@@ -16,7 +17,7 @@ def require_admin(
             detail="Bearer token required.",
         )
 
-    payload = decode_token(credentials.credentials)
+    payload = decode_access_token(credentials.credentials)
 
     if "error" in payload:
         raise HTTPException(
@@ -46,3 +47,19 @@ def require_admin(
         )
 
     return user_id
+
+
+
+def require_active_user(credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme)) -> int:
+    if credentials is None:
+        raise HTTPException(status_code=401, detail="Bearer token required.")
+
+    payload = decode_access_token(credentials.credentials)
+    if "error" in payload:
+        raise HTTPException(status_code=401, detail=payload["error"])
+
+    user_id = payload.get("user_id")
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Invalid token.")
+    return user_id
+

@@ -1,6 +1,6 @@
 from psycopg.rows import dict_row
 
-from Library.Owner.database import get_connection
+from Modules.owner.database import get_connection
 
 
 def get_dashboard_stats():
