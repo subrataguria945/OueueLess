@@ -197,14 +197,14 @@ export function ForgotPasswordModal({ isOpen, onClose }) {
       style={{
         position: "fixed",
         inset: 0,
-        backgroundColor: "rgba(15, 23, 42, 0.65)",
-        backdropFilter: "blur(6px)",
-        WebkitBackdropFilter: "blur(6px)",
+        backgroundColor: "rgba(15, 23, 42, 0.45)",
+        backdropFilter: "blur(5px)",
+        WebkitBackdropFilter: "blur(5px)",
         zIndex: 99999,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "16px",
+        padding: "20px",
         boxSizing: "border-box",
         animation: "qlFadeIn 0.2s ease-out",
       }}
@@ -213,14 +213,14 @@ export function ForgotPasswordModal({ isOpen, onClose }) {
       <div
         style={{
           width: "100%",
-          maxWidth: "400px",
+          maxWidth: "520px",
           maxHeight: "92vh",
           overflowY: "auto",
           WebkitOverflowScrolling: "touch",
           backgroundColor: "#ffffff",
           borderRadius: "20px",
-          padding: "28px 24px 22px",
-          boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.04)",
+          padding: "36px 32px 30px",
+          boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05)",
           position: "relative",
           boxSizing: "border-box",
           fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
@@ -273,7 +273,7 @@ export function ForgotPasswordModal({ isOpen, onClose }) {
               borderRadius: "14px",
               backgroundColor: "#eff6ff",
               border: "1px solid #dbeafe",
-              color: "#1960f7",
+              color: "#2563eb",
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
@@ -396,8 +396,8 @@ export function ForgotPasswordModal({ isOpen, onClose }) {
               disabled={isLoading || Boolean(success)}
               style={inputStyle}
               onFocus={(e) => {
-                e.target.style.borderColor = "#1960f7";
-                e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)";
+                e.target.style.borderColor = "#2563eb";
+                e.target.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.14)";
               }}
               onBlur={(e) => {
                 e.target.style.borderColor = "#dde4f0";
@@ -521,8 +521,8 @@ export function ForgotPasswordModal({ isOpen, onClose }) {
               disabled={isLoading || Boolean(success)}
               style={inputStyle}
               onFocus={(e) => {
-                e.target.style.borderColor = "#1960f7";
-                e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)";
+                e.target.style.borderColor = "#2563eb";
+                e.target.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.14)";
               }}
               onBlur={(e) => {
                 e.target.style.borderColor = "#dde4f0";
@@ -584,7 +584,7 @@ export function ForgotPasswordModal({ isOpen, onClose }) {
             style={{
               width: "100%",
               height: "46px",
-              backgroundColor: "#1960f7",
+              backgroundColor: "#2563eb",
               color: "#ffffff",
               border: "none",
               borderRadius: "11px",
@@ -600,10 +600,10 @@ export function ForgotPasswordModal({ isOpen, onClose }) {
               transition: "background-color 0.15s, transform 0.1s",
             }}
             onMouseEnter={(e) => {
-              if (!isLoading && !success) e.currentTarget.style.backgroundColor = "#124cd4";
+              if (!isLoading && !success) e.currentTarget.style.backgroundColor = "#1d4ed8";
             }}
             onMouseLeave={(e) => {
-              if (!isLoading && !success) e.currentTarget.style.backgroundColor = "#1960f7";
+              if (!isLoading && !success) e.currentTarget.style.backgroundColor = "#2563eb";
             }}
           >
             {isLoading ? (

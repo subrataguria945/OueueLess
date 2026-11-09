@@ -142,28 +142,28 @@ export function EmailOtpModal({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: "rgba(15, 23, 42, 0.72)",
-        backdropFilter: "blur(6px)",
-        WebkitBackdropFilter: "blur(6px)",
+        backgroundColor: "rgba(15, 23, 42, 0.45)",
+        backdropFilter: "blur(5px)",
+        WebkitBackdropFilter: "blur(5px)",
         zIndex: 999999,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "16px",
+        padding: "20px",
       }}
       onClick={onCancel}
     >
       <div
         style={{
           width: "100%",
-          maxWidth: "430px",
+          maxWidth: "520px",
           maxHeight: "92vh",
           overflowY: "auto",
           WebkitOverflowScrolling: "touch",
           backgroundColor: "#ffffff",
           borderRadius: "22px",
-          padding: "32px 26px 28px",
-          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.3)",
+          padding: "36px 32px 30px",
+          boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.2)",
           border: "1px solid #e2e8f0",
           fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
           boxSizing: "border-box",
@@ -213,8 +213,8 @@ export function EmailOtpModal({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "#1960f7",
-              boxShadow: "0 4px 12px rgba(25, 96, 247, 0.12)",
+              color: "#2563eb",
+              boxShadow: "0 4px 12px rgba(37, 99, 235, 0.12)",
             }}
           >
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -290,16 +290,16 @@ export function EmailOtpModal({
                   fontWeight: "700",
                   color: "#0f172a",
                   background: "#ffffff",
-                  border: digit ? "2px solid #1960f7" : "1.5px solid #cbd5e1",
+                  border: digit ? "2px solid #2563eb" : "1.5px solid #cbd5e1",
                   borderRadius: "11px",
                   outline: "none",
                   boxSizing: "border-box",
-                  boxShadow: digit ? "0 0 0 3px rgba(25, 96, 247, 0.12)" : "none",
+                  boxShadow: digit ? "0 0 0 3px rgba(37, 99, 235, 0.12)" : "none",
                   transition: "all 0.15s ease",
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = "#1960f7";
-                  e.target.style.boxShadow = "0 0 0 3px rgba(25, 96, 247, 0.15)";
+                  e.target.style.borderColor = "#2563eb";
+                  e.target.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.15)";
                 }}
                 onBlur={(e) => {
                   if (!e.target.value) {
@@ -357,7 +357,7 @@ export function EmailOtpModal({
               background:
                 isVerifying || !isOtpComplete
                   ? "#94a3b8"
-                  : "linear-gradient(135deg, #1960f7 0%, #0d47a1 100%)",
+                  : "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
               color: "#ffffff",
               border: "none",
               borderRadius: "11px",
@@ -412,7 +412,7 @@ export function EmailOtpModal({
               style={{
                 background: "none",
                 border: "none",
-                color: "#1960f7",
+                color: "#2563eb",
                 fontSize: "13px",
                 fontWeight: "600",
                 cursor: "pointer",

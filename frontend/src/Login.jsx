@@ -400,7 +400,7 @@ export function Login({ initialMode = "login", initialForgotOpen = false, onSwit
                   onChange={(e) => setLoginEmail(e.target.value)}
                   required
                   style={loginInputStyle}
-                  onFocus={e => { e.target.style.borderColor = "#1960f7"; e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)"; }}
+                  onFocus={e => { e.target.style.borderColor = "#2563eb"; e.target.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.14)"; }}
                   onBlur={e => { e.target.style.borderColor = "#dde4f0"; e.target.style.boxShadow = "none"; }}
                 />
               </div>
@@ -420,7 +420,7 @@ export function Login({ initialMode = "login", initialForgotOpen = false, onSwit
                   onChange={(e) => setLoginPassword(e.target.value)}
                   required
                   style={{ ...loginInputStyle, paddingRight: "46px" }}
-                  onFocus={e => { e.target.style.borderColor = "#1960f7"; e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)"; }}
+                  onFocus={e => { e.target.style.borderColor = "#2563eb"; e.target.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.14)"; }}
                   onBlur={e => { e.target.style.borderColor = "#dde4f0"; e.target.style.boxShadow = "none"; }}
                 />
                 <button type="button" className="ql-eye-btn" onClick={() => setShowLoginPassword(!showLoginPassword)} aria-label="Toggle password">
@@ -447,8 +447,8 @@ export function Login({ initialMode = "login", initialForgotOpen = false, onSwit
                     style={{ position: "absolute", opacity: 0, width: 0, height: 0 }}
                   />
                   <span className="ql-cb-box" style={{
-                    backgroundColor: rememberMe ? "#1960f7" : "#ffffff",
-                    borderColor: rememberMe ? "#1960f7" : "#cbd5e1",
+                    backgroundColor: rememberMe ? "#2563eb" : "#ffffff",
+                    borderColor: rememberMe ? "#2563eb" : "#cbd5e1",
                   }}>
                     {rememberMe && (
                       <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
@@ -479,7 +479,7 @@ export function Login({ initialMode = "login", initialForgotOpen = false, onSwit
                         style={{
                           width: "12px",
                           height: "12px",
-                          border: "2px solid #1960f7",
+                          border: "2px solid #2563eb",
                           borderTopColor: "transparent",
                           borderRadius: "50%",
                           display: "inline-block",
