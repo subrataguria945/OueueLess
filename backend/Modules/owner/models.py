@@ -27,3 +27,7 @@ class OwnerDetail(BaseModel):
 class UpdateOwnerStatusRequest(BaseModel):
     owner_id: int   
     new_status: bool
+
+class DeleteOwnerRequest(BaseModel):
+    user_id : int
+    owner_id: int
