@@ -28,7 +28,7 @@ def get_user_role_and_status(user_id: int):
             )
             return cur.fetchone()
 
-def insert_owner_indb(admin_user_id, fullname, email, password, phone, max_shop_count, backup_id):
+def insert_owner_indb(admin_user_id, fullname, email, password, phone,address, max_shop_count, backup_id):
     con = None
     try:
         con = psycopg.connect(
@@ -46,8 +46,8 @@ def insert_owner_indb(admin_user_id, fullname, email, password, phone, max_shop_
         with con.cursor() as cur:
             try:
                 cur.execute(
-                    "CALL public.sp_add_owner(%s, %s, %s, %s, %s, %s, %s, NULL, NULL, NULL, NULL);",
-                    (admin_user_id, fullname, email, password, phone, max_shop_count, backup_id)
+                    "CALL public.sp_add_owner(%s, %s, %s, %s, %s, %s,%s, %s, NULL, NULL, NULL, NULL);",
+                    (admin_user_id, fullname, email, password, phone, address , max_shop_count, backup_id)
                 )
                 result = cur.fetchone()  
                 if result:
