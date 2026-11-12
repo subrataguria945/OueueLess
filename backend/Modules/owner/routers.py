@@ -24,11 +24,12 @@ def update_owner_status(data: UpdateOwnerStatusRequest, admin_id: int = Depends(
     response = update_o_status(payload)
     return response
 
-@router.delete("/delete")
-def delete_owner(data: DeleteOwnerRequest, admin_id: int = Depends(require_admin)):
-    payload = {
-        "admin_user_id": admin_id,
-        "owner_id": data.owner_id
-    }
-    response = delete_own(payload)
-    return response
+# @router.delete("/delete")
+# def delete_owner(data: DeleteOwnerRequest, admin_id: int = Depends(require_admin)):
+#     payload = {
+#         "user_id": data.user_id,
+#         "owner_id": data.owner_id,
+#         "admin_id": admin_id
+#     }   
+#     response = delete_own(payload)
+#     return response
