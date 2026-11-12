@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from Library.Security.gatekeeper import require_admin
-from .models import AddOwnerRequest, OwnerDetail,UpdateOwnerStatusRequest
-from .utility import register_owner,update_owner_status as update_o_status
+from .models import AddOwnerRequest, DeleteOwnerRequest, OwnerDetail,UpdateOwnerStatusRequest
+from .utility import register_owner,update_owner_status as update_o_status,delete_owner as delete_own
 from .database import get_all_owners_details
 
 router = APIRouter()
@@ -23,3 +23,13 @@ def update_owner_status(data: UpdateOwnerStatusRequest, admin_id: int = Depends(
     payload["admin_id"] = admin_id
     response = update_o_status(payload)
     return response
+
+# @router.delete("/delete")
+# def delete_owner(data: DeleteOwnerRequest, admin_id: int = Depends(require_admin)):
+#     payload = {
+#         "user_id": data.user_id,
+#         "owner_id": data.owner_id,
+#         "admin_id": admin_id
+#     }   
+#     response = delete_own(payload)
+#     return response
