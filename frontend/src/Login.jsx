@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import "./Login.css";
-import { RegisterPanel } from "./register";
 import { ForgotPasswordModal } from "./ForgotPasswordModal";
+import { EmailOtpModal } from "./EmailOtpModal";
+import { initiateSignup, verifySignupOtp } from "./authApi";
 import { triggerGoogleSignIn } from "./googleAuth";
 
 const API_BASE = (
@@ -26,7 +27,7 @@ export function Login({
     initialForgotOpen || initialMode === "forgot"
   );
 
-  /* ── Form State ────────────────────────────────────── */
+  /* ── Login Form State ──────────────────────────────── */
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
@@ -36,6 +37,22 @@ export function Login({
   const [loginSuccess, setLoginSuccess] = useState("");
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const forgotTimerRef = useRef(null);
+
+  /* ── Register Form State ───────────────────────────── */
+  const [regName, setRegName] = useState("");
+  const [regEmail, setRegEmail] = useState("");
+  const [regPhone, setRegPhone] = useState("");
+  const [regPassword, setRegPassword] = useState("");
+  const [regConfirmPassword, setRegConfirmPassword] = useState("");
+  const [showRegPassword, setShowRegPassword] = useState(false);
+  const [showRegConfirmPassword, setShowRegConfirmPassword] = useState(false);
+  const [regError, setRegError] = useState("");
+  const [regSuccess, setRegSuccess] = useState("");
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const [signupToken, setSignupToken] = useState("");
+  const [isSendingCode, setIsSendingCode] = useState(false);
+  const [sendingError, setSendingError] = useState("");
+  const pendingInitiateRef = useRef(null);
 
   const showTemporaryError = (msg, duration = 4000) => {
     if (forgotTimerRef.current) clearTimeout(forgotTimerRef.current);
@@ -85,12 +102,15 @@ export function Login({
   /* ── Mode Switching ───────────────────────────────── */
   const handleSwitchToRegister = () => {
     setMode("register");
+    setRegError("");
+    setRegSuccess("");
     window.history.replaceState(null, "", "/register");
     if (onSwitchToRegister) onSwitchToRegister();
   };
 
   const handleSwitchToLogin = () => {
     setMode("login");
+    setLoginError("");
     window.history.replaceState(null, "", "/login");
     if (onSwitchToLogin) onSwitchToLogin();
   };
@@ -106,7 +126,6 @@ export function Login({
       showTemporaryError("Your session has expired. Please sign in again.");
       return;
     }
-    // If arriving from explicit logout, purge all tokens and prevent auto-redirect
     if (params.get("logout") === "true") {
       localStorage.removeItem("token");
       localStorage.removeItem("ql_admin_token");
@@ -116,7 +135,6 @@ export function Login({
       sessionStorage.clear();
       return;
     }
-    // Auto-redirect if user already has an active session
     const existingToken =
       localStorage.getItem("token") ||
       localStorage.getItem("ql_admin_token") ||
@@ -127,146 +145,119 @@ export function Login({
     }
   }, []);
 
+  /* ── Google Sign-In ────────────────────────────────── */
   const handleGoogleSuccess = (user, token, isNew, message) => {
-    setLoginError("");
-    setLoginSuccess("");
+    setIsGoogleLoading(false);
     if (token) {
-      rememberMe ? localStorage.setItem("token", token) : sessionStorage.setItem("token", token);
+      localStorage.setItem("token", token);
       localStorage.setItem("ql_admin_token", token);
+      sessionStorage.setItem("token", token);
     }
-    const googleRefreshToken = user?.refresh_token || (typeof token === "object" ? token?.refresh_token : null);
-    if (googleRefreshToken) {
-      rememberMe ? localStorage.setItem("refresh_token", googleRefreshToken) : sessionStorage.setItem("refresh_token", googleRefreshToken);
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
+      if (user.role) localStorage.setItem("role", user.role);
     }
-    if (user) localStorage.setItem("user", JSON.stringify(user));
+    setLoginSuccess(message || "Signed in with Google successfully! Redirecting...");
+    setTimeout(() => {
+      window.location.href = "/admin";
+    }, 800);
+  };
 
-    const rawRole = user?.role ?? user?.user_role;
-    const isAdmin = Number(rawRole) === 1 || String(rawRole).trim() === "1" || String(rawRole).toLowerCase() === "admin" || String(rawRole).toLowerCase() === "super admin";
-
-    localStorage.setItem("role", isAdmin ? "admin" : (Number(rawRole) === 3 ? "owner" : "user"));
-    window.location.href = "/admin";
+  const handleGoogleError = (errorMsg) => {
+    setIsGoogleLoading(false);
+    showTemporaryError(errorMsg || "Google sign-in failed. Please try again.");
   };
 
   const handleGoogleClick = () => {
     setLoginError("");
     setLoginSuccess("");
     setIsGoogleLoading(true);
+
     triggerGoogleSignIn({
-      onSuccess: (user, token, isNew, message) => {
-        setIsGoogleLoading(false);
-        handleGoogleSuccess(user, token, isNew, message);
-      },
-      onError: (err) => {
-        setIsGoogleLoading(false);
-        if (err) {
-          const str = String(err).toLowerCase();
-          if (!str.includes("cancel") && !str.includes("closed")) {
-            setLoginError(err || "Unable to sign in with Google. Please try again.");
-          }
-        }
-      },
-      onCancel: () => {
-        setIsGoogleLoading(false);
-      },
+      onSuccess: handleGoogleSuccess,
+      onError: handleGoogleError,
+      onClose: () => setIsGoogleLoading(false),
     });
   };
 
+  /* ── Regular Email/Password Login ──────────────────── */
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    setIsLoginLoading(true);
     setLoginError("");
     setLoginSuccess("");
 
-    const trimmedEmail = loginEmail.trim().toLowerCase();
+    const cleanEmail = loginEmail.trim().toLowerCase();
+    if (!cleanEmail) {
+      setLoginError("Please enter your email address.");
+      return;
+    }
+    if (!loginPassword) {
+      setLoginError("Please enter your password.");
+      return;
+    }
+
+    setIsLoginLoading(true);
 
     try {
       const response = await fetch(LOGIN_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: trimmedEmail, password: loginPassword }),
+        body: JSON.stringify({
+          email: cleanEmail,
+          password: loginPassword,
+        }),
       });
+
       const data = await response.json().catch(() => ({}));
 
-      const isFailed =
-        !response.ok ||
-        data.status === "Login Failed" ||
-        data.status === "error" ||
-        data.status === "failed" ||
-        (!data.token && !data.accessToken && !data.access_token && !data.data?.token);
-
-      if (!isFailed) {
+      if (response.ok) {
         const token =
           data.token ||
           data.accessToken ||
           data.access_token ||
-          data.data?.token ||
-          data.data?.accessToken;
+          data.jwt ||
+          data.data?.token;
 
-        const refreshToken =
-          data.refresh_token ||
-          data.refreshToken ||
-          data.data?.refresh_token ||
-          data.data?.refreshToken;
+        const user = data.user || data.data?.user || {
+          email: cleanEmail,
+          name: data.name || cleanEmail.split("@")[0],
+          role: data.role || data.user_role || "ADMIN",
+        };
 
         if (token) {
-          rememberMe ? localStorage.setItem("token", token) : sessionStorage.setItem("token", token);
-          localStorage.setItem("ql_admin_token", token);
+          if (rememberMe) {
+            localStorage.setItem("token", token);
+            localStorage.setItem("ql_admin_token", token);
+          } else {
+            sessionStorage.setItem("token", token);
+          }
         }
 
-        if (refreshToken) {
-          rememberMe ? localStorage.setItem("refresh_token", refreshToken) : sessionStorage.setItem("refresh_token", refreshToken);
+        if (user) {
+          const userPayload = JSON.stringify(user);
+          if (rememberMe) {
+            localStorage.setItem("user", userPayload);
+            localStorage.setItem("role", user.role || "ADMIN");
+          } else {
+            sessionStorage.setItem("user", userPayload);
+            sessionStorage.setItem("role", user.role || "ADMIN");
+          }
         }
 
-        const userObj = data.user || data.data?.user || {
-          user_id: data.user_id,
-          email: data.email || trimmedEmail,
-          fullname: data.fullname || data.name || trimmedEmail.split("@")[0],
-          user_role: data.user_role ?? data.role ?? 3,
-        };
-        if (userObj && Object.keys(userObj).length > 0) {
-          localStorage.setItem("user", JSON.stringify(userObj));
-        }
-
-        const rawRole =
-          userObj.role ??
-          userObj.user_role ??
-          data.role ??
-          data.user_role ??
-          data.data?.role ??
-          data.data?.user_role;
-
-        const isAdmin =
-          Number(rawRole) === 1 ||
-          String(rawRole).trim() === "1" ||
-          String(rawRole).toLowerCase() === "admin" ||
-          String(rawRole).toLowerCase() === "super admin";
-
-        localStorage.setItem("role", isAdmin ? "admin" : (Number(rawRole) === 3 ? "owner" : "user"));
-        window.location.href = "/admin";
+        setLoginSuccess("Login successful! Redirecting to dashboard...");
+        setTimeout(() => {
+          window.location.href = "/admin";
+        }, 600);
       } else {
-        const rawError =
-          data.message ||
-          (Array.isArray(data.detail) ? data.detail.map((d) => d.msg || d).join(", ") : data.detail) ||
-          data.error ||
-          "";
-
-        const lower = String(rawError).toLowerCase().trim();
-        let formattedMessage = "Incorrect email or password. Please try again.";
+        const rawError = data.error || data.message || data.detail || "";
+        const lower = String(rawError).toLowerCase();
+        let formattedMessage = "Unable to sign in. Please verify your email and password.";
 
         if (
-          lower.includes("not_found") ||
-          lower.includes("not found") ||
-          lower.includes("doesn't exist") ||
-          lower.includes("no user") ||
-          lower.includes("unregistered") ||
-          lower.includes("user_not_found")
-        ) {
-          formattedMessage = "No account found with this email. Please sign up first.";
-        } else if (
-          lower.includes("invalid_credentials") ||
+          response.status === 401 ||
           lower.includes("invalid") ||
           lower.includes("incorrect") ||
-          lower.includes("credential") ||
+          lower.includes("not found") ||
           lower.includes("password")
         ) {
           formattedMessage = "Incorrect email or password. Please try again or use 'Forgot password?'.";
@@ -285,10 +276,128 @@ export function Login({
     }
   };
 
+  /* ── Register Submit -> Open OTP Modal ────────────── */
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    setRegError("");
+    setRegSuccess("");
+    setSendingError("");
+
+    const cleanName = regName.trim();
+    const cleanEmail = regEmail.trim().toLowerCase();
+    const cleanPhone = regPhone.trim().replace(/\D/g, "");
+
+    if (!cleanName) {
+      setRegError("Please enter your full name.");
+      return;
+    }
+    if (!cleanEmail || !cleanEmail.includes("@")) {
+      setRegError("Please enter a valid email address.");
+      return;
+    }
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      setRegError("Please enter a valid 10-digit phone number.");
+      return;
+    }
+    if (regPassword.length < 6) {
+      setRegError("Password must be at least 6 characters long.");
+      return;
+    }
+    if (regPassword !== regConfirmPassword) {
+      setRegError("Passwords do not match!");
+      return;
+    }
+
+    // Instantly open the OTP modal
+    setIsOtpModalOpen(true);
+    setIsSendingCode(true);
+    setSendingError("");
+
+    const initiatePromise = initiateSignup({
+      fullname: cleanName,
+      email: cleanEmail,
+      phone: cleanPhone,
+      user_role: 3,
+    })
+      .then((result) => {
+        setSignupToken(result.signup_token);
+        setIsSendingCode(false);
+        return result.signup_token;
+      })
+      .catch((err) => {
+        const msg = err?.message || "Failed to send verification code. Please check your details.";
+        setSendingError(msg);
+        setIsSendingCode(false);
+        throw err;
+      });
+
+    pendingInitiateRef.current = initiatePromise;
+  };
+
+  /* ── Verify OTP and Create Account ────────────────── */
+  const handleVerifyOtp = async (otpCode) => {
+    let tokenToUse = signupToken;
+    if (!tokenToUse && pendingInitiateRef.current) {
+      tokenToUse = await pendingInitiateRef.current.catch(() => null);
+    }
+
+    if (!tokenToUse) {
+      throw new Error(sendingError || "Sending code failed. Please click Resend Code.");
+    }
+
+    await verifySignupOtp({
+      signup_token: tokenToUse,
+      otp: otpCode,
+      password: regPassword,
+    });
+
+    setIsOtpModalOpen(false);
+    setLoginSuccess("Account created successfully! Please log in.");
+    setLoginEmail(regEmail);
+
+    setRegName("");
+    setRegEmail("");
+    setRegPhone("");
+    setRegPassword("");
+    setRegConfirmPassword("");
+    setSignupToken("");
+    pendingInitiateRef.current = null;
+
+    setTimeout(() => {
+      handleSwitchToLogin();
+    }, 1000);
+  };
+
+  /* ── Resend OTP ────────────────────────────────────── */
+  const handleResendOtp = async () => {
+    setSendingError("");
+    setIsSendingCode(true);
+    const cleanName = regName.trim();
+    const cleanEmail = regEmail.trim().toLowerCase();
+    const cleanPhone = regPhone.trim().replace(/\D/g, "");
+
+    try {
+      const result = await initiateSignup({
+        fullname: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone,
+        user_role: 3,
+      });
+
+      setSignupToken(result.signup_token);
+      return result;
+    } catch (err) {
+      setSendingError(err?.message || "Failed to resend verification code.");
+      throw err;
+    } finally {
+      setIsSendingCode(false);
+    }
+  };
+
   return (
-    <div className="ql-login-page">
+    <div className={`ql-login-page ${mode === "register" ? "ql-signup-active" : "ql-login-active"}`}>
       <div className="ql-login-split">
-        {/* ── LEFT COLUMN: LOGIN FORM SECTION ── */}
+        {/* ── FORM COLUMN (LEFT ON LOGIN, SLIDES TO RIGHT ON SIGNUP) ── */}
         <div className="ql-login-left">
           <div className="ql-login-form-wrap">
             {/* Brand Logo */}
@@ -301,12 +410,187 @@ export function Login({
             </div>
 
             {mode === "register" ? (
-              <div className="ql-register-wrapper">
-                <RegisterPanel onSwitchToLogin={handleSwitchToLogin} />
+              /* ── REGISTER / CREATE ACCOUNT VIEW ── */
+              <div className="ql-pane-fade" key="register-pane">
+                <h1 className="ql-title">Create Account</h1>
+                <p className="ql-subtitle">Join QueueLess and get started</p>
+
+                {/* Alerts */}
+                {regError && (
+                  <div className="ql-alert-banner ql-alert-error" role="alert" onClick={() => setRegError("")}>
+                    <span>{regError}</span>
+                    <button type="button" className="ql-alert-dismiss">✕</button>
+                  </div>
+                )}
+                {regSuccess && (
+                  <div className="ql-alert-banner ql-alert-success" role="status" onClick={() => setRegSuccess("")}>
+                    <span>{regSuccess}</span>
+                    <button type="button" className="ql-alert-dismiss">✕</button>
+                  </div>
+                )}
+
+                <form onSubmit={handleRegisterSubmit} className="ql-form" noValidate>
+                  {/* Full Name */}
+                  <div className="ql-input-group">
+                    <span className="ql-input-icon">
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
+                    </span>
+                    <input
+                      id="ql-reg-name"
+                      type="text"
+                      placeholder="Full Name"
+                      value={regName}
+                      onChange={(e) => setRegName(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  {/* Email Address */}
+                  <div className="ql-input-group">
+                    <span className="ql-input-icon">
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="2" y="4" width="20" height="16" rx="2" />
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                      </svg>
+                    </span>
+                    <input
+                      id="ql-reg-email"
+                      type="email"
+                      autoComplete="username email"
+                      placeholder="Email Address"
+                      value={regEmail}
+                      onChange={(e) => setRegEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  {/* Phone Number */}
+                  <div className="ql-input-group">
+                    <span className="ql-input-icon">
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                      </svg>
+                    </span>
+                    <input
+                      id="ql-reg-phone"
+                      type="tel"
+                      placeholder="Phone Number"
+                      maxLength={10}
+                      value={regPhone}
+                      onChange={(e) => setRegPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                      required
+                    />
+                  </div>
+
+                  {/* Password */}
+                  <div className="ql-input-group">
+                    <span className="ql-input-icon">
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                    </span>
+                    <input
+                      id="ql-reg-password"
+                      type={showRegPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      placeholder="Password"
+                      value={regPassword}
+                      onChange={(e) => setRegPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="ql-eye-btn"
+                      onClick={() => setShowRegPassword(!showRegPassword)}
+                      aria-label={showRegPassword ? "Hide password" : "Show password"}
+                    >
+                      {showRegPassword ? (
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      ) : (
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                          <line x1="1" y1="1" x2="23" y2="23" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Confirm Password */}
+                  <div className="ql-input-group">
+                    <span className="ql-input-icon">
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                    </span>
+                    <input
+                      id="ql-reg-confirm-password"
+                      type={showRegConfirmPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      placeholder="Confirm Password"
+                      value={regConfirmPassword}
+                      onChange={(e) => setRegConfirmPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="ql-eye-btn"
+                      onClick={() => setShowRegConfirmPassword(!showRegConfirmPassword)}
+                      aria-label={showRegConfirmPassword ? "Hide password" : "Show password"}
+                    >
+                      {showRegConfirmPassword ? (
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      ) : (
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                          <line x1="1" y1="1" x2="23" y2="23" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    className="ql-btn-primary"
+                    disabled={isSendingCode}
+                  >
+                    {isSendingCode ? (
+                      <>
+                        <span className="ql-spinner-circle" />
+                        <span>Creating Account...</span>
+                      </>
+                    ) : (
+                      <span>Sign Up &rarr;</span>
+                    )}
+                  </button>
+                </form>
+
+                {/* Footer Switch to Login */}
+                <div className="ql-footer-prompt">
+                  <span>Already have an account? </span>
+                  <button
+                    type="button"
+                    className="ql-signup-btn"
+                    onClick={handleSwitchToLogin}
+                  >
+                    Log In
+                  </button>
+                </div>
               </div>
             ) : (
-              <>
-                {/* Heading & Subtitle */}
+              /* ── LOG IN VIEW ── */
+              <div className="ql-pane-fade" key="login-pane">
                 <h1 className="ql-title">Log In</h1>
                 <p className="ql-subtitle">Access your QueueLess account</p>
 
@@ -453,14 +737,29 @@ export function Login({
                     Sign Up
                   </button>
                 </div>
-              </>
+              </div>
             )}
           </div>
         </div>
 
-        {/* ── RIGHT COLUMN: QUEUELESS LIVE QUEUE HERO SCENE ── */}
+        {/* ── HERO SCENE COLUMN (RIGHT ON LOGIN, SLIDES TO LEFT ON SIGNUP) ── */}
         <div className="ql-login-right">
           <div className="ql-hero-scene-wrap">
+            <div className="ql-hero-headline-wrap" key={mode}>
+              <h2 className="ql-hero-heading">
+                {mode === "register" ? (
+                  <>
+                    Get Started with <span className="ql-hero-brand-blue">QueueLess</span>
+                  </>
+                ) : (
+                  <>
+                    Smarter <span className="ql-hero-brand-blue">Queue</span> Management
+                  </>
+                )}
+              </h2>
+              <div className="ql-hero-accent-bar" />
+            </div>
+
             <img
               src="/queueless-login-scene-feathered.png"
               alt="QueueLess Smart Queue Display Token A-042"
@@ -474,6 +773,20 @@ export function Login({
       <ForgotPasswordModal
         isOpen={isForgotModalOpen}
         onClose={() => setIsForgotModalOpen(false)}
+      />
+
+      {/* Email OTP Verification Modal for Registration */}
+      <EmailOtpModal
+        isOpen={isOtpModalOpen}
+        email={regEmail}
+        isSendingCode={isSendingCode}
+        sendingError={sendingError}
+        onVerifyOtp={handleVerifyOtp}
+        onResendOtp={handleResendOtp}
+        onCancel={() => {
+          setIsOtpModalOpen(false);
+          setIsSendingCode(false);
+        }}
       />
     </div>
   );

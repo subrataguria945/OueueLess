@@ -1,7 +1,8 @@
 /* ==========================================================================
-   QUEUELESS — OFFICIAL MODERN SPLIT LOGIN UI (MATCHING MOCKUP)
-   Left: Clean White Form (Logo, Title, Inputs, Button, Forgot, Divider, Google, SignUp)
-   Right: QueueLess Live Queue Display Hero Artwork (Token A-042, Desk, Queue)
+   QUEUELESS — OFFICIAL MODERN SPLIT AUTH UI (SLIDING LOGIN & SIGNUP)
+   Desktop: 50/50 Split Screen with Smooth Sliding Panel Transition
+   Login Mode: Form on Left, Token A-042 Hero Scene on Right
+   Signup Mode: Hero Scene smoothly slides to Left, Create Account Form on Right
    ========================================================================== */
 
 /* ── 1. MAIN SPLIT SCREEN WRAPPER ────────────────────────────────────────── */
@@ -23,12 +24,13 @@
   height: 100vh;
   max-height: 100vh;
   overflow: hidden;
+  position: relative;
 }
 
-/* ── 2. LEFT COLUMN: LOGIN FORM SECTION ──────────────────────────────────── */
+/* ── 2. FORM PANEL (LEFT BY DEFAULT, SLIDES RIGHT IN SIGNUP) ─────────────── */
 .ql-login-left {
-  flex: 0 0 44%;
-  width: 44%;
+  flex: 0 0 50%;
+  width: 50%;
   min-width: 380px;
   height: 100vh;
   max-height: 100vh;
@@ -36,7 +38,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(14px, 2.5vh, 28px) clamp(24px, 3.5vw, 42px);
+  padding: clamp(10px, 2vh, 22px) clamp(20px, 3.5vw, 42px);
   box-sizing: border-box;
   position: relative;
   z-index: 2;
@@ -44,7 +46,8 @@
   overflow-x: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  animation: ql-fade-in 0.4s ease-out;
+  transition: transform 0.65s cubic-bezier(0.65, 0, 0.35, 1);
+  will-change: transform;
 }
 
 .ql-login-left::-webkit-scrollbar {
@@ -62,15 +65,22 @@
   margin: auto 0;
 }
 
+.ql-pane-fade {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  animation: ql-fade-in 0.35s ease-out;
+}
+
 /* ── 3. BRAND LOGO ───────────────────────────────────────────────────────── */
 .ql-logo-box {
-  margin-bottom: clamp(10px, 2vh, 20px);
+  margin-bottom: clamp(10px, 1.8vh, 18px);
   display: flex;
   align-items: center;
 }
 
 .ql-brand-logo {
-  height: clamp(28px, 3.8vh, 36px);
+  height: clamp(28px, 3.6vh, 34px);
   width: auto;
   object-fit: contain;
   display: block;
@@ -78,7 +88,7 @@
 
 /* ── 4. TITLE & SUBTITLE ─────────────────────────────────────────────────── */
 .ql-title {
-  font-size: clamp(22px, 3vh, 26px);
+  font-size: clamp(22px, 2.8vh, 26px);
   font-weight: 700;
   color: #0f172a;
   margin: 0 0 4px 0;
@@ -88,7 +98,7 @@
 .ql-subtitle {
   font-size: 13.5px;
   color: #64748b;
-  margin: 0 0 clamp(10px, 1.8vh, 18px) 0;
+  margin: 0 0 clamp(9px, 1.6vh, 16px) 0;
   font-weight: 450;
 }
 
@@ -97,11 +107,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 9px 13px;
-  border-radius: 9px;
-  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
   font-weight: 500;
-  margin-bottom: 16px;
+  margin-bottom: 11px;
   cursor: pointer;
   animation: ql-fade-in 0.2s ease-out;
 }
@@ -140,13 +150,13 @@
   position: relative;
   display: flex;
   align-items: center;
-  height: clamp(40px, 4.6vh, 45px);
+  height: clamp(39px, 4.4vh, 44px);
   background: #ffffff;
   border: 1.2px solid #e2e8f0;
   border-radius: 9px;
   padding: 0 13px;
   gap: 11px;
-  margin-bottom: clamp(9px, 1.3vh, 13px);
+  margin-bottom: clamp(8px, 1.2vh, 12px);
   box-sizing: border-box;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
@@ -211,10 +221,10 @@
   color: #0f172a;
 }
 
-/* ── 7. PRIMARY SUBMIT BUTTON ("Log In ->") ──────────────────────────────── */
+/* ── 7. PRIMARY SUBMIT BUTTON ("Log In ->" / "Sign Up ->") ───────────────── */
 .ql-btn-primary {
   width: 100%;
-  height: clamp(40px, 4.6vh, 45px);
+  height: clamp(39px, 4.4vh, 44px);
   background: #0062ff;
   color: #ffffff;
   border: none;
@@ -250,8 +260,8 @@
 .ql-forgot-wrap {
   display: flex;
   justify-content: flex-end;
-  margin-top: 7px;
-  margin-bottom: clamp(7px, 1.2vh, 12px);
+  margin-top: 6px;
+  margin-bottom: clamp(6px, 1.1vh, 11px);
 }
 
 .ql-forgot-btn {
@@ -277,7 +287,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: clamp(7px, 1.2vh, 12px) 0;
+  margin: clamp(6px, 1.1vh, 11px) 0;
 }
 
 .ql-div-line {
@@ -295,7 +305,7 @@
 /* ── 10. CONTINUE WITH GOOGLE BUTTON ─────────────────────────────────────── */
 .ql-btn-google {
   width: 100%;
-  height: clamp(40px, 4.6vh, 45px);
+  height: clamp(39px, 4.4vh, 44px);
   background: #ffffff;
   border: 1.2px solid #e2e8f0;
   border-radius: 9px;
@@ -323,10 +333,10 @@
   cursor: not-allowed;
 }
 
-/* ── 11. SIGN UP PROMPT FOOTER ───────────────────────────────────────────── */
+/* ── 11. SIGN UP / LOG IN PROMPT FOOTER ──────────────────────────────────── */
 .ql-footer-prompt {
   text-align: center;
-  margin-top: clamp(10px, 1.8vh, 18px);
+  margin-top: clamp(9px, 1.6vh, 16px);
   font-size: 13px;
   color: #64748b;
   display: flex;
@@ -352,38 +362,69 @@
   text-decoration: underline;
 }
 
-/* ── 12. RIGHT COLUMN: QUEUELESS LIVE SCENE ARTWORK ──────────────────────── */
+/* ── 12. HERO PANEL (RIGHT BY DEFAULT, SLIDES LEFT IN SIGNUP) ────────────── */
 .ql-login-right {
-  flex: 1;
-  width: 56%;
+  flex: 0 0 50%;
+  width: 50%;
   height: 100vh;
   max-height: 100vh;
   background: radial-gradient(circle at 55% 45%, #f4f8fe 0%, #edf5fd 55%, #e1edfe 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(16px, 2.5vh, 32px) clamp(20px, 3vw, 40px);
+  padding: clamp(14px, 2.5vh, 28px) clamp(20px, 3vw, 40px);
   box-sizing: border-box;
   overflow: hidden;
   position: relative;
+  z-index: 1;
+  transition: transform 0.65s cubic-bezier(0.65, 0, 0.35, 1);
+  will-change: transform;
 }
 
 .ql-hero-scene-wrap {
   width: 100%;
-  max-width: 660px;
-  max-height: calc(100vh - 48px);
+  max-width: 620px;
+  max-height: calc(100vh - 40px);
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   justify-content: center;
   animation: ql-fade-in 0.5s ease-out;
   overflow: hidden;
+}
+
+/* ── HERO HEADLINE MATCHING MOCKUP ───────────────────────────────────────── */
+.ql-hero-headline-wrap {
+  width: 100%;
+  margin-bottom: clamp(10px, 1.6vh, 16px);
+  animation: ql-fade-in 0.4s ease-out;
+}
+
+.ql-hero-heading {
+  font-size: clamp(22px, 2.8vh, 28px);
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.25;
+  margin: 0 0 7px 0;
+  letter-spacing: -0.5px;
+}
+
+.ql-hero-brand-blue {
+  color: #0062ff;
+}
+
+.ql-hero-accent-bar {
+  width: 36px;
+  height: 3.5px;
+  background: #0062ff;
+  border-radius: 2px;
 }
 
 .ql-hero-artwork {
   width: auto;
   max-width: 100%;
   height: auto;
-  max-height: calc(100vh - 64px);
+  max-height: calc(100vh - 160px);
   object-fit: contain;
   display: block;
   user-select: none;
@@ -414,33 +455,36 @@
 @keyframes ql-fade-in {
   from {
     opacity: 0;
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* ── 14. REGISTER EMBED OVERRIDES ────────────────────────────────────────── */
-.ql-register-wrapper {
-  width: 100%;
+/* ── 14. DESKTOP SLIDING TRANSITION (IMAGE SLIDES TO LEFT IN SIGNUP) ─────── */
+@media (min-width: 961px) {
+  /* Default (Login Mode): Form is Left (0vw), Hero is Right (0vw) */
+  .ql-login-active .ql-login-left {
+    transform: translateX(0);
+  }
+  .ql-login-active .ql-login-right {
+    transform: translateX(0);
+  }
+
+  /* When SignUp is active:
+     Hero moves from Right to LEFT (-100% of panel width = -50vw)
+     Form moves from Left to RIGHT (+100% of panel width = +50vw) */
+  .ql-signup-active .ql-login-left {
+    transform: translateX(100%);
+  }
+  .ql-signup-active .ql-login-right {
+    transform: translateX(-100%);
+  }
 }
 
-.ql-register-wrapper .ql-panel-register .ql-inner {
-  max-width: 100%;
-}
-
-.ql-register-wrapper .ql-brand {
-  display: none;
-}
-
-.ql-register-wrapper .ql-card {
-  box-shadow: none;
-  border: none;
-  padding: 0;
-  background: transparent;
-}
-
-/* ── 15. RESPONSIVE BREAKPOINTS ──────────────────────────────────────────── */
+/* ── 15. RESPONSIVE BREAKPOINTS (MOBILE & TABLET) ────────────────────────── */
 @media (max-width: 960px) {
   .ql-login-page {
     height: auto;
@@ -465,8 +509,14 @@
     min-width: 0;
     height: auto;
     min-height: 100vh;
-    padding: 36px 20px;
+    padding: 32px 20px;
     overflow-y: visible;
+    transform: none !important;
+  }
+
+  .ql-signup-active .ql-login-left,
+  .ql-login-active .ql-login-left {
+    transform: none !important;
   }
 
   .ql-login-form-wrap {
@@ -481,16 +531,16 @@
   }
 
   .ql-title {
-    font-size: 25px;
+    font-size: 24px;
   }
 
   .ql-input-group {
-    height: 44px;
+    height: 42px;
   }
 
   .ql-btn-primary,
   .ql-btn-google {
-    height: 44px;
+    height: 42px;
     font-size: 14px;
   }
 }
