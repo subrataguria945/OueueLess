@@ -458,13 +458,15 @@ export function Login({
           </div>
         </div>
 
-        {/* ── RIGHT COLUMN: SEAMLESS ARTWORK (NO HARSH LINE) ── */}
+        {/* ── RIGHT COLUMN: QUEUELESS LIVE QUEUE HERO SCENE ── */}
         <div className="ql-login-right">
-          <img
-            src="/ql-smarter-queue-hero.png"
-            alt="Smarter Queue Management"
-            className="ql-hero-artwork"
-          />
+          <div className="ql-hero-scene-wrap">
+            <img
+              src="/queueless-login-scene-feathered.png"
+              alt="QueueLess Smart Queue Display Token A-042"
+              className="ql-hero-artwork"
+            />
+          </div>
         </div>
       </div>
 
