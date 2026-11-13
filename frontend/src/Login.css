@@ -74,13 +74,14 @@
 
 /* ── 3. BRAND LOGO ───────────────────────────────────────────────────────── */
 .ql-logo-box {
-  margin-bottom: clamp(14px, 2.4vh, 24px);
+  margin-bottom: clamp(14px, 2.2vh, 22px);
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .ql-brand-logo {
-  height: clamp(34px, 4.2vh, 42px);
+  height: clamp(44px, 5.2vh, 52px);
   width: auto;
   object-fit: contain;
   display: block;
@@ -93,6 +94,7 @@
   color: #0f172a;
   margin: 0 0 6px 0;
   letter-spacing: -0.5px;
+  text-align: center;
 }
 
 .ql-subtitle {
@@ -100,6 +102,7 @@
   color: #64748b;
   margin: 0 0 clamp(14px, 2.2vh, 22px) 0;
   font-weight: 450;
+  text-align: center;
 }
 
 /* ── 5. ALERT NOTIFICATIONS ──────────────────────────────────────────────── */
