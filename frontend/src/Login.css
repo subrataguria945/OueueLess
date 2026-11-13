@@ -29,8 +29,8 @@
 
 /* ── 2. FORM PANEL (LEFT BY DEFAULT, SLIDES RIGHT IN SIGNUP) ─────────────── */
 .ql-login-left {
-  flex: 0 0 50%;
-  width: 50%;
+  flex: 0 0 54%;
+  width: 54%;
   min-width: 380px;
   height: 100vh;
   max-height: 100vh;
@@ -458,8 +458,8 @@
 
 /* ── 12. HERO PANEL (RIGHT BY DEFAULT, SLIDES LEFT IN SIGNUP) ────────────── */
 .ql-login-right {
-  flex: 0 0 50%;
-  width: 50%;
+  flex: 0 0 46%;
+  width: 46%;
   height: 100vh;
   max-height: 100vh;
   background: radial-gradient(circle at 55% 45%, #f4f8fe 0%, #edf5fd 55%, #e1edfe 100%);
@@ -477,7 +477,7 @@
 
 .ql-hero-scene-wrap {
   width: 100%;
-  max-width: 620px;
+  max-width: 530px;
   max-height: calc(100vh - 40px);
   display: flex;
   flex-direction: column;
@@ -495,7 +495,7 @@
 }
 
 .ql-hero-heading {
-  font-size: clamp(22px, 2.8vh, 28px);
+  font-size: clamp(21px, 2.7vh, 27px);
   font-weight: 800;
   color: #0f172a;
   line-height: 1.25;
@@ -518,7 +518,7 @@
   width: auto;
   max-width: 100%;
   height: auto;
-  max-height: calc(100vh - 160px);
+  max-height: calc(100vh - 170px);
   object-fit: contain;
   display: block;
   user-select: none;
@@ -568,13 +568,13 @@
   }
 
   /* When SignUp is active:
-     Hero moves from Right to LEFT (-100% of panel width = -50vw)
-     Form moves from Left to RIGHT (+100% of panel width = +50vw) */
+     Hero moves from Right (54vw) to LEFT (0vw) -> translateX(-54vw)
+     Form moves from Left (0vw) to RIGHT (46vw) -> translateX(46vw) */
   .ql-signup-active .ql-login-left {
-    transform: translateX(100%);
+    transform: translateX(46vw);
   }
   .ql-signup-active .ql-login-right {
-    transform: translateX(-100%);
+    transform: translateX(-54vw);
   }
 }
 
