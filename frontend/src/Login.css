@@ -1,189 +1,130 @@
 /* ==========================================================================
-   QUEUELESS — ORGANIC CURVED AUTHENTICATION SUITE
-   Faithfully crafted to match the reference curved dual-panel aesthetic
+   QUEUELESS — PIXEL-PERFECT ORGANIC CURVED AUTHENTICATION CARD
+   Faithfully inspired by user reference mockup
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-:root {
-  --ql-curve-primary: #059669;
-  --ql-curve-primary-dark: #064e3b;
-  --ql-curve-primary-mid: #047857;
-  --ql-curve-primary-light: #10b981;
-  --ql-curve-pill-bg: #d1fae5;
-  --ql-curve-pill-border: #a7f3d0;
-  --ql-curve-pill-text: #064e3b;
-}
-
-/* ── VIEWPORT CANVAS (MUTED SLATE BACKGROUND) ────────────────────────────── */
-.ql-curved-canvas {
+/* ── VIEWPORT BACKGROUND (MUTED SLATE AS IN MOCKUP) ──────────────────────── */
+.ql-mockup-wrapper {
   min-height: 100vh;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #52525b;
-  padding: 32px 16px;
+  background: radial-gradient(circle at 50% 50%, #4b5563 0%, #374151 100%);
+  padding: 36px 16px;
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   box-sizing: border-box;
 }
 
-.ql-curved-canvas *,
-.ql-curved-canvas *::before,
-.ql-curved-canvas *::after {
+.ql-mockup-wrapper *,
+.ql-mockup-wrapper *::before,
+.ql-mockup-wrapper *::after {
   box-sizing: border-box;
 }
 
-/* ── MAIN CURVED CARD CONTAINER ──────────────────────────────────────────── */
-.ql-curved-card {
+/* ── MAIN HORIZONTAL CARD CONTAINER ──────────────────────────────────────── */
+.ql-mockup-card {
   position: relative;
   width: 100%;
-  max-width: 880px;
-  min-height: 500px;
+  max-width: 860px;
+  min-height: 510px;
   background-color: #ffffff;
   border-radius: 36px;
   overflow: hidden;
   display: flex;
-  box-shadow: 0 25px 65px -10px rgba(0, 0, 0, 0.35), 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 30px 75px -15px rgba(0, 0, 0, 0.45), 0 10px 25px -5px rgba(0, 0, 0, 0.2);
 }
 
-/* ── LEFT HERO PANEL (CURVED WAVE + GREETING) ────────────────────────────── */
-.ql-curved-hero {
+/* ── 1. LEFT HERO SECTION (GREEN ORGANIC WAVE) ───────────────────────────── */
+.ql-hero-side {
   position: relative;
   width: 44%;
-  min-height: 500px;
-  background: linear-gradient(155deg, var(--ql-curve-primary-dark) 0%, var(--ql-curve-primary-mid) 45%, var(--ql-curve-primary) 85%, var(--ql-curve-primary-light) 100%);
+  min-height: 510px;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 40px 32px;
-  color: #ffffff;
-  overflow: hidden;
   z-index: 2;
+  overflow: visible;
 }
 
-/* Bulge curve sweeping into the right white form */
-.ql-hero-bulge-curve {
+/* SVG Organic Wave extending outward to the right */
+.ql-hero-svg-layer {
   position: absolute;
-  top: 50%;
-  right: -90px;
-  transform: translateY(-50%);
-  width: 180px;
-  height: 380px;
-  border-radius: 50%;
-  background: linear-gradient(155deg, var(--ql-curve-primary-mid) 0%, var(--ql-curve-primary) 70%, var(--ql-curve-primary-light) 100%);
+  top: 0;
+  left: 0;
+  width: calc(100% + 70px);
+  height: 100%;
   pointer-events: none;
   z-index: 1;
 }
 
-/* Decorative Geometric Corner Arcs */
-.ql-corner-arc {
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* White quarter arc in bottom-left of hero */
-.ql-corner-arc-bl {
-  width: 140px;
-  height: 140px;
-  bottom: -60px;
-  left: -60px;
-  background-color: #ffffff;
-}
-
-/* Darker green quarter arc in top-left of hero */
-.ql-corner-arc-tl {
-  width: 160px;
-  height: 160px;
-  top: -80px;
-  left: -80px;
-  background: rgba(0, 0, 0, 0.12);
-}
-
-/* Green quarter arc in top-right of white panel */
-.ql-corner-arc-tr {
-  width: 150px;
-  height: 150px;
-  top: -65px;
-  right: -65px;
-  background: linear-gradient(135deg, var(--ql-curve-primary-mid), var(--ql-curve-primary));
-  border-radius: 50%;
-  position: absolute;
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* Hero Content Stack */
-.ql-hero-content {
+.ql-hero-inner {
   position: relative;
   z-index: 3;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  max-width: 280px;
+  max-width: 270px;
   margin: auto;
+  color: #ffffff;
 }
 
-.ql-hero-logo-circle {
-  width: 66px;
-  height: 66px;
+/* Flame Logo in White Circle */
+.ql-hero-flame-circle {
+  width: 64px;
+  height: 64px;
   background-color: #ffffff;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 8px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
   transition: transform 0.25s ease;
 }
 
-.ql-hero-logo-circle:hover {
-  transform: scale(1.05);
+.ql-hero-flame-circle:hover {
+  transform: scale(1.06);
 }
 
-.ql-hero-logo-img {
-  height: 38px;
-  width: 38px;
-  object-fit: contain;
-}
-
-.ql-hero-brand-name {
+.ql-hero-brand-title {
   font-size: 14px;
   font-weight: 700;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.5px;
   color: #ffffff;
   margin-bottom: 22px;
   text-transform: lowercase;
 }
 
-.ql-hero-headline {
-  font-size: 26px;
+.ql-hero-main-title {
+  font-size: 27px;
   font-weight: 800;
   letter-spacing: -0.4px;
   color: #ffffff;
-  margin: 0 0 12px 0;
+  margin: 0 0 10px 0;
   line-height: 1.2;
 }
 
-.ql-hero-subtext {
+.ql-hero-text {
   font-size: 13px;
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.9);
-  margin: 0 0 28px 0;
+  margin: 0 0 26px 0;
   max-width: 250px;
 }
 
-/* Ghost Outline Pill Button */
-.ql-hero-pill-btn {
+/* Outline Pill Button */
+.ql-hero-outline-pill {
   border: 1.8px solid rgba(255, 255, 255, 0.9);
   background: transparent;
   color: #ffffff;
   border-radius: 9999px;
-  padding: 10px 36px;
-  font-size: 12.5px;
+  padding: 9px 36px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -192,99 +133,109 @@
   font-family: inherit;
 }
 
-.ql-hero-pill-btn:hover {
+.ql-hero-outline-pill:hover {
   background-color: #ffffff;
-  color: var(--ql-curve-primary-dark);
+  color: #047857;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
   transform: translateY(-1px);
 }
 
-.ql-hero-footnote {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 10px;
+.ql-hero-credits {
+  font-size: 9.5px;
   font-weight: 600;
   letter-spacing: 0.8px;
-  color: rgba(255, 255, 255, 0.5);
-  margin-top: 32px;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 30px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-/* ── RIGHT FORM PANEL (WHITE CANVAS + PILL FORM) ─────────────────────────── */
-.ql-curved-form-area {
+/* ── 2. RIGHT FORM SECTION (WHITE CANVAS + PILL FORM) ────────────────────── */
+.ql-form-side {
   position: relative;
-  width: 56%;
+  flex: 1;
   background-color: #ffffff;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 44px 48px;
-  overflow: hidden;
+  padding: 44px 52px;
   z-index: 1;
 }
 
-.ql-form-content {
+/* Top-Right Decorative Green Wave Arc */
+.ql-top-right-arc {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 140px;
+  height: 140px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ql-form-stack {
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 380px;
+  max-width: 360px;
   margin: auto;
 }
 
-/* Heading */
-.ql-form-heading {
+/* Headings */
+.ql-title-group {
   text-align: center;
   margin-bottom: 24px;
 }
 
-.ql-welcome-title {
-  font-size: 32px;
+.ql-green-welcome {
+  font-size: 34px;
   font-weight: 800;
   letter-spacing: -0.5px;
-  color: var(--ql-curve-primary);
+  color: #059669;
   margin: 0 0 4px 0;
   line-height: 1.15;
 }
 
-.ql-welcome-subtitle {
-  font-size: 13.5px;
+.ql-green-sub {
+  font-size: 13px;
   color: #64748b;
   margin: 0;
 }
 
-/* Feedback Alerts */
-.ql-curved-alert {
+/* Alerts */
+.ql-pill-alert {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 18px;
+  padding: 9px 18px;
   border-radius: 9999px;
   font-size: 12.5px;
   line-height: 1.35;
   margin-bottom: 16px;
   cursor: pointer;
-  animation: qlCurvedFade 0.2s ease-out;
+  animation: qlFadeInAlert 0.2s ease-out;
 }
 
-@keyframes qlCurvedFade {
+@keyframes qlFadeInAlert {
   from { opacity: 0; transform: translateY(-3px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.ql-curved-alert-error {
+.ql-pill-alert-error {
   background-color: #fee2e2;
   border: 1px solid #fca5a5;
   color: #991b1b;
 }
 
-.ql-curved-alert-success {
+.ql-pill-alert-success {
   background-color: #d1fae5;
   border: 1px solid #6ee7b7;
   color: #065f46;
 }
 
-.ql-alert-close {
+.ql-alert-x {
   background: none;
   border: none;
   color: inherit;
@@ -294,111 +245,110 @@
   opacity: 0.6;
 }
 
-.ql-alert-close:hover {
+.ql-alert-x:hover {
   opacity: 1;
 }
 
-/* Form */
-.ql-curved-form {
+/* Pill Form */
+.ql-pill-form {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-/* Pill Input Wrapper & Element */
-.ql-pill-input-wrap {
+.ql-input-pill-container {
   position: relative;
   width: 100%;
 }
 
-.ql-pill-input {
+.ql-soft-pill-input {
   width: 100%;
-  height: 48px;
-  background-color: var(--ql-curve-pill-bg);
-  border: 1px solid transparent;
+  height: 46px;
+  background-color: #d1fae5;
+  border: 1.5px solid transparent;
   border-radius: 9999px;
-  padding: 0 24px;
-  font-size: 14px;
+  padding: 0 22px;
+  font-size: 13.5px;
   font-family: inherit;
   font-weight: 500;
-  color: #0f172a;
+  color: #064e3b;
   outline: none;
   transition: all 0.2s ease;
 }
 
-.ql-pill-input::placeholder {
-  color: #64748b;
-  opacity: 0.75;
-  letter-spacing: 0.5px;
+.ql-soft-pill-input::placeholder {
+  color: #059669;
+  opacity: 0.55;
+  letter-spacing: 0.3px;
 }
 
-.ql-pill-input:focus {
+.ql-soft-pill-input:focus {
   background-color: #ffffff;
-  border-color: var(--ql-curve-primary);
+  border-color: #059669;
   box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.16);
 }
 
-.ql-pill-password-wrap {
+.ql-pwd-container {
   display: flex;
   align-items: center;
 }
 
-.ql-pill-input-pwd {
-  padding-right: 50px;
+.ql-soft-pwd-input {
+  padding-right: 48px;
 }
 
-.ql-pill-eye-btn {
+.ql-pill-toggle-eye {
   position: absolute;
-  right: 16px;
+  right: 14px;
   background: none;
   border: none;
   padding: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #64748b;
+  color: #059669;
+  opacity: 0.7;
   cursor: pointer;
-  border-radius: 50%;
-  transition: color 0.15s ease;
+  transition: opacity 0.15s ease;
 }
 
-.ql-pill-eye-btn:hover {
-  color: var(--ql-curve-primary);
+.ql-pill-toggle-eye:hover {
+  opacity: 1;
 }
 
-/* Forgot Password Row */
-.ql-forgot-row {
+/* Forgot Password */
+.ql-pill-forgot-wrap {
   text-align: center;
-  margin: -2px 0 6px 0;
+  margin: -2px 0 4px 0;
 }
 
-.ql-forgot-text-link {
+.ql-pill-forgot-link {
   background: none;
   border: none;
   padding: 0;
-  font-size: 12.5px;
+  font-size: 12px;
   color: #64748b;
   cursor: pointer;
   font-family: inherit;
   transition: color 0.15s ease;
 }
 
-.ql-forgot-text-link:hover {
-  color: var(--ql-curve-primary);
+.ql-pill-forgot-link:hover {
+  color: #059669;
   text-decoration: underline;
 }
 
-/* Centered Pill Submit Button */
-.ql-submit-row {
+/* Centered Pill Button: LOG IN */
+.ql-pill-btn-center {
   display: flex;
   justify-content: center;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
-.ql-pill-submit-btn {
-  width: 170px;
-  height: 44px;
-  background-color: var(--ql-curve-primary);
+.ql-green-login-pill {
+  width: 160px;
+  height: 42px;
+  background-color: #059669;
   color: #ffffff;
   border: none;
   border-radius: 9999px;
@@ -416,191 +366,190 @@
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.ql-pill-submit-btn:hover:not(:disabled) {
-  background-color: var(--ql-curve-primary-dark);
-  box-shadow: 0 6px 20px rgba(5, 150, 105, 0.45);
+.ql-green-login-pill:hover:not(:disabled) {
+  background-color: #047857;
+  box-shadow: 0 6px 18px rgba(5, 150, 105, 0.45);
   transform: translateY(-1px);
 }
 
-.ql-pill-submit-btn:disabled {
+.ql-green-login-pill:disabled {
   opacity: 0.75;
   cursor: wait;
 }
 
-.ql-curved-spinner {
+.ql-pill-spinner {
   width: 14px;
   height: 14px;
   border: 2px solid rgba(255, 255, 255, 0.35);
   border-top-color: #ffffff;
   border-radius: 50%;
-  animation: qlCurvedSpin 0.7s linear infinite;
+  animation: qlPillSpin 0.7s linear infinite;
   display: inline-block;
 }
 
-@keyframes qlCurvedSpin {
+@keyframes qlPillSpin {
   to { transform: rotate(360deg); }
 }
 
-/* Google Pill Button Row */
-.ql-google-pill-row {
+/* Google CTA */
+.ql-pill-google-center {
   display: flex;
   justify-content: center;
   margin-top: 14px;
 }
 
-.ql-pill-google-btn {
-  height: 40px;
-  padding: 0 22px;
+.ql-pill-google-cta {
+  height: 38px;
+  padding: 0 20px;
   background-color: #ffffff;
   border: 1.5px solid #e2e8f0;
   border-radius: 9999px;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   font-family: inherit;
   color: #1e293b;
   display: inline-flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-.ql-pill-google-btn:hover:not(:disabled) {
+.ql-pill-google-cta:hover:not(:disabled) {
   background-color: #f8fafc;
   border-color: #cbd5e1;
   transform: translateY(-1px);
 }
 
-.ql-pill-google-btn:disabled {
+.ql-pill-google-cta:disabled {
   opacity: 0.7;
   cursor: wait;
 }
 
-/* Bottom Switch Text */
-.ql-bottom-switch {
+/* Sign Up Prompt */
+.ql-pill-signup-prompt {
   text-align: center;
   font-size: 13px;
   color: #64748b;
   margin-top: 18px;
 }
 
-.ql-signup-text-btn {
+.ql-pill-green-link {
   background: none;
   border: none;
   padding: 0;
   font-size: 13px;
   font-weight: 700;
-  color: var(--ql-curve-primary);
+  color: #059669;
   cursor: pointer;
   font-family: inherit;
   text-transform: lowercase;
 }
 
-.ql-signup-text-btn:hover {
+.ql-pill-green-link:hover {
   text-decoration: underline;
 }
 
 /* ── REGISTER EMBED SUPPORT ──────────────────────────────────────────────── */
-.ql-register-embed-box {
+.ql-reg-embed {
   width: 100%;
 }
 
-.ql-register-embed-box .ql-inner {
+.ql-reg-embed .ql-inner {
   width: 100%;
 }
 
-.ql-register-embed-box .ql-brand {
+.ql-reg-embed .ql-brand {
   display: none;
 }
 
-.ql-register-embed-box .ql-card {
+.ql-reg-embed .ql-card {
   padding: 0;
   border: none;
   box-shadow: none;
   background: transparent;
 }
 
-.ql-register-embed-box .ql-card-title {
+.ql-reg-embed .ql-card-title {
   font-size: 24px;
   font-weight: 800;
-  color: var(--ql-curve-primary);
+  color: #059669;
   text-align: center;
   margin: 0 0 4px;
 }
 
-.ql-register-embed-box .ql-card-sub {
+.ql-reg-embed .ql-card-sub {
   font-size: 13px;
   color: #64748b;
   text-align: center;
   margin: 0 0 16px;
 }
 
-.ql-register-embed-box .ql-field input {
+.ql-reg-embed .ql-field input {
   border-radius: 9999px !important;
-  background-color: var(--ql-curve-pill-bg) !important;
+  background-color: #d1fae5 !important;
   border: 1px solid transparent !important;
 }
 
-.ql-register-embed-box .ql-field input:focus {
+.ql-reg-embed .ql-field input:focus {
   background-color: #ffffff !important;
-  border-color: var(--ql-curve-primary) !important;
+  border-color: #059669 !important;
 }
 
-.ql-register-embed-box .ql-submit {
+.ql-reg-embed .ql-submit {
   border-radius: 9999px !important;
-  background-color: var(--ql-curve-primary) !important;
+  background-color: #059669 !important;
 }
 
-/* ── MOBILE RESPONSIVENESS (MATCHING MOCKUP FRAMES 2 & 3) ─────────────────── */
-@media (max-width: 800px) {
-  .ql-curved-canvas {
-    padding: 16px 12px;
+/* ── MOBILE RESPONSIVENESS (MATCHING MOCKUP SCREEN 2 & 3) ─────────────────── */
+@media (max-width: 820px) {
+  .ql-mockup-wrapper {
+    padding: 20px 14px;
   }
 
-  .ql-curved-card {
+  .ql-mockup-card {
     flex-direction: column;
-    max-width: 420px;
+    max-width: 400px;
     border-radius: 28px;
     min-height: auto;
   }
 
-  .ql-curved-hero {
+  .ql-hero-side {
     width: 100%;
-    min-height: 220px;
+    min-height: 230px;
     padding: 32px 20px 48px;
-    border-bottom-left-radius: 48px;
-    border-bottom-right-radius: 48px;
+    overflow: hidden;
   }
 
-  .ql-hero-bulge-curve {
-    top: auto;
-    bottom: -60px;
-    right: 50%;
-    transform: translateX(50%);
-    width: 260px;
-    height: 120px;
-  }
-
-  .ql-curved-form-area {
+  .ql-hero-svg-layer {
     width: 100%;
-    padding: 32px 24px 36px;
+    height: 100%;
   }
 
-  .ql-welcome-title {
-    font-size: 26px;
+  .ql-hero-svg-layer path {
+    d: path("M 0,0 L 400,0 L 400,180 C 300,230 100,230 0,180 Z");
   }
 
-  .ql-hero-headline {
+  .ql-form-side {
+    width: 100%;
+    padding: 28px 24px 34px;
+  }
+
+  .ql-green-welcome {
+    font-size: 28px;
+  }
+
+  .ql-hero-main-title {
     font-size: 22px;
   }
 
-  .ql-hero-subtext {
+  .ql-hero-text {
     font-size: 12.5px;
     margin-bottom: 20px;
   }
 
-  .ql-pill-input {
-    height: 46px;
+  .ql-soft-pill-input {
+    height: 44px;
   }
 }
