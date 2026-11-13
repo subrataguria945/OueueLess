@@ -269,3 +269,4 @@ def update_owner_indb(admin_user_id,owner_id,fullname,email,phone,address,max_sh
     finally:
        if con:
            con.close() 
+           con.close()           

@@ -41,7 +41,6 @@ class UpdateOwnerStatusRequest(BaseModel):
     owner_id: int   
     new_status: bool
 
-# Request schema for owner deletion
 class DeleteOwnerRequest(BaseModel):
     user_id : int
     owner_id: int
