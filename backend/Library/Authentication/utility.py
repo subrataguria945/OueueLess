@@ -11,19 +11,20 @@ def login_user(input : dict ):
     password = input.get("password")
     response = validate_login_indb(email,password)
     if response.get("status") == 200:
-        access_token = generate_access_token(response.get("user_id"),email)
-        refresh_token = generate_refresh_token(response.get("user_id"),email)
-        update_refresh_token_indb(response.get("user_id"),refresh_token)
+        access_token = generate_access_token(response.get("data").get("user_id"),email)
+        refresh_token = generate_refresh_token(response.get("data").get("user_id"),email)
+        print(response.get("data").get("user_id"))
+        update_refresh_token_indb(response.get("data").get("user_id"),refresh_token)
         return {
             "status" : "success",
-            "user_id": response.get("user_id"),
-            "user_role": response.get("user_role"),
-            "fullname": response.get("full_name"),
-            "email": response.get("email"),
-            "phone": response.get("phone"),
-            "profile_image": response.get("profile_image"),
-            "address": response.get("address"),
-            "joined_date": response.get("joined_date"),
+            "user_id": response.get("data").get("user_id"),
+            "user_role": response.get("data").get("user_role"),
+            "fullname": response.get("data").get("full_name"),
+            "email": response.get("data").get("email"),
+            "phone": response.get("data").get("phone"),
+            "profile_image": response.get("data").get("profile_image"),
+            "address": response.get("data").get("address"),
+            "joined_date": response.get("data").get("joined_date"),
             "message": response.get("message"),
             "access_token": access_token,
             "refresh_token": refresh_token,
