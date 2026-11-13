@@ -193,3 +193,109 @@ CALL public.sp_delete_owner(
 ## জরুরি নিয়ম
 - প্রথমে `users` টেবিল থেকে এবং পরে `owners` টেবিল থেকে রেকর্ড ডিলিট হবে।
 - কোনো একটি অংশ ডিলিট হতে সমস্যা হলে পুরো কাজটি আগের অবস্থায় ফিরে আসবে (Rollback হবে)।
+
+
+
+----------------------------------------------------------------------------------------------------------------
+
+
+
+###SHOP###
+# `sp_create_shop` (Shop Create Stored Procedure)
+
+## 1. SP-এর actual কাজটা কী?
+
+নতুন দোকান (Shop) তৈরি করে `public.shops` টেবিলে সেভ করার জন্য এই Stored Procedure ব্যবহার করা হয়। সরাসরি ডেটা ইনসার্ট করার আগে এটি বেশ কিছু জরুরি নিয়ম যাচাই (Validate) করে নেয়:
+
+1. **Owner ID** সঠিক কি না এবং সেই Owner ডেটাবেসে আসলেই আছে (exist করে) কি না তা check করে।
+2. যে ইউজার রিকোয়েস্ট পাঠিয়েছে, তার **User ID** ঠিক আছে কি না দেখে।
+3. ইউজারটি **Active** (`status = TRUE`), তার **Role ID `2` (Owner)**, এবং সে ওই নির্দিষ্ট **Owner-এর অধীনে** আছে কি না তা verify করে।
+4. দোকানের দরকারি তথ্যগুলো—যেমন **Shop Name**, **Address**, এবং **City** ফাঁকা (`NULL` বা খালি স্ট্রিং) আছে কি না তা চেক করে।
+5. সব ঠিক থাকলে `public.shops` টেবিলে নতুন দোকানের তথ্য ইনসার্ট করে, শুরুতেই দোকানটি চালু (`isactive = TRUE`) রাখে এবং `createdat` ও `updatedat`-এ বর্তমান সময় বসিয়ে দেয়।
+6. সফলভাবে দোকান তৈরি হলে নতুন তৈরি হওয়া **`shopid`** সহ `Status Code` এবং `Status Message` আউটপুট হিসেবে রিটার্ন করে।
+
+---
+
+## 2. SP Calling Query
+
+```sql
+CALL public.sp_create_shop(
+    1,                          -- p_owner_id (Owner ID)
+    3,                          -- p_user_id (User ID)
+    'Debo Technology Store',    -- p_shop_name (Shop Name)
+    'Computer accessories',     -- p_description (Description)
+    'Park Street',              -- p_address (Address)
+    'Kolkata',                  -- p_city (City)
+    'West Bengal',              -- p_state (State)
+    '700016',                   -- p_pincode (Pincode)
+    '9876543210',               -- p_phone (Phone)
+    'shop@gmail.com',           -- p_email (Email)
+    NULL,                       -- p_shop_image (Shop Image URL/Path)
+    '09:30:00',                 -- p_opening_time (Opening Time)
+    '21:30:00',                 -- p_closing_time (Closing Time)
+
+    NULL,                       -- OUT: p_shop_id
+    NULL,                       -- OUT: p_status_code
+    NULL                        -- OUT: p_status_message
+);
+```
+
+---
+
+## 3. Inputs (IN Parameters)
+
+এই প্রসিডিউরে মোট **13টি Input Parameter** দিতে হয়:
+
+| Parameter | Data Type | সহজ বিবরণ (Description) | উদাহরণ (Example) |
+| :--- | :--- | :--- | :--- |
+| `p_owner_id` | `INTEGER` | যে Owner-এর অধীনে দোকান তৈরি হবে তার ID | `1` |
+| `p_user_id` | `INTEGER` | দোকান তৈরির রিকোয়েস্ট পাঠানো User-এর ID | `3` |
+| `p_shop_name` | `VARCHAR` | দোকানের নাম (Required) | `'Debo Technology Store'` |
+| `p_description` | `VARCHAR` | দোকান সম্পর্কে সংক্ষিপ্ত বিবরণ (Optional) | `'Computer accessories'` |
+| `p_address` | `VARCHAR` | দোকানের ঠিকানা (Required) | `'Park Street'` |
+| `p_city` | `VARCHAR` | শহরের নাম (Required) | `'Kolkata'` |
+| `p_state` | `VARCHAR` | রাজ্যের নাম (Optional) | `'West Bengal'` |
+| `p_pincode` | `VARCHAR` | এলাকার পিনকোড (Optional) | `'700016'` |
+| `p_phone` | `VARCHAR` | দোকানের ফোন নম্বর (Optional) | `'9876543210'` |
+| `p_email` | `VARCHAR` | দোকানের ইমেইল (Optional) | `'shop@gmail.com'` |
+| `p_shop_image` | `VARCHAR` | দোকানের ছবির লিংক বা পাথ (Optional) | `NULL` |
+| `p_opening_time` | `TIME` | দোকান খোলার সময় (Optional) | `'09:30:00'` |
+| `p_closing_time` | `TIME` | দোকান বন্ধের সময় (Optional) | `'21:30:00'` |
+
+---
+
+## 4. Possible Output (OUT Parameters)
+
+আউটপুট হিসেবে মোট **3টি Parameter** পাওয়া যায়:
+
+| Parameter | Data Type | সহজ বিবরণ (Description) |
+| :--- | :--- | :--- |
+| `p_shop_id` | `INTEGER` | সফলভাবে তৈরি হওয়া নতুন দোকানের ID (ব্যর্থ হলে `NULL`) |
+| `p_status_code` | `INTEGER` | অপারেশনের রেজাল্ট কোড (`1` = Success, `0` = Validation Fail, `-1` = DB Error) |
+| `p_status_message` | `VARCHAR` | কাজটি সফল হলো না কেন ব্যর্থ হলো তার বিস্তারিত মেসেজ |
+
+### সম্ভাব্য আউটপুট পরিস্থিতি (Possible Output Scenarios)
+
+| Scenario | `p_shop_id` | `p_status_code` | `p_status_message` |
+| :--- | :---: | :---: | :--- |
+| **সফলভাবে দোকান তৈরি হলে** | নতুন ID (যেমন: `1`) | `1` | `Shop created successfully.` |
+| **Owner ID ভুল বা `<= 0` হলে** | `NULL` | `0` | `Invalid Owner ID.` |
+| **Owner ডেটাবেসে না থাকলে** | `NULL` | `0` | `Owner does not exist.` |
+| **User ID ভুল বা `<= 0` হলে** | `NULL` | `0` | `Invalid User ID.` |
+| **User ইনঅ্যাক্টিভ বা Owner-এর না হলে** | `NULL` | `0` | `User is invalid, inactive, or does not belong to this owner.` |
+| **Shop Name ফাঁকা দিলে** | `NULL` | `0` | `Shop name is required.` |
+| **Address ফাঁকা দিলে** | `NULL` | `0` | `Shop address is required.` |
+| **City ফাঁকা দিলে** | `NULL` | `0` | `City is required.` |
+| **ডেটাবেস জনিত কোনো এরর হলে** | `NULL` | `-1` | `SQLERRM` *(ডেটাবেসের আসল এরর মেসেজ)* |
+
+---
+
+## 5. Any Critical Scenario (গুরুত্বপূর্ণ ও জটিল বিষয়সমূহ)
+
+- **Strict User & Owner Authorization:** ইউজারকে অবশ্যই সক্রিয় (`status = TRUE`), `roleid = 2` (Owner), এবং প্রদত্ত `p_owner_id`-র সাথে যুক্ত থাকতে হবে। অন্য কোনো Owner-এর আইডি দিয়ে দোকান তৈরি করা যাবে না।
+- **Mandatory Fields Check:** `Shop Name`, `Address`, এবং `City`—এই তিনটি ফিল্ড অবশ্যই দিতে হবে। শুরু বা শেষে বাড়তি স্পেস থাকলে `TRIM()` করে সেভ করা হয়।
+- **Default Active Status:** নতুন দোকান তৈরি হওয়ার সাথে সাথে সেটি স্বয়ংক্রিয়ভাবে চালু (`TRUE`) অবস্থায় ডেটাবেসে সেভ হয়।
+- **Column Name Alert (`isactive` vs `status`):** বর্তমান কোডে `INSERT INTO public.shops` অংশে `isactive` কলাম ব্যবহার করা হয়েছে। যদি তুমি `shops` টেবিলের `isactive` কলামটির নাম বদলে `status` করে থাকো, তবে এই প্রসিডিউরের ভেতরেও `isactive` পরিবর্তন করে `status` করে নিতে হবে—নতুবা `column "isactive" does not exist` এরর আসবে।
+- **Max Shop Limit Check (Missing Validation):** `owners` টেবিলে প্রতিটি Owner-এর জন্য `maxshopcount` লিমিট (যেমন সর্বোচ্চ 5টি দোকান) সেট করা থাকলেও, এই প্রসিডিউরে এখনো ওই লিমিট চেক করার লজিক বসানো হয়নি। প্রয়োজন হলে ইনসার্টের আগে বর্তমান দোকানের সংখ্যা `maxshopcount`-এর চেয়ে কম কি না তা চেক করে নেওয়া ভালো।
+- **Duplicate Shop Name & Time Check:** একই Owner একই নামে একাধিক দোকান খুলতে পারবে কি না, অথবা `openingtime` যেন `closingtime`-এর আগে হয়—এই ভ্যালিডেশনগুলো বর্তমানে প্রসিডিউরে নেই, প্রয়োজনে যোগ করা যেতে পারে।
+
