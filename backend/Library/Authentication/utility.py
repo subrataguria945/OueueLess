@@ -1,10 +1,11 @@
-from Library.Authentication.user.database import update_user_indb, user_exists_indb, validate_login_indb , insert_user_indb , change_password_indb , update_refresh_token_indb, check_google_account
+from .database import  user_exists_indb, validate_login_indb , insert_user_indb , change_password_indb , update_refresh_token_indb, check_google_account
 from Library.Security.JWT import generate_access_token , generate_forget_password_token, generate_signup_token , decode_access_token , decode_forget_password_token , decode_refresh_token , generate_refresh_token
 import secrets
 import hashlib
 from Library.Notification.email import send_otp_email , send_reset_password_email
 from dotenv import load_dotenv
 load_dotenv() 
+# Authenticate user and issue access and refresh tokens
 def login_user(input : dict ):
     email = input.get("email")
     password = input.get("password")
@@ -34,7 +35,7 @@ def login_user(input : dict ):
             "message" : response.get("error")
         }
 
-
+# Handle Google OAuth sign-in / registration
 def manage_google_user(input : dict ):
     response = check_google_account(input.get("fullname"),input.get("email"), input.get("google_id"))
     if response.get("status") == 200:   
@@ -54,6 +55,7 @@ def manage_google_user(input : dict ):
     else:
         return response
     
+# Change password for authenticated active user
 def change_password(input : dict):
     userid = input.get("userid")
     oldpassword = input.get("oldpassword")
@@ -76,6 +78,7 @@ def change_password(input : dict):
                 "message" : response.get("error")
             }
             
+# Initiate user registration by generating and emailing OTP
 def initiate_register(input: dict):
     response = user_exists_indb(input.get("email"))
     if response.get("status") == 200:
@@ -143,6 +146,7 @@ def veriy_and_register_user(input : dict ):
             "message" : response.get("error")
         }   
 
+# Verify user email and send password reset link
 def check_and_send_forget_password_link(input : dict):
     email = input.get("email")
     response = user_exists_indb(email)
@@ -165,6 +169,7 @@ def check_and_send_forget_password_link(input : dict):
         }
     
 
+# Reset user password using verified reset token
 def reset_password(input : dict):
     reset_token = input.get("reset_token")
     newpassword = input.get("newpassword")
@@ -191,6 +196,7 @@ def reset_password(input : dict):
             }  
 
 
+# Refresh expired access token using valid refresh token
 def refresh_user_token(input: dict):
     refresh_token = input.get("refresh_token")
     payload = decode_refresh_token(refresh_token)
@@ -210,20 +216,3 @@ def refresh_user_token(input: dict):
         "token_type": "bearer"
     }
 
-def update_user(input:dict):
-    user_id = input.get("user_id")
-    fullname = input.get("fullname")
-    phone = input.get("phone")
-    profile_image = input.get("profile_image")
-    address = input.get("address")
-    response = update_user_indb(user_id, fullname, phone, profile_image,address)
-    if response.get("status") == 200:
-        return {
-            "status": "success",
-            "message": response.get("message")
-        }
-    else:
-        return {
-            "status": "failed",
-            "message": response.get("error")
-        }
