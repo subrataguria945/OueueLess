@@ -62,4 +62,3 @@ def require_active_user(credentials: HTTPAuthorizationCredentials | None = Depen
     if user_id is None:
         raise HTTPException(status_code=401, detail="Invalid token.")
     return user_id
-
