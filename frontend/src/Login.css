@@ -1,126 +1,225 @@
 /* ==========================================================================
-   QUEUELESS — MINIMALIST & PROFESSIONAL AUTHENTICATION INTERFACE
-   Clean, Focused, Responsive Centered Card Experience
+   QUEUELESS — MODERN PREMIUM SAAS AUTHENTICATION
+   Sleek Frosted Glassmorphism, Ambient Mesh Backdrop & Royal Blue Accents
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-/* ── BASE CONTAINER ──────────────────────────────────────────────────────── */
-.ql-clean-auth-container {
+/* ── VIEWPORT CONTAINER & AMBIENT MESH ───────────────────────────────────── */
+.ql-auth-viewport {
+  position: relative;
   min-height: 100vh;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: #f8fafc;
-  padding: 32px 16px;
+  background-image: radial-gradient(#e2e8f0 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+  padding: 40px 16px;
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow-x: hidden;
   box-sizing: border-box;
 }
 
-.ql-clean-auth-container *,
-.ql-clean-auth-container *::before,
-.ql-clean-auth-container *::after {
+.ql-auth-viewport *,
+.ql-auth-viewport *::before,
+.ql-auth-viewport *::after {
   box-sizing: border-box;
 }
 
-/* ── CENTERED AUTH CARD ─────────────────────────────────────────────────── */
-.ql-clean-card {
+/* Floating Ambient Gradient Orbs */
+.ql-bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(85px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.7;
+}
+
+.ql-bg-orb-top {
+  width: 500px;
+  height: 500px;
+  top: -150px;
+  left: 10%;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.16) 0%, rgba(147, 197, 253, 0.05) 60%, transparent 75%);
+}
+
+.ql-bg-orb-bottom {
+  width: 480px;
+  height: 480px;
+  bottom: -150px;
+  right: 12%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(191, 219, 254, 0.04) 60%, transparent 75%);
+}
+
+/* ── MAIN BOX WRAPPER ────────────────────────────────────────────────────── */
+.ql-auth-box {
+  position: relative;
+  z-index: 1;
   width: 100%;
-  max-width: 420px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 36px 32px;
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
-}
-
-/* ── BRAND LOGO ──────────────────────────────────────────────────────────── */
-.ql-clean-brand {
+  max-width: 440px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  margin-bottom: 20px;
 }
 
-.ql-clean-logo {
-  height: 38px;
+/* ── BRAND LOGO & LIVE STATUS BADGE ──────────────────────────────────────── */
+.ql-brand-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.ql-logo-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  transition: transform 0.25s ease;
+}
+
+.ql-logo-badge:hover {
+  transform: translateY(-2px);
+}
+
+.ql-brand-logo {
+  height: 42px;
   width: auto;
   object-fit: contain;
 }
 
-/* ── HEADER ──────────────────────────────────────────────────────────────── */
-.ql-clean-header {
-  text-align: center;
-  margin-bottom: 24px;
+.ql-status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e2e8f0;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #64748b;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
-.ql-clean-title {
-  font-size: 22px;
-  font-weight: 700;
+.ql-status-pulse {
+  width: 6.5px;
+  height: 6.5px;
+  background-color: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: qlRadarPulse 2s infinite;
+}
+
+@keyframes qlRadarPulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* ── FROSTED GLASS AUTH CARD ─────────────────────────────────────────────── */
+.ql-auth-glass-card {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-radius: 20px;
+  padding: 34px 32px 28px;
+  box-shadow:
+    0 20px 48px -12px rgba(15, 23, 42, 0.08),
+    0 4px 14px -2px rgba(15, 23, 42, 0.03);
+}
+
+.ql-card-intro {
+  margin-bottom: 22px;
+}
+
+.ql-card-title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
   color: #0f172a;
-  margin: 0 0 6px 0;
-  letter-spacing: -0.3px;
+  margin: 0 0 5px 0;
+  line-height: 1.25;
 }
 
-.ql-clean-sub {
+.ql-card-description {
   font-size: 13.5px;
   color: #64748b;
   margin: 0;
+  line-height: 1.45;
 }
 
-/* ── ALERTS ──────────────────────────────────────────────────────────────── */
-.ql-clean-alert {
+/* ── ALERTS (FEEDBACK BANNERS) ───────────────────────────────────────────── */
+.ql-alert-banner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
-  border-radius: 10px;
+  padding: 11px 13px;
+  border-radius: 12px;
   font-size: 13px;
   line-height: 1.4;
   margin-bottom: 18px;
   cursor: pointer;
-  animation: qlCleanFade 0.2s ease-out;
+  animation: qlSlideFade 0.2s ease-out;
 }
 
-@keyframes qlCleanFade {
-  from { opacity: 0; transform: translateY(-3px); }
+@keyframes qlSlideFade {
+  from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.ql-clean-alert-error {
+.ql-alert-text-wrap {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+}
+
+.ql-alert-svg {
+  flex-shrink: 0;
+}
+
+.ql-alert-close-btn {
+  background: none;
+  border: none;
+  font-size: 13px;
+  line-height: 1;
+  padding: 0 0 0 6px;
+  cursor: pointer;
+  opacity: 0.6;
+  color: inherit;
+  transition: opacity 0.15s ease;
+}
+
+.ql-alert-close-btn:hover {
+  opacity: 1;
+}
+
+.ql-alert-banner-error {
   background-color: #fef2f2;
   border: 1px solid #fecaca;
   color: #b91c1c;
 }
 
-.ql-clean-alert-success {
+.ql-alert-banner-success {
   background-color: #f0fdf4;
   border: 1px solid #bbf7d0;
   color: #15803d;
 }
 
-.ql-clean-alert-dismiss {
-  background: none;
-  border: none;
-  color: inherit;
-  opacity: 0.6;
-  font-size: 14px;
-  cursor: pointer;
-  padding: 0 0 0 8px;
-}
-
-.ql-clean-alert-dismiss:hover {
-  opacity: 1;
-}
-
 /* ── GOOGLE BUTTON ───────────────────────────────────────────────────────── */
-.ql-clean-google-btn {
+.ql-google-button {
   width: 100%;
-  height: 44px;
+  height: 46px;
   background-color: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
   font-size: 14px;
   font-weight: 600;
   font-family: inherit;
@@ -128,68 +227,80 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 11px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
-.ql-clean-google-btn:hover:not(:disabled) {
+.ql-google-button:hover:not(:disabled) {
   background-color: #f8fafc;
-  border-color: #94a3b8;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
 }
 
-.ql-clean-google-btn:disabled {
-  opacity: 0.7;
+.ql-google-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.ql-google-button:disabled {
+  opacity: 0.75;
   cursor: wait;
 }
 
+.ql-google-g-icon {
+  flex-shrink: 0;
+}
+
 /* ── DIVIDER ─────────────────────────────────────────────────────────────── */
-.ql-clean-divider {
+.ql-or-divider {
   display: flex;
   align-items: center;
   gap: 12px;
   margin: 20px 0;
 }
 
-.ql-clean-divider-line {
+.ql-or-line {
   flex: 1;
   height: 1px;
   background-color: #e2e8f0;
 }
 
-.ql-clean-divider-text {
+.ql-or-text {
   font-size: 12px;
+  font-weight: 500;
   color: #94a3b8;
   white-space: nowrap;
 }
 
 /* ── FORM & INPUTS ───────────────────────────────────────────────────────── */
-.ql-clean-form {
+.ql-login-form {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.ql-clean-group {
+.ql-field-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.ql-clean-label-row {
+.ql-field-label-row {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
 }
 
-.ql-clean-label {
+.ql-field-label {
   font-size: 13px;
   font-weight: 600;
   color: #334155;
   user-select: none;
 }
 
-.ql-clean-forgot-btn {
+.ql-forgot-password-link {
   background: none;
   border: none;
   padding: 0;
@@ -198,48 +309,66 @@
   color: #2563eb;
   cursor: pointer;
   font-family: inherit;
+  transition: color 0.15s ease;
 }
 
-.ql-clean-forgot-btn:hover {
+.ql-forgot-password-link:hover {
+  color: #1d4ed8;
   text-decoration: underline;
 }
 
-.ql-clean-input {
+.ql-input-box {
+  position: relative;
+  display: flex;
+  align-items: center;
   width: 100%;
-  height: 44px;
+}
+
+.ql-input-icon {
+  position: absolute;
+  left: 14px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  transition: color 0.15s ease;
+}
+
+.ql-input-element {
+  width: 100%;
+  height: 48px;
   background-color: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
-  padding: 0 14px;
+  border: 1.5px solid #dde4f0;
+  border-radius: 12px;
+  padding: 0 16px 0 44px;
   font-size: 14px;
   font-family: inherit;
+  font-weight: 450;
   color: #0f172a;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.ql-clean-input::placeholder {
+.ql-input-element::placeholder {
   color: #94a3b8;
 }
 
-.ql-clean-input:focus {
+.ql-input-element:focus {
   border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  box-shadow: 0 0 0 3.5px rgba(37, 99, 235, 0.12);
 }
 
-.ql-clean-password-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
+.ql-input-box:focus-within .ql-input-icon {
+  color: #2563eb;
 }
 
-.ql-clean-input-pwd {
-  padding-right: 42px;
+.ql-input-with-eye {
+  padding-right: 44px;
 }
 
-.ql-clean-eye-btn {
+.ql-eye-toggle-btn {
   position: absolute;
-  right: 10px;
+  right: 12px;
   background: none;
   border: none;
   padding: 6px;
@@ -248,155 +377,219 @@
   justify-content: center;
   color: #94a3b8;
   cursor: pointer;
+  border-radius: 6px;
+  transition: color 0.15s ease, background-color 0.15s ease;
 }
 
-.ql-clean-eye-btn:hover {
-  color: #334155;
+.ql-eye-toggle-btn:hover {
+  color: #2563eb;
+  background-color: #f1f5f9;
 }
 
-/* ── CHECKBOX ────────────────────────────────────────────────────────────── */
-.ql-clean-options {
+/* ── REMEMBER ME OPTIONS ─────────────────────────────────────────────────── */
+.ql-options-bar {
   display: flex;
   align-items: center;
   margin-top: -2px;
 }
 
-.ql-clean-checkbox {
+.ql-remember-checkbox {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
-  color: #475569;
   cursor: pointer;
   user-select: none;
 }
 
-.ql-clean-checkbox input {
-  accent-color: #2563eb;
-  width: 15px;
-  height: 15px;
-  cursor: pointer;
+.ql-native-checkbox {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
 
-/* ── SUBMIT BUTTON ───────────────────────────────────────────────────────── */
-.ql-clean-submit-btn {
-  width: 100%;
-  height: 44px;
-  background-color: #2563eb;
-  color: #ffffff;
-  border: none;
-  border-radius: 10px;
-  font-size: 14.5px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
+.ql-custom-box {
+  width: 17px;
+  height: 17px;
+  border-radius: 5px;
+  border: 1.5px solid #cbd5e1;
+  background-color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.ql-custom-box.checked {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.ql-remember-text {
+  font-size: 13px;
+  color: #475569;
+  font-weight: 500;
+}
+
+/* ── SUBMIT CTA BUTTON ───────────────────────────────────────────────────── */
+.ql-auth-submit-btn {
+  width: 100%;
+  height: 48px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 14.5px;
+  font-weight: 700;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   gap: 8px;
-  transition: background-color 0.15s ease;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   margin-top: 4px;
 }
 
-.ql-clean-submit-btn:hover:not(:disabled) {
-  background-color: #1d4ed8;
+.ql-auth-submit-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.45);
+  filter: brightness(1.02);
 }
 
-.ql-clean-submit-btn:disabled {
+.ql-auth-submit-btn:hover:not(:disabled) .ql-submit-arrow {
+  transform: translateX(3px);
+}
+
+.ql-submit-arrow {
+  transition: transform 0.2s ease;
+}
+
+.ql-auth-submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.ql-auth-submit-btn:disabled {
   opacity: 0.75;
   cursor: wait;
 }
 
-/* ── SPINNER ─────────────────────────────────────────────────────────────── */
-.ql-clean-spinner {
+/* ── SPINNERS ────────────────────────────────────────────────────────────── */
+.ql-inline-spinner {
   width: 15px;
   height: 15px;
   border: 2px solid rgba(37, 99, 235, 0.25);
   border-top-color: #2563eb;
   border-radius: 50%;
-  animation: qlCleanSpin 0.7s linear infinite;
+  animation: qlRotate 0.7s linear infinite;
   display: inline-block;
 }
 
-.ql-clean-spinner-white {
+.ql-spinner-white {
   border-color: rgba(255, 255, 255, 0.35);
   border-top-color: #ffffff;
 }
 
-@keyframes qlCleanSpin {
+@keyframes qlRotate {
   to { transform: rotate(360deg); }
 }
 
-/* ── FOOTER PROMPT ───────────────────────────────────────────────────────── */
-.ql-clean-footer {
+/* ── FOOTER SWITCH PROMPT ────────────────────────────────────────────────── */
+.ql-card-footer {
   text-align: center;
   font-size: 13px;
   color: #64748b;
   margin-top: 22px;
 }
 
-.ql-clean-link {
+.ql-switch-mode-btn {
   background: none;
   border: none;
   padding: 0;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   color: #2563eb;
   cursor: pointer;
   font-family: inherit;
+  transition: color 0.15s ease;
 }
 
-.ql-clean-link:hover {
+.ql-switch-mode-btn:hover {
+  color: #1d4ed8;
   text-decoration: underline;
 }
 
+.ql-security-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: #94a3b8;
+  margin-top: 20px;
+  text-align: center;
+}
+
 /* ── REGISTER EMBED SUPPORT ──────────────────────────────────────────────── */
-.ql-clean-register-wrapper {
+.ql-register-card-override {
+  padding: 28px 30px;
+}
+
+.ql-register-card-override .ql-inner {
   width: 100%;
 }
 
-.ql-clean-register-wrapper .ql-inner {
-  width: 100%;
-}
-
-.ql-clean-register-wrapper .ql-brand {
+.ql-register-card-override .ql-brand {
   display: none;
 }
 
-.ql-clean-register-wrapper .ql-card {
+.ql-register-card-override .ql-card {
   padding: 0;
   border: none;
   box-shadow: none;
   background: transparent;
 }
 
-.ql-clean-register-wrapper .ql-card-title {
-  font-size: 20px;
-  font-weight: 700;
+.ql-register-card-override .ql-card-title {
+  font-size: 22px;
+  font-weight: 800;
   color: #0f172a;
   text-align: center;
   margin: 0 0 4px;
 }
 
-.ql-clean-register-wrapper .ql-card-sub {
+.ql-register-card-override .ql-card-sub {
   font-size: 13px;
   color: #64748b;
   text-align: center;
   margin: 0 0 16px;
 }
 
-/* ── MOBILE RESPONSIVE ───────────────────────────────────────────────────── */
+/* ── MOBILE RESPONSIVENESS ───────────────────────────────────────────────── */
 @media (max-width: 480px) {
-  .ql-clean-auth-container {
-    padding: 16px 12px;
+  .ql-auth-viewport {
+    padding: 24px 14px;
   }
 
-  .ql-clean-card {
-    padding: 24px 18px;
-    border-radius: 14px;
+  .ql-auth-glass-card {
+    padding: 26px 20px;
+    border-radius: 16px;
   }
 
-  .ql-clean-title {
-    font-size: 20px;
+  .ql-card-title {
+    font-size: 22px;
+  }
+
+  .ql-card-description {
+    font-size: 13px;
+  }
+
+  .ql-input-element,
+  .ql-auth-submit-btn,
+  .ql-google-button {
+    height: 46px;
+    font-size: 14px;
   }
 }
