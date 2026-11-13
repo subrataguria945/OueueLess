@@ -14,10 +14,6 @@ const LOGIN_API_URL =
   import.meta.env.VITE_LOGIN_API_URL ||
   `${API_BASE}/user/login`;
 
-const FORGOT_PASSWORD_API_URL =
-  import.meta.env.VITE_FORGOT_PASSWORD_API_URL ||
-  `${API_BASE}/user/password/forget`;
-
 export function Login({
   initialMode = "login",
   initialForgotOpen = false,
@@ -36,7 +32,6 @@ export function Login({
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoginLoading, setIsLoginLoading] = useState(false);
-  const [isForgotLoading, setIsForgotLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [loginSuccess, setLoginSuccess] = useState("");
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -100,41 +95,9 @@ export function Login({
     if (onSwitchToLogin) onSwitchToLogin();
   };
 
-  const handleSwitchToForgot = async () => {
-    const cleanEmail = (loginEmail || "").trim().toLowerCase();
-
-    if (!cleanEmail) {
-      showTemporaryError("Please enter your email above to receive a reset link.", 3500);
-      const emailInput = document.getElementById("ql-pill-email-input");
-      if (emailInput) emailInput.focus();
-      return;
-    }
-
-    setLoginError("");
-    setLoginSuccess("");
-    setIsForgotLoading(true);
-
-    try {
-      const response = await fetch(FORGOT_PASSWORD_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: cleanEmail }),
-      });
-
-      const data = await response.json().catch(() => ({}));
-      setIsForgotLoading(false);
-
-      if (!response.ok || data?.status === "failed" || data?.status === "error") {
-        showTemporaryError(data?.message || data?.error || "Account not found or failed to send reset link.", 4000);
-        return;
-      }
-
-      showTemporarySuccess(data?.message || "Password reset link sent to your email! Please check your inbox.", 5000);
-      if (onSwitchToForgot) onSwitchToForgot();
-    } catch {
-      setIsForgotLoading(false);
-      showTemporaryError("Unable to reach the server. Please check your internet connection.", 3500);
-    }
+  const handleSwitchToForgot = () => {
+    setIsForgotModalOpen(true);
+    if (onSwitchToForgot) onSwitchToForgot();
   };
 
   useEffect(() => {
@@ -158,6 +121,7 @@ export function Login({
       localStorage.getItem("token") ||
       localStorage.getItem("ql_admin_token") ||
       sessionStorage.getItem("token");
+
     if (existingToken && window.location.pathname === "/login") {
       window.location.href = "/admin";
     }
@@ -305,7 +269,7 @@ export function Login({
           lower.includes("credential") ||
           lower.includes("password")
         ) {
-          formattedMessage = "Incorrect email or password. Please try again or use 'Forgot password'.";
+          formattedMessage = "Incorrect email or password. Please try again or use 'Forgot Password'.";
         } else if (lower.includes("network") || lower.includes("failed to fetch") || lower.includes("connect")) {
           formattedMessage = "Unable to connect to the server. Please check your internet connection.";
         } else if (rawError && !rawError.startsWith("ERR_")) {
@@ -322,243 +286,250 @@ export function Login({
   };
 
   return (
-    <div className="ql-mockup-wrapper">
-      {/* ── CARD CONTAINER (AS DISPLAYED IN REFERENCE IMAGE) ── */}
-      <div className={`ql-mockup-card ${mode === "register" ? "is-register" : ""}`}>
+    <div className="ql-mockup-page">
+      {/* ── TOP RIGHT CORNER WAVE ── */}
+      <svg
+        className="ql-wave-tr"
+        viewBox="0 0 380 380"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient id="qlWaveTrGrad" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#4f9cf8" stopOpacity="0.95" />
+            <stop offset="60%" stopColor="#3b82f6" stopOpacity="0.85" />
+            <stop offset="100%" stopColor="#2563eb" stopOpacity="0.75" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M 110,0 C 160,150 230,230 380,265 L 380,0 Z"
+          fill="url(#qlWaveTrGrad)"
+        />
+      </svg>
 
-        {/* ── 1. LEFT HERO SECTION (GREEN ORGANIC WAVE) ────────── */}
-        <div className="ql-hero-side">
-          {/* Seamless SVG Organic Wave Background */}
-          <svg
-            className="ql-hero-svg-layer"
-            viewBox="0 0 440 520"
-            preserveAspectRatio="none"
-            aria-hidden="true"
-          >
-            <defs>
-              <linearGradient id="qlGreenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#064e3b" />
-                <stop offset="45%" stopColor="#047857" />
-                <stop offset="85%" stopColor="#059669" />
-                <stop offset="100%" stopColor="#10b981" />
-              </linearGradient>
-            </defs>
-            {/* Organic curved body bulging to the right */}
-            <path
-              d="M 0,0 L 330,0 C 430,150 430,370 330,520 L 0,520 Z"
-              fill="url(#qlGreenGradient)"
+      {/* ── BOTTOM LEFT CORNER WAVE ── */}
+      <svg
+        className="ql-wave-bl"
+        viewBox="0 0 380 380"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient id="qlWaveBlGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#4f9cf8" stopOpacity="0.95" />
+            <stop offset="60%" stopColor="#3b82f6" stopOpacity="0.85" />
+            <stop offset="100%" stopColor="#2563eb" stopOpacity="0.75" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M 0,115 C 150,145 230,225 265,380 L 0,380 Z"
+          fill="url(#qlWaveBlGrad)"
+        />
+      </svg>
+
+      {/* ── MAIN CONTENT CONTAINER ── */}
+      <div className="ql-mockup-container">
+        {/* ── LEFT COLUMN: BRANDING & QUEUE ILLUSTRATION ── */}
+        <div className="ql-mockup-left">
+          <div className="ql-left-logo-box">
+            <img
+              src="/queueless-logo-card.png"
+              alt="QueueLess Logo"
+              className="ql-left-brand-logo"
             />
-            {/* Bottom-left white quarter arc peeking in */}
-            <circle cx="0" cy="520" r="85" fill="#ffffff" />
-            {/* Top-left subtle darker shadow arc */}
-            <circle cx="0" cy="0" r="95" fill="rgba(0, 0, 0, 0.08)" />
-          </svg>
+          </div>
 
-          {/* Hero Foreground Content */}
-          <div className="ql-hero-inner">
-            {/* Flame/App Logo White Circle Badge */}
-            <div className="ql-hero-flame-circle">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 2C9.5 6 6 8.5 6 13C6 16.31 8.69 19 12 19C15.31 19 18 16.31 18 13C18 9 14 6 12 2Z"
-                  fill="#059669"
-                />
-                <path
-                  d="M12 8C10.5 10.5 9 12 9 14.5C9 16.16 10.34 17.5 12 17.5C13.66 17.5 15 16.16 15 14.5C15 12 13.5 10 12 8Z"
-                  fill="#10b981"
-                />
-              </svg>
-            </div>
-
-            <div className="ql-hero-brand-title">QueueLess</div>
-
-            <h2 className="ql-hero-main-title">
-              {mode === "login" ? "Welcome Back!" : "Hello, Friend!"}
-            </h2>
-
-            <p className="ql-hero-text">
-              {mode === "login"
-                ? "To stay connected with us please login with your personal info"
-                : "Enter your personal details and start your journey with us"}
-            </p>
-
-            {/* Outline Pill Button */}
-            <button
-              type="button"
-              className="ql-hero-outline-pill"
-              onClick={mode === "login" ? handleSwitchToRegister : handleSwitchToLogin}
-            >
-              {mode === "login" ? "SIGN UP" : "SIGN IN"}
-            </button>
-
-            <div className="ql-hero-credits">
-              <span>SMART QUEUE MANAGEMENT</span>
-              <span>•</span>
-              <span>ENTERPRISE</span>
-            </div>
+          <div className="ql-left-illustration-box">
+            <img
+              src="/ql-queue-illustration.png"
+              alt="Queue Management Counter Scene"
+              className="ql-queue-img"
+            />
           </div>
         </div>
 
-        {/* ── 2. RIGHT FORM SECTION (WHITE CANVAS + PILL FORM) ──── */}
-        <div className="ql-form-side">
-          {/* Top-Right Decorative Green Wave Arc */}
-          <svg
-            className="ql-top-right-arc"
-            viewBox="0 0 160 160"
-            preserveAspectRatio="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M 160,0 L 0,0 C 0,88 72,160 160,160 Z"
-              fill="url(#qlGreenGradient)"
-            />
-          </svg>
-
-          {mode === "login" ? (
-            <div className="ql-form-stack">
-              {/* Heading */}
-              <div className="ql-title-group">
-                <h1 className="ql-green-welcome">welcome</h1>
-                <p className="ql-green-sub">Login in to your account to continue</p>
+        {/* ── RIGHT COLUMN: SIGN IN / REGISTER CARD ── */}
+        <div className="ql-mockup-right">
+          {mode === "register" ? (
+            <div className="ql-mockup-card ql-register-wrapper">
+              <RegisterPanel onSwitchToLogin={handleSwitchToLogin} />
+            </div>
+          ) : (
+            <div className="ql-mockup-card">
+              {/* Card Centered Logo */}
+              <div className="ql-card-logo-center">
+                <img
+                  src="/queueless-logo-card.png"
+                  alt="QueueLess"
+                  className="ql-card-brand-img"
+                />
               </div>
 
-              {/* Feedback Alert Banners */}
+              {/* Main Heading */}
+              <h1 className="ql-card-heading">Sign In</h1>
+
+              {/* Alerts */}
               {loginError && (
-                <div className="ql-pill-alert ql-pill-alert-error" role="alert" onClick={() => setLoginError("")}>
+                <div className="ql-alert-banner ql-alert-error" role="alert" onClick={() => setLoginError("")}>
                   <span>{loginError}</span>
-                  <button type="button" className="ql-alert-x">✕</button>
+                  <button type="button" className="ql-alert-dismiss">✕</button>
                 </div>
               )}
               {loginSuccess && (
-                <div className="ql-pill-alert ql-pill-alert-success" role="status" onClick={() => setLoginSuccess("")}>
+                <div className="ql-alert-banner ql-alert-success" role="status" onClick={() => setLoginSuccess("")}>
                   <span>{loginSuccess}</span>
-                  <button type="button" className="ql-alert-x">✕</button>
+                  <button type="button" className="ql-alert-dismiss">✕</button>
                 </div>
               )}
 
-              {/* Pill Inputs Form */}
-              <form onSubmit={handleLoginSubmit} className="ql-pill-form" noValidate>
-                {/* Email Pill Input */}
-                <div className="ql-input-pill-container">
+              {/* Sign In Form */}
+              <form onSubmit={handleLoginSubmit} className="ql-auth-form" noValidate>
+                {/* Email Field */}
+                <div className="ql-form-field">
+                  <span className="ql-field-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="4" width="20" height="16" rx="2" />
+                      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                    </svg>
+                  </span>
                   <input
-                    id="ql-pill-email-input"
+                    id="ql-input-email"
                     type="email"
                     autoComplete="username email"
                     placeholder="Email"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
                     required
-                    className="ql-soft-pill-input"
                   />
                 </div>
 
-                {/* Password Pill Input */}
-                <div className="ql-input-pill-container ql-pwd-container">
+                {/* Password Field */}
+                <div className="ql-form-field">
+                  <span className="ql-field-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                  </span>
                   <input
-                    id="ql-pill-password-input"
+                    id="ql-input-password"
                     type={showLoginPassword ? "text" : "password"}
                     autoComplete="current-password"
                     placeholder="Password"
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
                     required
-                    className="ql-soft-pill-input ql-soft-pwd-input"
                   />
                   <button
                     type="button"
-                    className="ql-pill-toggle-eye"
+                    className="ql-field-eye"
                     onClick={() => setShowLoginPassword(!showLoginPassword)}
                     aria-label={showLoginPassword ? "Hide password" : "Show password"}
                   >
                     {showLoginPassword ? (
-                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                        <line x1="1" y1="1" x2="23" y2="23" />
-                      </svg>
-                    ) : (
-                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                         <circle cx="12" cy="12" r="3" />
                       </svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                      </svg>
                     )}
                   </button>
                 </div>
 
-                {/* Centered Forgot Password Link */}
-                <div className="ql-pill-forgot-wrap">
+                {/* Forgot Password Link */}
+                <div className="ql-forgot-container">
                   <button
                     type="button"
-                    className="ql-pill-forgot-link"
+                    className="ql-forgot-action"
                     onClick={handleSwitchToForgot}
-                    disabled={isForgotLoading}
                   >
-                    {isForgotLoading ? "Sending reset link..." : "Forgot your password?"}
+                    Forgot Password?
                   </button>
                 </div>
 
-                {/* Compact Green Pill Button: LOG IN */}
-                <div className="ql-pill-btn-center">
-                  <button
-                    type="submit"
-                    className="ql-green-login-pill"
-                    disabled={isLoginLoading}
-                  >
-                    {isLoginLoading ? (
-                      <span className="ql-pill-spinner" />
-                    ) : (
-                      "LOG IN"
-                    )}
-                  </button>
-                </div>
+                {/* Sign In Submit Button */}
+                <button
+                  type="submit"
+                  className="ql-btn-primary-signin"
+                  disabled={isLoginLoading}
+                >
+                  {isLoginLoading ? (
+                    <>
+                      <span className="ql-spinner-circle" />
+                      <span>Signing In...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                        <polyline points="10 17 15 12 10 7" />
+                        <line x1="15" y1="12" x2="3" y2="12" />
+                      </svg>
+                      <span>Sign In</span>
+                    </>
+                  )}
+                </button>
               </form>
 
-              {/* Google Sign-In Pill Button */}
-              <div className="ql-pill-google-center">
-                <button
-                  type="button"
-                  className="ql-pill-google-cta"
-                  onClick={handleGoogleClick}
-                  disabled={isGoogleLoading}
-                >
-                  <svg width="17" height="17" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
-                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.11 0-5.74-2.1-6.68-4.93H1.36v3.15C3.33 21.35 7.4 24 12 24z" />
-                    <path fill="#FBBC05" d="M5.32 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.36A11.94 11.94 0 0 0 0 12c0 1.92.45 3.74 1.36 5.42l3.96-3.15z" />
-                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.4 0 3.33 2.65 1.36 6.58l3.96 3.15c.94-2.83 3.57-4.98 6.68-4.98z" />
-                  </svg>
-                  <span>{isGoogleLoading ? "Connecting..." : "Continue with Google"}</span>
-                </button>
+              {/* OR Divider */}
+              <div className="ql-divider-container">
+                <span className="ql-divider-rule" />
+                <span className="ql-divider-label">OR</span>
+                <span className="ql-divider-rule" />
               </div>
 
-              {/* Footer Switch */}
-              <div className="ql-pill-signup-prompt">
-                <span>Don&apos;t have an account?</span>{" "}
+              {/* Continue with Google Button */}
+              <button
+                type="button"
+                className="ql-btn-google-continue"
+                onClick={handleGoogleClick}
+                disabled={isGoogleLoading}
+              >
+                {isGoogleLoading ? (
+                  <>
+                    <span className="ql-spinner-circle ql-spinner-dark" />
+                    <span>Connecting Google...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
+                      <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.11 0-5.74-2.1-6.68-4.93H1.36v3.15C3.33 21.35 7.4 24 12 24z" />
+                      <path fill="#FBBC05" d="M5.32 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.36A11.94 11.94 0 0 0 0 12c0 1.92.45 3.74 1.36 5.42l3.96-3.15z" />
+                      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.4 0 3.33 2.65 1.36 6.58l3.96 3.15c.94-2.83 3.57-4.98 6.68-4.98z" />
+                    </svg>
+                    <span>Continue with Google</span>
+                  </>
+                )}
+              </button>
+
+              {/* Bottom Switch Link */}
+              <div className="ql-bottom-switch">
+                <span>Don't have an account? </span>
                 <button
                   type="button"
-                  className="ql-pill-green-link"
+                  className="ql-switch-signup-link"
                   onClick={handleSwitchToRegister}
                 >
-                  sign up
+                  Sign Up
                 </button>
               </div>
-            </div>
-          ) : (
-            /* Register mode embedded */
-            <div className="ql-form-stack ql-reg-embed">
-              <RegisterPanel onSwitchToLogin={handleSwitchToLogin} />
             </div>
           )}
         </div>
       </div>
 
-      {/* Forgot Password Popup Modal */}
+      {/* Forgot Password Modal */}
       <ForgotPasswordModal
         isOpen={isForgotModalOpen}
         onClose={() => setIsForgotModalOpen(false)}
-        email={loginEmail}
       />
     </div>
   );
 }
-
-export default Login;
