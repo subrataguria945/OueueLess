@@ -113,9 +113,9 @@ export function Login({
 
   useEffect(() => {
     if (mode === "register") {
-      document.title = "Create Account — QueueLess";
+      document.title = "Create an Account — QueueLess";
     } else {
-      document.title = "Log In — QueueLess Smart Queue Management";
+      document.title = "Sign In — QueueLess Smart Queue Management";
     }
   }, [mode]);
 
@@ -436,8 +436,8 @@ export function Login({
             {mode === "register" ? (
               /* ── REGISTER / CREATE ACCOUNT VIEW ── */
               <div className="ql-pane-fade" key="register-pane">
-                <h1 className="ql-title">Create Account</h1>
-                <p className="ql-subtitle">Join QueueLess and get started</p>
+                <h1 className="ql-title">Create an Account</h1>
+                <p className="ql-subtitle">Join QueueLess for smarter, faster queue management</p>
 
                 {/* Alerts */}
                 {regError && (
@@ -465,7 +465,7 @@ export function Login({
                     <input
                       id="ql-reg-name"
                       type="text"
-                      placeholder="Full Name"
+                      placeholder="Enter your full name"
                       value={regName}
                       onChange={(e) => setRegName(e.target.value)}
                       required
@@ -484,7 +484,7 @@ export function Login({
                       id="ql-reg-email"
                       type="email"
                       autoComplete="username email"
-                      placeholder="Email Address"
+                      placeholder="Enter your email address"
                       value={regEmail}
                       onChange={(e) => setRegEmail(e.target.value)}
                       required
@@ -501,7 +501,7 @@ export function Login({
                     <input
                       id="ql-reg-phone"
                       type="tel"
-                      placeholder="Phone Number"
+                      placeholder="Enter 10-digit phone number"
                       maxLength={10}
                       value={regPhone}
                       onChange={(e) => setRegPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
@@ -521,7 +521,7 @@ export function Login({
                       id="ql-reg-password"
                       type={showRegPassword ? "text" : "password"}
                       autoComplete="new-password"
-                      placeholder="Password"
+                      placeholder="Create a strong password"
                       value={regPassword}
                       onChange={(e) => setRegPassword(e.target.value)}
                       required
@@ -595,7 +595,7 @@ export function Login({
                       id="ql-reg-confirm-password"
                       type={showRegConfirmPassword ? "text" : "password"}
                       autoComplete="new-password"
-                      placeholder="Confirm Password"
+                      placeholder="Confirm your password"
                       value={regConfirmPassword}
                       onChange={(e) => setRegConfirmPassword(e.target.value)}
                       required
@@ -655,7 +655,7 @@ export function Login({
                         <span>Creating Account...</span>
                       </>
                     ) : (
-                      <span>Sign Up &rarr;</span>
+                      <span>Create Account &rarr;</span>
                     )}
                   </button>
                 </form>
@@ -668,15 +668,15 @@ export function Login({
                     className="ql-signup-btn"
                     onClick={handleSwitchToLogin}
                   >
-                    Log In
+                    Sign In
                   </button>
                 </div>
               </div>
             ) : (
               /* ── LOG IN VIEW ── */
               <div className="ql-pane-fade" key="login-pane">
-                <h1 className="ql-title">Log In</h1>
-                <p className="ql-subtitle">Access your QueueLess account</p>
+                <h1 className="ql-title">Welcome Back!</h1>
+                <p className="ql-subtitle">Please sign in to access your QueueLess account</p>
 
                 {/* Alerts */}
                 {loginError && (
@@ -706,7 +706,7 @@ export function Login({
                       id="ql-input-email"
                       type="email"
                       autoComplete="username email"
-                      placeholder="Email address"
+                      placeholder="Enter your email address"
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
                       required
@@ -725,7 +725,7 @@ export function Login({
                       id="ql-input-password"
                       type={showLoginPassword ? "text" : "password"}
                       autoComplete="current-password"
-                      placeholder="Password"
+                      placeholder="Enter your password"
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
                       required
@@ -759,10 +759,10 @@ export function Login({
                     {isLoginLoading ? (
                       <>
                         <span className="ql-spinner-circle" />
-                        <span>Logging in...</span>
+                        <span>Signing in...</span>
                       </>
                     ) : (
-                      <span>Log In &rarr;</span>
+                      <span>Sign In &rarr;</span>
                     )}
                   </button>
 
@@ -781,7 +781,7 @@ export function Login({
                 {/* Divider */}
                 <div className="ql-divider">
                   <span className="ql-div-line" />
-                  <span className="ql-div-text">or</span>
+                  <span className="ql-div-text">or continue with</span>
                   <span className="ql-div-line" />
                 </div>
 
@@ -818,7 +818,7 @@ export function Login({
                     className="ql-signup-btn"
                     onClick={handleSwitchToRegister}
                   >
-                    Sign Up
+                    Create an Account
                   </button>
                 </div>
               </div>
