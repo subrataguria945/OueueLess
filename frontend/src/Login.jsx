@@ -1,35 +1,79 @@
 import { useState, useEffect, useRef } from "react";
 import "./Login.css";
-import { RegisterPanel } from "./register";
 import { ForgotPasswordModal } from "./ForgotPasswordModal";
+import { EmailOtpModal } from "./EmailOtpModal";
+import { initiateSignup, verifySignupOtp } from "./authApi";
 import { triggerGoogleSignIn } from "./googleAuth";
+
+const API_BASE = (
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_BACKEND_URL ||
+  "https://queueless-backend-b2qh.onrender.com"
+).replace(/\/+$/, "");
 
 const LOGIN_API_URL =
   import.meta.env.VITE_LOGIN_API_URL ||
-  import.meta.env.VITE_API_URL ||
-  "https://queueless-backend-b2qh.onrender.com/user/login";
+  `${API_BASE}/user/login`;
 
-const FORGOT_PASSWORD_API_URL =
-  import.meta.env.VITE_FORGOT_PASSWORD_API_URL ||
-  "https://queueless-backend-b2qh.onrender.com/user/password/forget";
+export function Login({
+  initialMode = "login",
+  initialForgotOpen = false,
+  onSwitchToRegister,
+  onSwitchToLogin,
+  onSwitchToForgot,
+}) {
+  const [mode, setMode] = useState(initialMode === "forgot" ? "login" : initialMode);
+  const [isForgotModalOpen, setIsForgotModalOpen] = useState(
+    initialForgotOpen || initialMode === "forgot"
+  );
 
-export function Login({ initialMode = "login", initialForgotOpen = false, onSwitchToRegister, onSwitchToLogin, onSwitchToForgot }) {
-  const [mode, setMode] = useState(initialMode === "forgot" ? "login" : initialMode); // "login" | "register"
-  const [isForgotModalOpen, setIsForgotModalOpen] = useState(initialForgotOpen || initialMode === "forgot");
-
-  /* ── Login State ──────────────────────────────────── */
+  /* ── Login Form State ──────────────────────────────── */
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoginLoading, setIsLoginLoading] = useState(false);
-  const [isForgotLoading, setIsForgotLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [loginSuccess, setLoginSuccess] = useState("");
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const forgotTimerRef = useRef(null);
 
-  // Auto-dismiss helper for messages
+  /* ── Register Form State ───────────────────────────── */
+  const [regName, setRegName] = useState("");
+  const [regEmail, setRegEmail] = useState("");
+  const [regPhone, setRegPhone] = useState("");
+  const [regPassword, setRegPassword] = useState("");
+  const [regConfirmPassword, setRegConfirmPassword] = useState("");
+  const [showRegPassword, setShowRegPassword] = useState(false);
+  const [showRegConfirmPassword, setShowRegConfirmPassword] = useState(false);
+  const [regError, setRegError] = useState("");
+  const [regSuccess, setRegSuccess] = useState("");
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const [signupToken, setSignupToken] = useState("");
+  const [isSendingCode, setIsSendingCode] = useState(false);
+  const [sendingError, setSendingError] = useState("");
+  const pendingInitiateRef = useRef(null);
+
+  /* ── Password Strength & Match Calculations ─────────── */
+  const hasMinLength = regPassword.length >= 8;
+  const hasUppercase = /[A-Z]/.test(regPassword);
+  const hasNumber = /[0-9]/.test(regPassword);
+  const hasSpecial = /[^A-Za-z0-9]/.test(regPassword);
+
+  const strengthScore = [hasMinLength, hasUppercase, hasNumber, hasSpecial].filter(Boolean).length;
+  const strengthInfo = (() => {
+    if (!regPassword) return { label: "", color: "#e2e8f0" };
+    if (strengthScore <= 1) return { label: "Weak", color: "#ef4444" };
+    if (strengthScore === 2) return { label: "Fair", color: "#f97316" };
+    if (strengthScore === 3) return { label: "Good", color: "#eab308" };
+    return { label: "Strong", color: "#10b981" };
+  })();
+
+  const isPasswordMatched =
+    regConfirmPassword.length > 0 && regPassword === regConfirmPassword;
+  const isPasswordMismatch =
+    regConfirmPassword.length > 0 && regPassword !== regConfirmPassword;
+
   const showTemporaryError = (msg, duration = 4000) => {
     if (forgotTimerRef.current) clearTimeout(forgotTimerRef.current);
     setLoginError(msg);
@@ -38,7 +82,7 @@ export function Login({ initialMode = "login", initialForgotOpen = false, onSwit
     }, duration);
   };
 
-  const showTemporarySuccess = (msg, duration = 4500) => {
+  const showTemporarySuccess = (msg, duration = 5000) => {
     if (forgotTimerRef.current) clearTimeout(forgotTimerRef.current);
     setLoginSuccess(msg);
     forgotTimerRef.current = setTimeout(() => {
@@ -46,7 +90,6 @@ export function Login({ initialMode = "login", initialForgotOpen = false, onSwit
     }, duration);
   };
 
-  // Clean timer on unmount
   useEffect(() => {
     return () => {
       if (forgotTimerRef.current) clearTimeout(forgotTimerRef.current);
@@ -70,222 +113,174 @@ export function Login({ initialMode = "login", initialForgotOpen = false, onSwit
 
   useEffect(() => {
     if (mode === "register") {
-      document.title = "Create Account — QueueLess";
+      document.title = "Create an Account — QueueLess";
     } else {
-      document.title = "Login — QueueLess";
+      document.title = "Sign In — QueueLess Smart Queue Management";
     }
   }, [mode]);
 
   /* ── Mode Switching ───────────────────────────────── */
   const handleSwitchToRegister = () => {
     setMode("register");
+    setRegError("");
+    setRegSuccess("");
     window.history.replaceState(null, "", "/register");
     if (onSwitchToRegister) onSwitchToRegister();
   };
 
   const handleSwitchToLogin = () => {
     setMode("login");
+    setLoginError("");
     window.history.replaceState(null, "", "/login");
     if (onSwitchToLogin) onSwitchToLogin();
   };
 
-  const handleSwitchToForgot = async () => {
-    const cleanEmail = (loginEmail || "").trim().toLowerCase();
-
-    // Check if email is entered on login page
-    if (!cleanEmail) {
-      showTemporaryError("Please enter your email address first to reset password.", 3500);
-      const emailInput = document.getElementById("ql-login-email");
-      if (emailInput) {
-        emailInput.focus();
-      }
-      return;
-    }
-
-    setLoginError("");
-    setLoginSuccess("");
-    setIsForgotLoading(true);
-
-    try {
-      const response = await fetch(FORGOT_PASSWORD_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: cleanEmail }),
-      });
-
-      const data = await response.json().catch(() => ({}));
-
-      setIsForgotLoading(false);
-
-      if (!response.ok || data?.status === "failed" || data?.status === "error") {
-        showTemporaryError(data?.message || data?.error || "User does not exist or failed to send reset link.", 4000);
-        return;
-      }
-
-      showTemporarySuccess(data?.message || "Reset password link sent to your email! Please check your inbox.", 4500);
-      if (onSwitchToForgot) onSwitchToForgot();
-    } catch {
-      setIsForgotLoading(false);
-      showTemporaryError("Unable to connect to the server. Please try again.", 3500);
-    }
+  const handleSwitchToForgot = () => {
+    setIsForgotModalOpen(true);
+    if (onSwitchToForgot) onSwitchToForgot();
   };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("session_expired") === "true") {
       showTemporaryError("Your session has expired. Please sign in again.");
+      return;
+    }
+    if (params.get("logout") === "true") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("ql_admin_token");
+      localStorage.removeItem("refresh_token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("role");
+      sessionStorage.clear();
+      return;
+    }
+    const existingToken =
+      localStorage.getItem("token") ||
+      localStorage.getItem("ql_admin_token") ||
+      sessionStorage.getItem("token");
+
+    if (existingToken && window.location.pathname === "/login") {
+      window.location.href = "/admin";
     }
   }, []);
 
+  /* ── Google Sign-In ────────────────────────────────── */
   const handleGoogleSuccess = (user, token, isNew, message) => {
-    setLoginError("");
-    setLoginSuccess("");
+    setIsGoogleLoading(false);
     if (token) {
-      rememberMe ? localStorage.setItem("token", token) : sessionStorage.setItem("token", token);
+      localStorage.setItem("token", token);
+      localStorage.setItem("ql_admin_token", token);
+      sessionStorage.setItem("token", token);
     }
-    const googleRefreshToken = user?.refresh_token || (typeof token === "object" ? token?.refresh_token : null);
-    if (googleRefreshToken) {
-      rememberMe ? localStorage.setItem("refresh_token", googleRefreshToken) : sessionStorage.setItem("refresh_token", googleRefreshToken);
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
+      if (user.role) localStorage.setItem("role", user.role);
     }
-    if (user) localStorage.setItem("user", JSON.stringify(user));
-
-    const rawRole = user?.role ?? user?.user_role;
-    const isAdmin = Number(rawRole) === 1 || String(rawRole).trim() === "1" || String(rawRole).toLowerCase() === "admin" || String(rawRole).toLowerCase() === "super admin";
-
-    if (isAdmin) {
-      localStorage.setItem("ql_admin_token", token || "admin_session");
-      localStorage.setItem("role", "admin");
+    setLoginSuccess(message || "Signed in with Google successfully! Redirecting...");
+    setTimeout(() => {
       window.location.href = "/admin";
-    } else {
-      window.location.href = "/";
-    }
+    }, 800);
+  };
+
+  const handleGoogleError = (errorMsg) => {
+    setIsGoogleLoading(false);
+    showTemporaryError(errorMsg || "Google sign-in failed. Please try again.");
   };
 
   const handleGoogleClick = () => {
     setLoginError("");
     setLoginSuccess("");
     setIsGoogleLoading(true);
+
     triggerGoogleSignIn({
-      onSuccess: (user, token, isNew, message) => {
-        setIsGoogleLoading(false);
-        handleGoogleSuccess(user, token, isNew, message);
-      },
-      onError: (err) => {
-        setIsGoogleLoading(false);
-        if (err) {
-          const str = String(err).toLowerCase();
-          if (str.includes("cancel") || str.includes("closed")) {
-            // Cancelled cleanly without error alert
-          } else {
-            setLoginError(err || "Unable to sign in with Google. Please try again or use your email and password.");
-          }
-        }
-      },
-      onCancel: () => {
-        setIsGoogleLoading(false);
-      },
+      onSuccess: handleGoogleSuccess,
+      onError: handleGoogleError,
+      onClose: () => setIsGoogleLoading(false),
     });
   };
 
+  /* ── Regular Email/Password Login ──────────────────── */
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    setIsLoginLoading(true);
     setLoginError("");
     setLoginSuccess("");
 
-    const trimmedEmail = loginEmail.trim().toLowerCase();
+    const cleanEmail = loginEmail.trim().toLowerCase();
+    if (!cleanEmail) {
+      setLoginError("Please enter your email address.");
+      return;
+    }
+    if (!loginPassword) {
+      setLoginError("Please enter your password.");
+      return;
+    }
+
+    setIsLoginLoading(true);
 
     try {
       const response = await fetch(LOGIN_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: trimmedEmail, password: loginPassword }),
+        body: JSON.stringify({
+          email: cleanEmail,
+          password: loginPassword,
+        }),
       });
+
       const data = await response.json().catch(() => ({}));
 
-      // Backend returns HTTP 200 with status: 'Login Failed' and message: 'ERR_INVALID_CREDENTIALS'
-      const isFailed =
-        !response.ok ||
-        data.status === "Login Failed" ||
-        data.status === "error" ||
-        data.status === "failed" ||
-        (!data.token && !data.accessToken && !data.access_token && !data.data?.token);
-
-      if (!isFailed) {
+      if (response.ok) {
         const token =
           data.token ||
           data.accessToken ||
           data.access_token ||
-          data.data?.token ||
-          data.data?.accessToken;
+          data.jwt ||
+          data.data?.token;
 
-        const refreshToken =
-          data.refresh_token ||
-          data.refreshToken ||
-          data.data?.refresh_token ||
-          data.data?.refreshToken;
+        const user = data.user || data.data?.user || {
+          email: cleanEmail,
+          name: data.name || cleanEmail.split("@")[0],
+          role: data.role || data.user_role || "ADMIN",
+        };
 
         if (token) {
-          rememberMe ? localStorage.setItem("token", token) : sessionStorage.setItem("token", token);
+          if (rememberMe) {
+            localStorage.setItem("token", token);
+            localStorage.setItem("ql_admin_token", token);
+          } else {
+            sessionStorage.setItem("token", token);
+          }
         }
 
-        if (refreshToken) {
-          rememberMe ? localStorage.setItem("refresh_token", refreshToken) : sessionStorage.setItem("refresh_token", refreshToken);
+        if (user) {
+          const userPayload = JSON.stringify(user);
+          if (rememberMe) {
+            localStorage.setItem("user", userPayload);
+            localStorage.setItem("role", user.role || "ADMIN");
+          } else {
+            sessionStorage.setItem("user", userPayload);
+            sessionStorage.setItem("role", user.role || "ADMIN");
+          }
         }
 
-        const userObj = data.user || data.data?.user || (data.email ? data : {});
-        if (userObj && Object.keys(userObj).length > 0) {
-          localStorage.setItem("user", JSON.stringify(userObj));
-        }
-
-        // Backend response role: role 1 means admin
-        const rawRole =
-          userObj.role ??
-          userObj.user_role ??
-          data.role ??
-          data.user_role ??
-          data.data?.role ??
-          data.data?.user_role;
-
-        const isAdmin =
-          Number(rawRole) === 1 ||
-          String(rawRole).trim() === "1" ||
-          String(rawRole).toLowerCase() === "admin";
-
-        if (isAdmin) {
-          localStorage.setItem("ql_admin_token", token || "ql_admin_session");
-          localStorage.setItem("role", "admin");
+        setLoginSuccess("Login successful! Redirecting to dashboard...");
+        setTimeout(() => {
           window.location.href = "/admin";
-        } else {
-          window.location.href = "/";
-        }
+        }, 600);
       } else {
-        const rawError =
-          data.message ||
-          (Array.isArray(data.detail) ? data.detail.map((d) => d.msg || d).join(", ") : data.detail) ||
-          data.error ||
-          "";
-
-        const lower = String(rawError).toLowerCase().trim();
-        let formattedMessage = "Incorrect email or password. Please try again or use 'Forgot password'.";
+        const rawError = data.error || data.message || data.detail || "";
+        const lower = String(rawError).toLowerCase();
+        let formattedMessage = "Unable to sign in. Please verify your email and password.";
 
         if (
-          lower.includes("not_found") ||
-          lower.includes("not found") ||
-          lower.includes("doesn't exist") ||
-          lower.includes("no user") ||
-          lower.includes("unregistered") ||
-          lower.includes("user_not_found")
-        ) {
-          formattedMessage = "No account found with this email. Please sign up first.";
-        } else if (
-          lower.includes("invalid_credentials") ||
+          response.status === 401 ||
           lower.includes("invalid") ||
           lower.includes("incorrect") ||
-          lower.includes("credential") ||
+          lower.includes("not found") ||
           lower.includes("password")
         ) {
-          formattedMessage = "Incorrect email or password. Please try again or use 'Forgot password'.";
+          formattedMessage = "Incorrect email or password. Please try again or use 'Forgot password?'.";
         } else if (lower.includes("network") || lower.includes("failed to fetch") || lower.includes("connect")) {
           formattedMessage = "Unable to connect to the server. Please check your internet connection.";
         } else if (rawError && !rawError.startsWith("ERR_")) {
@@ -301,298 +296,582 @@ export function Login({ initialMode = "login", initialForgotOpen = false, onSwit
     }
   };
 
-  /* ── Reusable Input Styles (Scoped & Collision-Proof) ─ */
-  const loginInputStyle = {
-    width: "100%",
-    height: "48px",
-    backgroundColor: "#ffffff",
-    background: "#ffffff",
-    border: "1.5px solid #dde4f0",
-    borderRadius: "12px",
-    padding: "0 44px 0 44px",
-    fontSize: "14.5px",
-    fontFamily: "inherit",
-    fontWeight: "450",
-    color: "#0d1b35",
-    outline: "none",
-    boxSizing: "border-box",
-    appearance: "none",
-    WebkitAppearance: "none",
-    transition: "border-color 0.15s, box-shadow 0.15s",
+  /* ── Register Submit -> Open OTP Modal ────────────── */
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    setRegError("");
+    setRegSuccess("");
+    setSendingError("");
+
+    const cleanName = regName.trim();
+    const cleanEmail = regEmail.trim().toLowerCase();
+    const cleanPhone = regPhone.trim().replace(/\D/g, "");
+
+    if (!cleanName) {
+      setRegError("Please enter your full name.");
+      return;
+    }
+    if (!cleanEmail || !cleanEmail.includes("@")) {
+      setRegError("Please enter a valid email address.");
+      return;
+    }
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      setRegError("Please enter a valid 10-digit phone number.");
+      return;
+    }
+    if (regPassword.length < 8) {
+      setRegError("Password must be at least 8 characters long.");
+      return;
+    }
+    if (strengthScore < 2) {
+      setRegError("Password is too weak. Please include numbers, uppercase or special characters.");
+      return;
+    }
+    if (regPassword !== regConfirmPassword) {
+      setRegError("Passwords do not match!");
+      return;
+    }
+
+    // Instantly open the OTP modal
+    setIsOtpModalOpen(true);
+    setIsSendingCode(true);
+    setSendingError("");
+
+    const initiatePromise = initiateSignup({
+      fullname: cleanName,
+      email: cleanEmail,
+      phone: cleanPhone,
+      user_role: 3,
+    })
+      .then((result) => {
+        setSignupToken(result.signup_token);
+        setIsSendingCode(false);
+        return result.signup_token;
+      })
+      .catch((err) => {
+        const msg = err?.message || "Failed to send verification code. Please check your details.";
+        setSendingError(msg);
+        setIsSendingCode(false);
+        throw err;
+      });
+
+    pendingInitiateRef.current = initiatePromise;
   };
 
-  const isAnyLoading = isLoginLoading || isGoogleLoading;
+  /* ── Verify OTP and Create Account ────────────────── */
+  const handleVerifyOtp = async (otpCode) => {
+    let tokenToUse = signupToken;
+    if (!tokenToUse && pendingInitiateRef.current) {
+      tokenToUse = await pendingInitiateRef.current.catch(() => null);
+    }
+
+    if (!tokenToUse) {
+      throw new Error(sendingError || "Sending code failed. Please click Resend Code.");
+    }
+
+    await verifySignupOtp({
+      signup_token: tokenToUse,
+      otp: otpCode,
+      password: regPassword,
+    });
+
+    setIsOtpModalOpen(false);
+    setLoginSuccess("Account created successfully! Please log in.");
+    setLoginEmail(regEmail);
+
+    setRegName("");
+    setRegEmail("");
+    setRegPhone("");
+    setRegPassword("");
+    setRegConfirmPassword("");
+    setSignupToken("");
+    pendingInitiateRef.current = null;
+
+    setTimeout(() => {
+      handleSwitchToLogin();
+    }, 1000);
+  };
+
+  /* ── Resend OTP ────────────────────────────────────── */
+  const handleResendOtp = async () => {
+    setSendingError("");
+    setIsSendingCode(true);
+    const cleanName = regName.trim();
+    const cleanEmail = regEmail.trim().toLowerCase();
+    const cleanPhone = regPhone.trim().replace(/\D/g, "");
+
+    try {
+      const result = await initiateSignup({
+        fullname: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone,
+        user_role: 3,
+      });
+
+      setSignupToken(result.signup_token);
+      return result;
+    } catch (err) {
+      setSendingError(err?.message || "Failed to resend verification code.");
+      throw err;
+    } finally {
+      setIsSendingCode(false);
+    }
+  };
 
   return (
-    <div className={`ql-root ql-mode-${mode}${isAnyLoading ? " ql-loading-active" : ""}`}>
-
-      {/* ── FORM STAGE (SLIDES LEFT <-> RIGHT) ───────────── */}
-      <div className="ql-forms-stage">
-
-        {/* ── 1. LOGIN FORM PANEL ─────────────────────────── */}
-        <div className="ql-panel ql-panel-login">
-          <div className="ql-inner">
-
-          {/* Brand Logo */}
-          <div className="ql-brand">
-            <img
-              src="/logo-transparent.png"
-              alt="Queueless - Smart Queue Management for a Smoother Tomorrow"
-              className="ql-brand-img"
-            />
-          </div>
-
-          {/* Login Card */}
-          <div className="ql-card">
-            <div className="ql-card-head">
-              <h2 className="ql-card-title">Welcome Back</h2>
-              <p className="ql-card-sub">Login to continue to QueueLess</p>
+    <div className={`ql-login-page ${mode === "register" ? "ql-signup-active" : "ql-login-active"}`}>
+      <div className="ql-login-split">
+        {/* ── FORM COLUMN (LEFT ON LOGIN, SLIDES TO RIGHT ON SIGNUP) ── */}
+        <div className="ql-login-left">
+          <div className="ql-login-form-wrap">
+            {/* Brand Logo */}
+            <div className="ql-logo-box">
+              <img
+                src="/queueless-logo-card.png"
+                alt="QueueLess"
+                className="ql-brand-logo"
+              />
             </div>
 
-            {loginError && (
-              <div
-                className="ql-alert ql-alert-error"
-                role="alert"
-                onClick={() => setLoginError("")}
-                title="Click to dismiss"
-                style={{ cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-                  </svg>
-                  <span>{loginError}</span>
-                </div>
-                <span style={{ fontSize: "14px", opacity: 0.6, paddingLeft: "8px", lineHeight: 1 }}>✕</span>
-              </div>
-            )}
-            {loginSuccess && (
-              <div
-                className="ql-alert ql-alert-success"
-                role="status"
-                onClick={() => setLoginSuccess("")}
-                title="Click to dismiss"
-                style={{ cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
-                  </svg>
-                  <span>{loginSuccess}</span>
-                </div>
-                <span style={{ fontSize: "14px", opacity: 0.6, paddingLeft: "8px", lineHeight: 1 }}>✕</span>
-              </div>
-            )}
+            {mode === "register" ? (
+              /* ── REGISTER / CREATE ACCOUNT VIEW ── */
+              <div className="ql-pane-fade" key="register-pane">
+                <h1 className="ql-title">Create an Account</h1>
+                <p className="ql-subtitle">Join QueueLess for smarter, faster queue management</p>
 
-            <form onSubmit={handleLoginSubmit} className="ql-form">
-              {/* Email */}
-              <div className="ql-field">
-                <span className="ql-field-icon">
-                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-                  </svg>
-                </span>
-                <input
-                  id="ql-login-email"
-                  type="email"
-                  placeholder="Email address"
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  required
-                  style={loginInputStyle}
-                  onFocus={e => { e.target.style.borderColor = "#2563eb"; e.target.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.14)"; }}
-                  onBlur={e => { e.target.style.borderColor = "#dde4f0"; e.target.style.boxShadow = "none"; }}
-                />
-              </div>
+                {/* Alerts */}
+                {regError && (
+                  <div className="ql-alert-banner ql-alert-error" role="alert" onClick={() => setRegError("")}>
+                    <span>{regError}</span>
+                    <button type="button" className="ql-alert-dismiss">✕</button>
+                  </div>
+                )}
+                {regSuccess && (
+                  <div className="ql-alert-banner ql-alert-success" role="status" onClick={() => setRegSuccess("")}>
+                    <span>{regSuccess}</span>
+                    <button type="button" className="ql-alert-dismiss">✕</button>
+                  </div>
+                )}
 
-              {/* Password */}
-              <div className="ql-field">
-                <span className="ql-field-icon">
-                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                  </svg>
-                </span>
-                <input
-                  id="ql-login-password"
-                  type={showLoginPassword ? "text" : "password"}
-                  placeholder="Password"
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  required
-                  style={{ ...loginInputStyle, paddingRight: "46px" }}
-                  onFocus={e => { e.target.style.borderColor = "#2563eb"; e.target.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.14)"; }}
-                  onBlur={e => { e.target.style.borderColor = "#dde4f0"; e.target.style.boxShadow = "none"; }}
-                />
-                <button type="button" className="ql-eye-btn" onClick={() => setShowLoginPassword(!showLoginPassword)} aria-label="Toggle password">
-                  {showLoginPassword ? (
-                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                      <line x1="1" y1="1" x2="23" y2="23"/>
-                    </svg>
-                  ) : (
-                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-                    </svg>
-                  )}
-                </button>
-              </div>
-
-              {/* Options */}
-              <div className="ql-row-options">
-                <label className="ql-remember">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    style={{ position: "absolute", opacity: 0, width: 0, height: 0 }}
-                  />
-                  <span className="ql-cb-box" style={{
-                    backgroundColor: rememberMe ? "#2563eb" : "#ffffff",
-                    borderColor: rememberMe ? "#2563eb" : "#cbd5e1",
-                  }}>
-                    {rememberMe && (
-                      <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-                        <polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                <form onSubmit={handleRegisterSubmit} className="ql-form" noValidate>
+                  {/* Full Name */}
+                  <div className="ql-input-group">
+                    <span className="ql-input-icon">
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
                       </svg>
+                    </span>
+                    <input
+                      id="ql-reg-name"
+                      type="text"
+                      placeholder="Enter your full name"
+                      value={regName}
+                      onChange={(e) => setRegName(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  {/* Email Address */}
+                  <div className="ql-input-group">
+                    <span className="ql-input-icon">
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="2" y="4" width="20" height="16" rx="2" />
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                      </svg>
+                    </span>
+                    <input
+                      id="ql-reg-email"
+                      type="email"
+                      autoComplete="username email"
+                      placeholder="Enter your email address"
+                      value={regEmail}
+                      onChange={(e) => setRegEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  {/* Phone Number */}
+                  <div className="ql-input-group">
+                    <span className="ql-input-icon">
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                      </svg>
+                    </span>
+                    <input
+                      id="ql-reg-phone"
+                      type="tel"
+                      placeholder="Enter 10-digit phone number"
+                      maxLength={10}
+                      value={regPhone}
+                      onChange={(e) => setRegPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                      required
+                    />
+                  </div>
+
+                  {/* Password */}
+                  <div className="ql-input-group">
+                    <span className="ql-input-icon">
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                    </span>
+                    <input
+                      id="ql-reg-password"
+                      type={showRegPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      placeholder="Create a strong password"
+                      value={regPassword}
+                      onChange={(e) => setRegPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="ql-eye-btn"
+                      onClick={() => setShowRegPassword(!showRegPassword)}
+                      aria-label={showRegPassword ? "Hide password" : "Show password"}
+                    >
+                      {showRegPassword ? (
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      ) : (
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                          <line x1="1" y1="1" x2="23" y2="23" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Password Strength Indicator */}
+                  {regPassword && (
+                    <div className="ql-strength-box">
+                      <div className="ql-strength-header">
+                        <span className="ql-strength-text">Password Strength:</span>
+                        <span className="ql-strength-badge" style={{ color: strengthInfo.color }}>
+                          {strengthInfo.label}
+                        </span>
+                      </div>
+                      <div className="ql-strength-bars">
+                        {[1, 2, 3, 4].map((seg) => (
+                          <div
+                            key={seg}
+                            className="ql-strength-seg"
+                            style={{
+                              background: seg <= strengthScore ? strengthInfo.color : "#e2e8f0",
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <div className="ql-strength-reqs">
+                        <span className={`ql-req-chip ${hasMinLength ? "ql-req-met" : ""}`}>
+                          {hasMinLength ? "✓" : "○"} 8+ chars
+                        </span>
+                        <span className={`ql-req-chip ${hasUppercase ? "ql-req-met" : ""}`}>
+                          {hasUppercase ? "✓" : "○"} Uppercase
+                        </span>
+                        <span className={`ql-req-chip ${hasNumber ? "ql-req-met" : ""}`}>
+                          {hasNumber ? "✓" : "○"} Number
+                        </span>
+                        <span className={`ql-req-chip ${hasSpecial ? "ql-req-met" : ""}`}>
+                          {hasSpecial ? "✓" : "○"} Symbol
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Confirm Password */}
+                  <div className={`ql-input-group ${regConfirmPassword ? (isPasswordMatched ? "ql-input-match" : "ql-input-mismatch") : ""}`}>
+                    <span className="ql-input-icon">
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                    </span>
+                    <input
+                      id="ql-reg-confirm-password"
+                      type={showRegConfirmPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      placeholder="Confirm your password"
+                      value={regConfirmPassword}
+                      onChange={(e) => setRegConfirmPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="ql-eye-btn"
+                      onClick={() => setShowRegConfirmPassword(!showRegConfirmPassword)}
+                      aria-label={showRegConfirmPassword ? "Hide password" : "Show password"}
+                    >
+                      {showRegConfirmPassword ? (
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      ) : (
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                          <line x1="1" y1="1" x2="23" y2="23" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Password Match Indicator */}
+                  {regConfirmPassword && (
+                    <div className={`ql-match-indicator ${isPasswordMatched ? "ql-matched" : "ql-mismatched"}`}>
+                      {isPasswordMatched ? (
+                        <>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                          <span>Passwords match</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="15" y1="9" x2="9" y2="15" />
+                            <line x1="9" y1="9" x2="15" y2="15" />
+                          </svg>
+                          <span>Passwords do not match</span>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    className="ql-btn-primary"
+                    disabled={isSendingCode}
+                  >
+                    {isSendingCode ? (
+                      <>
+                        <span className="ql-spinner-circle" />
+                        <span>Creating Account...</span>
+                      </>
+                    ) : (
+                      <span>Create Account &rarr;</span>
                     )}
-                  </span>
-                  <span className="ql-remember-text">Remember me</span>
-                </label>
-                <a
-                  href="/forgot-password"
-                  className="ql-forgot"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (!isForgotLoading) handleSwitchToForgot();
-                  }}
-                  style={{
-                    opacity: isForgotLoading ? 0.7 : 1,
-                    pointerEvents: isForgotLoading ? "none" : "auto",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
+                  </button>
+                </form>
+
+                {/* Footer Switch to Login */}
+                <div className="ql-footer-prompt">
+                  <span>Already have an account? </span>
+                  <button
+                    type="button"
+                    className="ql-signup-btn"
+                    onClick={handleSwitchToLogin}
+                  >
+                    Sign In
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* ── LOG IN VIEW ── */
+              <div className="ql-pane-fade" key="login-pane">
+                <h1 className="ql-title">Welcome Back!</h1>
+                <p className="ql-subtitle">Please sign in to access your QueueLess account</p>
+
+                {/* Alerts */}
+                {loginError && (
+                  <div className="ql-alert-banner ql-alert-error" role="alert" onClick={() => setLoginError("")}>
+                    <span>{loginError}</span>
+                    <button type="button" className="ql-alert-dismiss">✕</button>
+                  </div>
+                )}
+                {loginSuccess && (
+                  <div className="ql-alert-banner ql-alert-success" role="status" onClick={() => setLoginSuccess("")}>
+                    <span>{loginSuccess}</span>
+                    <button type="button" className="ql-alert-dismiss">✕</button>
+                  </div>
+                )}
+
+                {/* Form */}
+                <form onSubmit={handleLoginSubmit} className="ql-form" noValidate>
+                  {/* Email Field */}
+                  <div className="ql-input-group">
+                    <span className="ql-input-icon">
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="2" y="4" width="20" height="16" rx="2" />
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                      </svg>
+                    </span>
+                    <input
+                      id="ql-input-email"
+                      type="email"
+                      autoComplete="username email"
+                      placeholder="Enter your email address"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  {/* Password Field */}
+                  <div className="ql-input-group">
+                    <span className="ql-input-icon">
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                    </span>
+                    <input
+                      id="ql-input-password"
+                      type={showLoginPassword ? "text" : "password"}
+                      autoComplete="current-password"
+                      placeholder="Enter your password"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="ql-eye-btn"
+                      onClick={() => setShowLoginPassword(!showLoginPassword)}
+                      aria-label={showLoginPassword ? "Hide password" : "Show password"}
+                    >
+                      {showLoginPassword ? (
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      ) : (
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                          <line x1="1" y1="1" x2="23" y2="23" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Log In Button */}
+                  <button
+                    type="submit"
+                    className="ql-btn-primary"
+                    disabled={isLoginLoading}
+                  >
+                    {isLoginLoading ? (
+                      <>
+                        <span className="ql-spinner-circle" />
+                        <span>Signing in...</span>
+                      </>
+                    ) : (
+                      <span>Sign In &rarr;</span>
+                    )}
+                  </button>
+
+                  {/* Forgot Password Link (Below button, right-aligned) */}
+                  <div className="ql-forgot-wrap">
+                    <button
+                      type="button"
+                      className="ql-forgot-btn"
+                      onClick={handleSwitchToForgot}
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                </form>
+
+                {/* Divider */}
+                <div className="ql-divider">
+                  <span className="ql-div-line" />
+                  <span className="ql-div-text">or continue with</span>
+                  <span className="ql-div-line" />
+                </div>
+
+                {/* Continue with Google */}
+                <button
+                  type="button"
+                  className="ql-btn-google"
+                  onClick={handleGoogleClick}
+                  disabled={isGoogleLoading}
                 >
-                  {isForgotLoading ? (
+                  {isGoogleLoading ? (
                     <>
-                      <span
-                        style={{
-                          width: "12px",
-                          height: "12px",
-                          border: "2px solid #2563eb",
-                          borderTopColor: "transparent",
-                          borderRadius: "50%",
-                          display: "inline-block",
-                          animation: "qlModalSpin 0.7s linear infinite",
-                        }}
-                      />
-                      <span>Sending...</span>
+                      <span className="ql-spinner-circle ql-spinner-dark" />
+                      <span>Connecting Google...</span>
                     </>
                   ) : (
-                    "Forgot password?"
+                    <>
+                      <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.11 0-5.74-2.1-6.68-4.93H1.36v3.15C3.33 21.35 7.4 24 12 24z" />
+                        <path fill="#FBBC05" d="M5.32 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.36A11.94 11.94 0 0 0 0 12c0 1.92.45 3.74 1.36 5.42l3.96-3.15z" />
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.4 0 3.33 2.65 1.36 6.58l3.96 3.15c.94-2.83 3.57-4.98 6.68-4.98z" />
+                      </svg>
+                      <span>Continue with Google</span>
+                    </>
                   )}
-                </a>
-              </div>
+                </button>
 
-              {/* Submit */}
-              <button type="submit" className="ql-submit" disabled={isLoginLoading}>
-                {isLoginLoading ? (
-                  <><span className="ql-spin"></span>Logging in...</>
+                {/* Sign Up Footer */}
+                <div className="ql-footer-prompt">
+                  <span>Don't have an account? </span>
+                  <button
+                    type="button"
+                    className="ql-signup-btn"
+                    onClick={handleSwitchToRegister}
+                  >
+                    Create an Account
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── HERO SCENE COLUMN (RIGHT ON LOGIN, SLIDES TO LEFT ON SIGNUP) ── */}
+        <div className="ql-login-right">
+          <div className="ql-hero-scene-wrap">
+            <div className="ql-hero-headline-wrap" key={mode}>
+              <h2 className="ql-hero-heading">
+                {mode === "register" ? (
+                  <>
+                    Get Started with <span className="ql-hero-brand-blue">QueueLess</span>
+                  </>
                 ) : (
-                  <>Login&nbsp;
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-                    </svg>
+                  <>
+                    Smarter <span className="ql-hero-brand-blue">Queue</span> Management
                   </>
                 )}
-              </button>
-            </form>
-
-            {/* Divider */}
-            <div className="ql-divider">
-              <span className="ql-divider-line"/>
-              <span className="ql-divider-text">Or continue with</span>
-              <span className="ql-divider-line"/>
+              </h2>
+              <div className="ql-hero-accent-bar" />
             </div>
 
-            {/* Google */}
-            <button
-              type="button"
-              className="ql-google"
-              onClick={handleGoogleClick}
-              disabled={isGoogleLoading}
-              style={{ opacity: isGoogleLoading ? 0.75 : 1, cursor: isGoogleLoading ? "wait" : "pointer" }}
-            >
-              {isGoogleLoading ? (
-                <>
-                  <span className="ql-spin" />
-                  <span>Checking Google account...</span>
-                </>
-              ) : (
-                <>
-                  <svg width="20" height="20" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
-                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.11 0-5.74-2.1-6.68-4.93H1.36v3.15C3.33 21.35 7.4 24 12 24z"/>
-                    <path fill="#FBBC05" d="M5.32 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.36A11.94 11.94 0 0 0 0 12c0 1.92.45 3.74 1.36 5.42l3.96-3.15z"/>
-                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.4 0 3.33 2.65 1.36 6.58l3.96 3.15c.94-2.83 3.57-4.98 6.68-4.98z"/>
-                  </svg>
-                  Continue with Google
-                </>
-              )}
-            </button>
-
-            {/* Footer switch to Register */}
-            <p className="ql-footer">
-              Don&apos;t have an account?{" "}
-              <button type="button" className="ql-signup" onClick={handleSwitchToRegister}>
-                Sign Up
-              </button>
-            </p>
+            <img
+              src="/queueless-login-scene-feathered.png"
+              alt="QueueLess Smart Queue Display Token A-042"
+              className="ql-hero-artwork"
+            />
           </div>
         </div>
       </div>
 
-        {/* ── 2. REGISTER FORM PANEL (RIGHT) ────────────────── */}
-        <div className="ql-panel ql-panel-register">
-          <RegisterPanel onSwitchToLogin={handleSwitchToLogin} />
-        </div>
-      </div>
-
-      {/* ── 3. SLIDING HERO OVERLAY (RIGHT <-> LEFT) ────── */}
-      <div className="ql-hero-overlay">
-        {/* Active on Right edge in Login mode */}
-        <img
-          src="/hero-right.png?v=5"
-          alt="Queueless — Less Waiting, More Doing."
-          className="ql-hero-img ql-hero-login"
-        />
-
-        {/* Active on Left edge in Register mode */}
-        <img
-          src="/hero-left.png?v=5"
-          alt="Queueless — Be a Part of a Smarter Tomorrow."
-          className="ql-hero-img ql-hero-register"
-        />
-      </div>
-
-      {/* ── 4. FORGOT PASSWORD POPUP MODAL ────────────────── */}
+      {/* Forgot Password Modal */}
       <ForgotPasswordModal
         isOpen={isForgotModalOpen}
         onClose={() => setIsForgotModalOpen(false)}
-        email={loginEmail}
       />
 
-      {/* ── 5. FULL-PAGE BLURRED LOADING OVERLAY ─────────── */}
-      {isAnyLoading && (
-        <div className="ql-loading-overlay" aria-label="Loading" role="status">
-          <div className="ql-loader-card">
-            <div className="ql-spinner-disc">
-              <div className="ql-spinner-inner"></div>
-              <div className="ql-spinner-core"></div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Email OTP Verification Modal for Registration */}
+      <EmailOtpModal
+        isOpen={isOtpModalOpen}
+        email={regEmail}
+        isSendingCode={isSendingCode}
+        sendingError={sendingError}
+        onVerifyOtp={handleVerifyOtp}
+        onResendOtp={handleResendOtp}
+        onCancel={() => {
+          setIsOtpModalOpen(false);
+          setIsSendingCode(false);
+        }}
+      />
     </div>
   );
 }
