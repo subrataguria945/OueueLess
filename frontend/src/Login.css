@@ -1,113 +1,75 @@
 /* ==========================================================================
-   QUEUELESS — OFFICIAL LOGIN PAGE STYLES (MATCHING MOCKUP)
-   Pixel-perfect alignment with original reference design:
-   Seamless left hero illustration & QueueLess logo, dual layered corner wave,
-   and clean floating card with anti-autofill white inputs.
+   QUEUELESS — OFFICIAL MODERN SPLIT LOGIN UI (MATCHING MOCKUP)
+   Left: Clean White Canvas with Form (Logo, Title, Inputs, Button, Forgot, Google, SignUp)
+   Right: Soft Light Blue Panel with "Smarter Queue Management" & Full Illustration
    ========================================================================== */
 
-/* ── 1. PAGE BACKGROUND & CANVAS ─────────────────────────────────────────── */
-.ql-mockup-page {
-  position: relative;
+/* ── 1. MAIN SPLIT SCREEN WRAPPER ────────────────────────────────────────── */
+.ql-split-auth-page {
+  display: flex;
   min-height: 100vh;
   width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow-x: hidden;
-  background: radial-gradient(circle at 18% 22%, #f4f8fe 0%, #edf5fd 50%, #e2eeff 100%);
+  background: #ffffff;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   box-sizing: border-box;
+  overflow-x: hidden;
 }
 
-/* ── 2. TOP RIGHT LAYERED CORNER WAVE ────────────────────────────────────── */
-.ql-wave-tr {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: clamp(230px, 24vw, 360px);
-  height: clamp(230px, 24vw, 360px);
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* ── 3. MAIN CONTENT CONTAINER ───────────────────────────────────────────── */
-.ql-mockup-container {
+/* ── 2. LEFT PANEL: WHITE FORM SECTION ───────────────────────────────────── */
+.ql-auth-form-panel {
+  flex: 0 0 46%;
+  width: 46%;
+  min-width: 380px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  max-width: 1060px;
-  margin: auto;
-  padding: 24px 32px;
-  gap: clamp(28px, 4vw, 64px);
+  background: #ffffff;
+  padding: 40px 36px;
+  box-sizing: border-box;
   position: relative;
   z-index: 2;
+  animation: ql-fade-in 0.4s ease-out;
+}
+
+.ql-form-content-box {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
   box-sizing: border-box;
 }
 
-/* ── 4. LEFT COLUMN: SEAMLESS ARTWORK (NO BOX BORDER) ────────────────────── */
-.ql-mockup-left {
-  flex: 1;
+/* ── 3. BRAND LOGO AT TOP LEFT ───────────────────────────────────────────── */
+.ql-brand-logo-wrap {
+  margin-bottom: 28px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  max-width: 490px;
-  width: 100%;
-  box-sizing: border-box;
-  animation: ql-fade-in 0.5s ease-out;
 }
 
-.ql-hero-graphic {
-  width: 100%;
-  max-width: 480px;
-  height: auto;
-  object-fit: contain;
-  display: block;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-/* ── 5. RIGHT COLUMN: WHITE FLOATING CARD ────────────────────────────────── */
-.ql-mockup-right {
-  flex: 0 0 385px;
-  width: 100%;
-  max-width: 385px;
-  box-sizing: border-box;
-  animation: ql-slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.ql-mockup-card {
-  background: #ffffff;
-  border-radius: 24px;
-  padding: 36px 32px 30px;
-  box-shadow: 0 16px 40px -10px rgba(37, 99, 235, 0.1), 0 4px 16px -2px rgba(15, 23, 42, 0.03);
-  border: 1px solid rgba(226, 232, 240, 0.85);
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.ql-card-logo-center {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 6px;
-}
-
-.ql-card-brand-img {
-  height: 42px;
+.ql-brand-logo-img {
+  height: 38px;
   width: auto;
   object-fit: contain;
+  display: block;
 }
 
-.ql-card-heading {
-  font-size: 24px;
+/* ── 4. HEADINGS ─────────────────────────────────────────────────────────── */
+.ql-form-title {
+  font-size: 28px;
   font-weight: 700;
   color: #0f172a;
-  text-align: center;
-  margin: 4px 0 22px;
-  letter-spacing: -0.3px;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.4px;
 }
 
-/* ── 6. ALERT BANNERS ────────────────────────────────────────────────────── */
+.ql-form-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0 0 24px 0;
+  font-weight: 450;
+}
+
+/* ── 5. ALERT NOTIFICATIONS ──────────────────────────────────────────────── */
 .ql-alert-banner {
   display: flex;
   align-items: center;
@@ -144,34 +106,34 @@
   margin-left: 8px;
 }
 
-/* ── 7. INPUT FIELDS & ANTI-AUTOFILL WHITE BACKGROUND ────────────────────── */
-.ql-auth-form {
+/* ── 6. FORM FIELDS & ANTI-AUTOFILL WHITE INPUTS ─────────────────────────── */
+.ql-login-form {
   display: flex;
   flex-direction: column;
   width: 100%;
 }
 
-.ql-form-field {
+.ql-input-box {
   position: relative;
   display: flex;
   align-items: center;
-  height: 44px;
+  height: 46px;
   background: #ffffff;
   border: 1.2px solid #e2e8f0;
   border-radius: 10px;
-  padding: 0 13px;
-  gap: 11px;
-  margin-bottom: 12px;
+  padding: 0 14px;
+  gap: 12px;
+  margin-bottom: 14px;
   transition: border-color 0.15s, box-shadow 0.15s;
   box-sizing: border-box;
 }
 
-.ql-form-field:focus-within {
-  border-color: #0066ff;
-  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+.ql-input-box:focus-within {
+  border-color: #0062ff;
+  box-shadow: 0 0 0 3px rgba(0, 98, 255, 0.1);
 }
 
-.ql-field-icon {
+.ql-box-icon {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -179,12 +141,12 @@
   flex-shrink: 0;
 }
 
-.ql-form-field input {
+.ql-input-box input {
   flex: 1;
   border: none;
   outline: none;
   background: transparent;
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 450;
   color: #0f172a;
   height: 100%;
@@ -194,22 +156,22 @@
   font-family: inherit;
 }
 
-.ql-form-field input::placeholder {
+.ql-input-box input::placeholder {
   color: #94a3b8;
   font-weight: 400;
 }
 
-/* Prevent Chrome autofill pale blue/yellow background */
-.ql-form-field input:-webkit-autofill,
-.ql-form-field input:-webkit-autofill:hover,
-.ql-form-field input:-webkit-autofill:focus,
-.ql-form-field input:-webkit-autofill:active {
+/* Prevent Chrome browser autofill from tinting inputs yellow/pale-blue */
+.ql-input-box input:-webkit-autofill,
+.ql-input-box input:-webkit-autofill:hover,
+.ql-input-box input:-webkit-autofill:focus,
+.ql-input-box input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 40px #ffffff inset !important;
   -webkit-text-fill-color: #0f172a !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 
-.ql-field-eye {
+.ql-box-toggle {
   background: transparent;
   border: none;
   outline: none;
@@ -222,72 +184,186 @@
   transition: color 0.15s;
 }
 
-.ql-field-eye:hover {
+.ql-box-toggle:hover {
   color: #0f172a;
 }
 
-/* ── 8. FORGOT PASSWORD ACTION ───────────────────────────────────────────── */
-.ql-forgot-container {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: -2px;
-  margin-bottom: 20px;
-}
-
-.ql-forgot-action {
-  background: transparent;
-  border: none;
-  padding: 0;
-  color: #0066ff;
-  font-size: 12.5px;
-  font-weight: 500;
-  cursor: pointer;
-  text-decoration: none;
-  transition: color 0.15s;
-  font-family: inherit;
-}
-
-.ql-forgot-action:hover {
-  color: #004ecc;
-  text-decoration: underline;
-}
-
-/* ── 9. PRIMARY SUBMIT BUTTON ────────────────────────────────────────────── */
-.ql-btn-primary-signin {
+/* ── 7. PRIMARY SUBMIT BUTTON ("Log In ->") ──────────────────────────────── */
+.ql-btn-login-submit {
   width: 100%;
-  height: 44px;
-  background: #0066ff;
+  height: 46px;
+  background: #0062ff;
   color: #ffffff;
   border: none;
   border-radius: 10px;
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.28);
+  box-shadow: 0 4px 14px rgba(0, 98, 255, 0.28);
   transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
   font-family: inherit;
 }
 
-.ql-btn-primary-signin:hover:not(:disabled) {
+.ql-btn-login-submit:hover:not(:disabled) {
   background: #0052cc;
-  box-shadow: 0 6px 16px rgba(0, 102, 255, 0.38);
+  box-shadow: 0 6px 18px rgba(0, 98, 255, 0.38);
   transform: translateY(-1px);
 }
 
-.ql-btn-primary-signin:active:not(:disabled) {
+.ql-btn-login-submit:active:not(:disabled) {
   transform: translateY(0);
 }
 
-.ql-btn-primary-signin:disabled {
+.ql-btn-login-submit:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
 
-/* ── 10. SPINNER ANIMATIONS ──────────────────────────────────────────────── */
+/* ── 8. FORGOT PASSWORD ACTION (BELOW BUTTON, RIGHT-ALIGNED) ─────────────── */
+.ql-forgot-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+  margin-bottom: 16px;
+}
+
+.ql-forgot-link-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: #0062ff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.15s;
+  font-family: inherit;
+}
+
+.ql-forgot-link-btn:hover {
+  color: #004ecc;
+  text-decoration: underline;
+}
+
+/* ── 9. DIVIDER ("-- or --") ─────────────────────────────────────────────── */
+.ql-or-divider-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.ql-or-bar {
+  flex: 1;
+  height: 1px;
+  background: #e2e8f0;
+}
+
+.ql-or-tag {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+/* ── 10. CONTINUE WITH GOOGLE BUTTON ─────────────────────────────────────── */
+.ql-btn-google-auth {
+  width: 100%;
+  height: 46px;
+  background: #ffffff;
+  border: 1.2px solid #e2e8f0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.ql-btn-google-auth:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.ql-btn-google-auth:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ── 11. SIGN UP PROMPT FOOTER ───────────────────────────────────────────── */
+.ql-signup-prompt {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 13.5px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.ql-signup-action {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: #0062ff;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: color 0.15s;
+  font-family: inherit;
+}
+
+.ql-signup-action:hover {
+  color: #004ecc;
+  text-decoration: underline;
+}
+
+/* ── 12. RIGHT HERO PANEL: SMARTER QUEUE MANAGEMENT ──────────────────────── */
+.ql-auth-hero-panel {
+  flex: 1;
+  width: 54%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 65% 45%, #f4f8fe 0%, #edf5fd 55%, #e1edfe 100%);
+  padding: 32px;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  animation: ql-fade-in 0.5s ease-out;
+}
+
+.ql-hero-content-wrap {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ql-right-hero-graphic {
+  width: 100%;
+  max-width: 580px;
+  height: auto;
+  max-height: 85vh;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* ── 13. SPINNER ─────────────────────────────────────────────────────────── */
 .ql-spinner-circle {
   width: 16px;
   height: 16px;
@@ -308,90 +384,18 @@
   }
 }
 
-/* ── 11. OR DIVIDER ──────────────────────────────────────────────────────── */
-.ql-divider-container {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 16px 0;
+@keyframes ql-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-.ql-divider-rule {
-  flex: 1;
-  height: 1px;
-  background: #e2e8f0;
-}
-
-.ql-divider-label {
-  font-size: 10.5px;
-  font-weight: 700;
-  color: #94a3b8;
-  letter-spacing: 0.5px;
-}
-
-/* ── 12. CONTINUE WITH GOOGLE BUTTON ─────────────────────────────────────── */
-.ql-btn-google-continue {
-  width: 100%;
-  height: 44px;
-  background: #ffffff;
-  border: 1.2px solid #e2e8f0;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  color: #0f172a;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-  transition: all 0.15s;
-  font-family: inherit;
-}
-
-.ql-btn-google-continue:hover:not(:disabled) {
-  background: #f8fafc;
-  border-color: #cbd5e1;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-}
-
-.ql-btn-google-continue:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-/* ── 13. BOTTOM SWITCH FOOTER ────────────────────────────────────────────── */
-.ql-bottom-switch {
-  text-align: center;
-  margin-top: 20px;
-  font-size: 13px;
-  color: #64748b;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-}
-
-.ql-switch-signup-link {
-  background: transparent;
-  border: none;
-  padding: 0;
-  color: #0066ff;
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-  transition: color 0.15s;
-  font-family: inherit;
-}
-
-.ql-switch-signup-link:hover {
-  color: #004ecc;
-  text-decoration: underline;
-}
-
-/* ── 14. REGISTER OVERRIDES WHEN EMBEDDED ────────────────────────────────── */
+/* ── 14. REGISTER EMBED OVERRIDES ────────────────────────────────────────── */
 .ql-register-wrapper {
-  padding: 26px 28px 22px;
+  width: 100%;
 }
 
 .ql-register-wrapper .ql-panel-register .ql-inner {
@@ -409,67 +413,45 @@
   background: transparent;
 }
 
-/* ── 15. KEYFRAME ANIMATIONS ─────────────────────────────────────────────── */
-@keyframes ql-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes ql-slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ── 16. RESPONSIVE BREAKPOINTS ──────────────────────────────────────────── */
-@media (max-width: 880px) {
-  .ql-mockup-container {
+/* ── 15. RESPONSIVE BREAKPOINTS ──────────────────────────────────────────── */
+@media (max-width: 960px) {
+  .ql-split-auth-page {
     flex-direction: column;
-    padding: 24px 16px;
-    gap: 20px;
   }
 
-  .ql-mockup-left {
+  .ql-auth-hero-panel {
     display: none;
   }
 
-  .ql-mockup-right {
-    max-width: 390px;
+  .ql-auth-form-panel {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    padding: 32px 20px;
   }
 
-  .ql-mockup-card {
-    padding: 32px 24px 26px;
-    border-radius: 20px;
+  .ql-form-content-box {
+    max-width: 400px;
+    margin: auto;
   }
 }
 
 @media (max-width: 440px) {
-  .ql-mockup-card {
-    padding: 26px 18px 22px;
-    border-radius: 18px;
+  .ql-auth-form-panel {
+    padding: 24px 16px;
   }
 
-  .ql-card-heading {
-    font-size: 22px;
-    margin-bottom: 18px;
+  .ql-form-title {
+    font-size: 25px;
   }
 
-  .ql-form-field {
-    height: 42px;
+  .ql-input-box {
+    height: 44px;
   }
 
-  .ql-btn-primary-signin,
-  .ql-btn-google-continue {
-    height: 42px;
-    font-size: 13.5px;
+  .ql-btn-login-submit,
+  .ql-btn-google-auth {
+    height: 44px;
+    font-size: 14px;
   }
 }
