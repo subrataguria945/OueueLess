@@ -100,38 +100,41 @@ export function AdminProvider({ children }) {
   const [isUsersLoading, setIsUsersLoading] = useState(true);
   const [usersError, setUsersError] = useState(null);
 
-  // Initialize admin profile: Only department, accessLevel, and bio are read from localStorage
+  // Initialize admin profile from cached profile, logged user, or defaults
   const [adminProfile, setAdminProfile] = useState(() => {
     let loggedUser = {};
     try {
       loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
     } catch (e) {}
 
-    let localCustomFields = {
-      department: "System Architecture & Operations",
-      accessLevel: "Role Clearance (System Enforced)",
-      bio: "Master administrator for QueueLess platform, token moderation, shop subscriptions & system configuration.",
-    };
+    let savedProfile = {};
+    try {
+      const saved = localStorage.getItem("ql_admin_profile");
+      if (saved) savedProfile = JSON.parse(saved) || {};
+    } catch (e) {}
 
-    const saved = localStorage.getItem("ql_admin_profile");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === "object") {
-          localCustomFields = {
-            department: parsed.department || localCustomFields.department,
-            accessLevel: parsed.accessLevel || localCustomFields.accessLevel,
-            bio: parsed.bio !== undefined ? parsed.bio : localCustomFields.bio,
-          };
-        }
-      } catch (e) {}
-    }
+    const realName = (
+      savedProfile.name ||
+      loggedUser.fullname ||
+      loggedUser.full_name ||
+      loggedUser.name ||
+      ""
+    ).trim() || "Administrator";
 
-    const realName = loggedUser.fullname || loggedUser.name || "Sujit Kar";
-    const realPhone = loggedUser.phone && loggedUser.phone !== "+91 98765 43210" ? loggedUser.phone : "";
-    const realEmail = loggedUser.email || "admin@gmail.com";
-    const realAddress = loggedUser.address || "";
-    const realImage = loggedUser.profile_image || null;
+    const realPhone =
+      savedProfile.phone ||
+      (loggedUser.phone && loggedUser.phone !== "+91 98765 43210" ? loggedUser.phone : "");
+
+    const realEmail = savedProfile.email || loggedUser.email || "";
+    const realAddress = savedProfile.address || loggedUser.address || "";
+    const realImage =
+      savedProfile.avatarImg ||
+      loggedUser.profile_image ||
+      loggedUser.profileimage ||
+      null;
+    const realRole = savedProfile.role || loggedUser.role || "Super Admin";
+    const realJoined = savedProfile.joinedOn || "12 Jan 2026";
+    const realStatus = savedProfile.status || "Active";
 
     return {
       name: realName,
@@ -139,12 +142,15 @@ export function AdminProvider({ children }) {
       email: realEmail,
       phone: realPhone,
       address: realAddress,
-      role: loggedUser.role || "Super Admin",
-      joinedOn: "12 Jan 2026",
-      status: "Active",
-      department: localCustomFields.department,
-      accessLevel: localCustomFields.accessLevel,
-      bio: localCustomFields.bio,
+      role: realRole,
+      joinedOn: realJoined,
+      status: realStatus,
+      department: savedProfile.department || "System Architecture & Operations",
+      accessLevel: savedProfile.accessLevel || "Role Clearance (System Enforced)",
+      bio:
+        savedProfile.bio !== undefined
+          ? savedProfile.bio
+          : "Master administrator for QueueLess platform, token moderation, shop subscriptions & system configuration.",
       avatarBg: "#0f172a",
       avatarColor: "#ffffff",
       avatarImg: realImage,
@@ -160,9 +166,17 @@ export function AdminProvider({ children }) {
       const res = await authFetch(ALL_USERS_API_URL, { method: "GET" });
       const data = await res.json().catch(() => null);
 
-      if (res.ok && Array.isArray(data)) {
+      const userList = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.data)
+        ? data.data
+        : Array.isArray(data?.users)
+        ? data.users
+        : [];
+
+      if (res.ok && (Array.isArray(data) || userList.length >= 0)) {
         // Strictly only regular users (exclude Owner and Admin)
-        const onlyRegularUsers = data.filter(isRegularUser);
+        const onlyRegularUsers = userList.filter(isRegularUser);
 
         const mapped = onlyRegularUsers.map(mapApiUserToDashboard);
         setUsersData(mapped);
@@ -173,32 +187,83 @@ export function AdminProvider({ children }) {
           loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
         } catch (e) {}
 
-        const adminFromApi = data.find(
-          (u) =>
-            (loggedUser.email && u.email?.toLowerCase() === loggedUser.email.toLowerCase()) ||
-            (loggedUser.id && (u.user_id === loggedUser.id || u.user_id === loggedUser.userid)) ||
-            (loggedUser.userid && (u.user_id === loggedUser.userid || u.user_id === loggedUser.id)) ||
-            u.role?.toLowerCase() === "admin" ||
-            u.role?.toLowerCase() === "super admin"
-        );
+        const currentAdminId = Number(loggedUser.user_id ?? loggedUser.userid ?? loggedUser.id ?? 0);
+        const currentEmail = String(loggedUser.email || "").trim().toLowerCase();
+
+        // Find Admin record from /user/all:
+        // Priority 1: Match logged in user's ID
+        // Priority 2: Match logged in user's email
+        // Priority 3: First user in database with role "Admin" / "Super Admin" or user_role === 1
+        const adminFromApi =
+          (currentAdminId > 0 &&
+            userList.find((u) => Number(u.user_id ?? u.userid ?? u.id) === currentAdminId)) ||
+          (currentEmail &&
+            userList.find((u) => String(u.email || "").trim().toLowerCase() === currentEmail)) ||
+          userList.find((u) => {
+            const roleStr = String(u.role || "").trim().toLowerCase();
+            const roleNum = Number(u.user_role !== undefined ? u.user_role : u.role);
+            return roleNum === 1 || roleStr.includes("admin");
+          });
 
         if (adminFromApi) {
-          const apiName = (adminFromApi.full_name || adminFromApi.fullname || "").trim();
+          const apiName = (
+            adminFromApi.full_name ||
+            adminFromApi.fullname ||
+            adminFromApi.name ||
+            ""
+          ).trim();
           const apiEmail = adminFromApi.email || loggedUser.email || "";
-          const apiPhone = adminFromApi.phone || "";
+          const apiPhone = adminFromApi.phone || adminFromApi.mobile || "";
           const apiAddress = adminFromApi.address || "";
-          const apiImage = adminFromApi.profile_image || adminFromApi.profileimage || null;
+          const apiImage =
+            adminFromApi.profile_image ||
+            adminFromApi.profileimage ||
+            adminFromApi.avatarImg ||
+            null;
+          const apiRole =
+            adminFromApi.role && typeof adminFromApi.role === "string" && adminFromApi.role.trim()
+              ? adminFromApi.role
+              : Number(adminFromApi.user_role) === 1
+              ? "Super Admin"
+              : "Admin";
+          const apiStatus =
+            adminFromApi.account_status !== undefined
+              ? (adminFromApi.account_status ? "Active" : "Suspended")
+              : "Active";
 
-          setAdminProfile((prev) => ({
-            ...prev,
-            name: apiName || prev.name,
-            email: apiEmail || prev.email,
-            phone: apiPhone || prev.phone,
-            address: apiAddress || prev.address,
-            avatarImg: apiImage || prev.avatarImg,
-            status: adminFromApi.account_status !== undefined ? (adminFromApi.account_status ? "Active" : "Suspended") : prev.status,
-            role: adminFromApi.role || prev.role || "Super Admin",
-          }));
+          let formattedJoined = "";
+          if (adminFromApi.joined_date || adminFromApi.createdat) {
+            try {
+              const d = new Date(adminFromApi.joined_date || adminFromApi.createdat);
+              if (!isNaN(d.getTime())) {
+                formattedJoined = d.toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                });
+              }
+            } catch (e) {}
+          }
+
+          setAdminProfile((prev) => {
+            const nextProfile = {
+              ...prev,
+              name: apiName || prev.name,
+              email: apiEmail || prev.email,
+              phone: apiPhone || prev.phone,
+              address: apiAddress || prev.address,
+              avatarImg: apiImage !== undefined ? apiImage : prev.avatarImg,
+              status: apiStatus || prev.status,
+              role: apiRole || prev.role,
+              joinedOn: formattedJoined || prev.joinedOn,
+            };
+
+            try {
+              localStorage.setItem("ql_admin_profile", JSON.stringify(nextProfile));
+            } catch (e) {}
+
+            return nextProfile;
+          });
 
           try {
             const currentStoredUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -213,7 +278,7 @@ export function AdminProvider({ children }) {
                 phone: apiPhone || currentStoredUser.phone,
                 address: apiAddress || currentStoredUser.address,
                 profile_image: apiImage || currentStoredUser.profile_image,
-                role: adminFromApi.role || currentStoredUser.role,
+                role: apiRole || currentStoredUser.role,
               })
             );
           } catch (err) {}
@@ -519,7 +584,7 @@ export function AdminProvider({ children }) {
       : USER_UPDATE_API_URL;
 
     const payload = {
-      fullname: adminProfile.name || loggedUser.fullname || "Sujit Kar",
+      fullname: adminProfile.name || loggedUser.fullname || "Administrator",
       phone: adminProfile.phone || loggedUser.phone || "",
       address: adminProfile.address || loggedUser.address || "",
       profile_image: newImage || "",
@@ -537,6 +602,11 @@ export function AdminProvider({ children }) {
         try {
           const updatedUser = { ...loggedUser, profile_image: newImage || null };
           localStorage.setItem("user", JSON.stringify(updatedUser));
+          const currentAdminProf = JSON.parse(localStorage.getItem("ql_admin_profile") || "{}");
+          localStorage.setItem(
+            "ql_admin_profile",
+            JSON.stringify({ ...currentAdminProf, avatarImg: newImage || null })
+          );
         } catch (e) {}
         fetchAdminProfile();
       } else {
@@ -632,14 +702,7 @@ export function AdminProvider({ children }) {
       };
       setAdminProfile(updatedProfile);
 
-      localStorage.setItem(
-        "ql_admin_profile",
-        JSON.stringify({
-          department: editAdminForm.department || "System Architecture & Operations",
-          accessLevel: editAdminForm.accessLevel || "Role Clearance (System Enforced)",
-          bio: editAdminForm.bio || "",
-        })
-      );
+      localStorage.setItem("ql_admin_profile", JSON.stringify(updatedProfile));
 
       showToast("Administrator profile updated successfully in database!", "success");
       setEditAdminModalOpen(false);

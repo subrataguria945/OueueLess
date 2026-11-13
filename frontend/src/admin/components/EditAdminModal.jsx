@@ -111,7 +111,7 @@ export function EditAdminModal() {
                   readOnly
                   disabled
                   className="adm-input adm-input-disabled"
-                  value={adminProfile.email || "admin@gmail.com"}
+                  value={editAdminForm.email || adminProfile.email || ""}
                 />
               </div>
             </div>

@@ -129,6 +129,18 @@ export function SettingsPage() {
                 <span className="adm-detail-label">Role Clearance</span>
                 <span className="adm-detail-value">{adminProfile.accessLevel}</span>
               </div>
+
+              <div className="adm-detail-item">
+                <span className="adm-detail-label">Joined Date</span>
+                <span className="adm-detail-value">{adminProfile.joinedOn || "N/A"}</span>
+              </div>
+
+              <div className="adm-detail-item">
+                <span className="adm-detail-label">Account Status</span>
+                <span className={`adm-badge ${adminProfile.status === "Active" ? "adm-badge-success" : "adm-badge-warning"}`}>
+                  {adminProfile.status || "Active"}
+                </span>
+              </div>
             </div>
 
             {/* Bio Box */}
