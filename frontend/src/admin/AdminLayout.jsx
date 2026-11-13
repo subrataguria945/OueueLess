@@ -3,6 +3,7 @@ import { NavLink, useNavigate, useLocation } from "react-router";
 import { useAdmin } from "./AdminContext";
 import { AddOwnerModal } from "./components/AddOwnerModal";
 import { EditOwnerModal } from "./components/EditOwnerModal";
+import { EditUserModal } from "./components/EditUserModal";
 import { EditAdminModal } from "./components/EditAdminModal";
 import { PlanModals } from "./components/PlanModals";
 import { AdminImageCropModal } from "../AdminImageCropModal";
@@ -356,6 +357,7 @@ export function AdminLayout({ children }) {
       {/* ── MODALS MOUNTED GLOBALLY ──────────────────────────────── */}
       <AddOwnerModal />
       <EditOwnerModal />
+      <EditUserModal />
       <EditAdminModal />
       <PlanModals />
 

@@ -703,6 +703,122 @@ export function AdminProvider({ children }) {
     }
   };
 
+  // ── EDIT CUSTOMER / USER MODAL STATE ────────────────────────────────────
+  const [editUserModalOpen, setEditUserModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [editUserForm, setEditUserForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    status: "Active",
+  });
+  const [isSavingUser, setIsSavingUser] = useState(false);
+  const [editUserError, setEditUserError] = useState("");
+
+  const handleOpenEditUser = (user) => {
+    if (!user) return;
+    setEditingUser(user);
+    setEditUserForm({
+      name: user.name || "",
+      email: user.email || "",
+      phone: user.phone && user.phone !== "N/A" ? user.phone : "",
+      address: user.address && user.address !== "N/A" ? user.address : "",
+      status: user.status || "Active",
+    });
+    setEditUserError("");
+    setEditUserModalOpen(true);
+  };
+
+  const handleSaveUser = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!editingUser) return;
+
+    const trimmedName = (editUserForm.name || "").trim();
+    const trimmedEmail = (editUserForm.email || "").trim();
+    const cleanPhone = (editUserForm.phone || "").replace(/\D/g, "");
+
+    if (!trimmedName) {
+      setEditUserError("Customer full name is required.");
+      return;
+    }
+    if (!trimmedEmail) {
+      setEditUserError("Valid email address is required.");
+      return;
+    }
+    if (cleanPhone.length !== 10) {
+      setEditUserError("Phone number must be exactly 10 digits.");
+      return;
+    }
+
+    setIsSavingUser(true);
+    setEditUserError("");
+
+    const updatePayload = {
+      user_id: Number(editingUser.id),
+      fullname: trimmedName,
+      email: trimmedEmail,
+      phone: cleanPhone,
+      address: (editUserForm.address || "").trim(),
+      account_status: editUserForm.status === "Active",
+    };
+
+    try {
+      try {
+        const targetUrl = USER_UPDATE_API_URL.includes("?")
+          ? `${USER_UPDATE_API_URL}&user_id=${editingUser.id}`
+          : `${USER_UPDATE_API_URL}?user_id=${editingUser.id}`;
+        await authFetch(targetUrl, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatePayload),
+        }).catch(() => null);
+      } catch (err1) {}
+
+      // Update state in usersData
+      setUsersData((prev) => {
+        const updated = prev.map((u) => {
+          if (u.id === editingUser.id) {
+            return {
+              ...u,
+              name: trimmedName,
+              initial: trimmedName ? trimmedName.charAt(0).toUpperCase() : "U",
+              email: trimmedEmail,
+              phone: cleanPhone,
+              address: (editUserForm.address || "").trim() || "N/A",
+              status: editUserForm.status,
+              isActive: editUserForm.status === "Active",
+            };
+          }
+          return u;
+        });
+        return updated;
+      });
+
+      // Update selectedUserDetail if open
+      setSelectedUserDetail((prev) => {
+        if (!prev || prev.id !== editingUser.id) return prev;
+        return {
+          ...prev,
+          name: trimmedName,
+          initial: trimmedName ? trimmedName.charAt(0).toUpperCase() : "U",
+          email: trimmedEmail,
+          phone: cleanPhone,
+          address: (editUserForm.address || "").trim() || "N/A",
+          status: editUserForm.status,
+          isActive: editUserForm.status === "Active",
+        };
+      });
+
+      setEditUserModalOpen(false);
+      showToast(`Customer "${trimmedName}" updated successfully!`, "success");
+    } catch (err) {
+      setEditUserError(err.message || "Could not update customer details.");
+    } finally {
+      setIsSavingUser(false);
+    }
+  };
+
   // ── PROFILE PHOTO & DB SYNC ───────────────────────────────────────────
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [rawSelectedImage, setRawSelectedImage] = useState(null);
@@ -990,6 +1106,18 @@ export function AdminProvider({ children }) {
         // Delete User
         handleDeleteUser,
         deletingUserId,
+        // Edit User / Customer Modal
+        editUserModalOpen,
+        setEditUserModalOpen,
+        editingUser,
+        setEditingUser,
+        editUserForm,
+        setEditUserForm,
+        isSavingUser,
+        editUserError,
+        setEditUserError,
+        handleOpenEditUser,
+        handleSaveUser,
         // Profile Photo
         cropModalOpen,
         setCropModalOpen,
