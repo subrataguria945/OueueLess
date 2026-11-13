@@ -12,7 +12,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
-      /* ── HIDE SCROLLBAR GLOBALLY (ALL PAGES & ELEMENTS REMAIN SCROLLABLE) ── */
+      /* ── GLOBAL RESET & HIDE SCROLLBAR ─────────────────────────────────── */
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow-x: hidden;
+      }
+      #root {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+      }
       html,
       body,
       *,
