@@ -1,595 +1,606 @@
 /* ==========================================================================
-   QUEUELESS — MODERN PREMIUM SAAS AUTHENTICATION
-   Sleek Frosted Glassmorphism, Ambient Mesh Backdrop & Royal Blue Accents
+   QUEUELESS — ORGANIC CURVED AUTHENTICATION SUITE
+   Faithfully crafted to match the reference curved dual-panel aesthetic
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-/* ── VIEWPORT CONTAINER & AMBIENT MESH ───────────────────────────────────── */
-.ql-auth-viewport {
-  position: relative;
+:root {
+  --ql-curve-primary: #059669;
+  --ql-curve-primary-dark: #064e3b;
+  --ql-curve-primary-mid: #047857;
+  --ql-curve-primary-light: #10b981;
+  --ql-curve-pill-bg: #d1fae5;
+  --ql-curve-pill-border: #a7f3d0;
+  --ql-curve-pill-text: #064e3b;
+}
+
+/* ── VIEWPORT CANVAS (MUTED SLATE BACKGROUND) ────────────────────────────── */
+.ql-curved-canvas {
   min-height: 100vh;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f8fafc;
-  background-image: radial-gradient(#e2e8f0 1.2px, transparent 1.2px);
-  background-size: 24px 24px;
-  padding: 40px 16px;
+  background-color: #52525b;
+  padding: 32px 16px;
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  overflow-x: hidden;
   box-sizing: border-box;
 }
 
-.ql-auth-viewport *,
-.ql-auth-viewport *::before,
-.ql-auth-viewport *::after {
+.ql-curved-canvas *,
+.ql-curved-canvas *::before,
+.ql-curved-canvas *::after {
   box-sizing: border-box;
 }
 
-/* Floating Ambient Gradient Orbs */
-.ql-bg-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(85px);
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.7;
-}
-
-.ql-bg-orb-top {
-  width: 500px;
-  height: 500px;
-  top: -150px;
-  left: 10%;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.16) 0%, rgba(147, 197, 253, 0.05) 60%, transparent 75%);
-}
-
-.ql-bg-orb-bottom {
-  width: 480px;
-  height: 480px;
-  bottom: -150px;
-  right: 12%;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(191, 219, 254, 0.04) 60%, transparent 75%);
-}
-
-/* ── MAIN BOX WRAPPER ────────────────────────────────────────────────────── */
-.ql-auth-box {
+/* ── MAIN CURVED CARD CONTAINER ──────────────────────────────────────────── */
+.ql-curved-card {
   position: relative;
-  z-index: 1;
   width: 100%;
-  max-width: 440px;
+  max-width: 880px;
+  min-height: 500px;
+  background-color: #ffffff;
+  border-radius: 36px;
+  overflow: hidden;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  box-shadow: 0 25px 65px -10px rgba(0, 0, 0, 0.35), 0 10px 25px -5px rgba(0, 0, 0, 0.2);
 }
 
-/* ── BRAND LOGO & LIVE STATUS BADGE ──────────────────────────────────────── */
-.ql-brand-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 24px;
-  text-align: center;
-}
-
-.ql-logo-badge {
+/* ── LEFT HERO PANEL (CURVED WAVE + GREETING) ────────────────────────────── */
+.ql-curved-hero {
+  position: relative;
+  width: 44%;
+  min-height: 500px;
+  background: linear-gradient(155deg, var(--ql-curve-primary-dark) 0%, var(--ql-curve-primary-mid) 45%, var(--ql-curve-primary) 85%, var(--ql-curve-primary-light) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 10px;
+  padding: 40px 32px;
+  color: #ffffff;
+  overflow: hidden;
+  z-index: 2;
+}
+
+/* Bulge curve sweeping into the right white form */
+.ql-hero-bulge-curve {
+  position: absolute;
+  top: 50%;
+  right: -90px;
+  transform: translateY(-50%);
+  width: 180px;
+  height: 380px;
+  border-radius: 50%;
+  background: linear-gradient(155deg, var(--ql-curve-primary-mid) 0%, var(--ql-curve-primary) 70%, var(--ql-curve-primary-light) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Decorative Geometric Corner Arcs */
+.ql-corner-arc {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* White quarter arc in bottom-left of hero */
+.ql-corner-arc-bl {
+  width: 140px;
+  height: 140px;
+  bottom: -60px;
+  left: -60px;
+  background-color: #ffffff;
+}
+
+/* Darker green quarter arc in top-left of hero */
+.ql-corner-arc-tl {
+  width: 160px;
+  height: 160px;
+  top: -80px;
+  left: -80px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+/* Green quarter arc in top-right of white panel */
+.ql-corner-arc-tr {
+  width: 150px;
+  height: 150px;
+  top: -65px;
+  right: -65px;
+  background: linear-gradient(135deg, var(--ql-curve-primary-mid), var(--ql-curve-primary));
+  border-radius: 50%;
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Hero Content Stack */
+.ql-hero-content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 280px;
+  margin: auto;
+}
+
+.ql-hero-logo-circle {
+  width: 66px;
+  height: 66px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   transition: transform 0.25s ease;
 }
 
-.ql-logo-badge:hover {
-  transform: translateY(-2px);
+.ql-hero-logo-circle:hover {
+  transform: scale(1.05);
 }
 
-.ql-brand-logo {
-  height: 42px;
-  width: auto;
+.ql-hero-logo-img {
+  height: 38px;
+  width: 38px;
   object-fit: contain;
 }
 
-.ql-status-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid #e2e8f0;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #64748b;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-}
-
-.ql-status-pulse {
-  width: 6.5px;
-  height: 6.5px;
-  background-color: #10b981;
-  border-radius: 50%;
-  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-  animation: qlRadarPulse 2s infinite;
-}
-
-@keyframes qlRadarPulse {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-}
-
-/* ── FROSTED GLASS AUTH CARD ─────────────────────────────────────────────── */
-.ql-auth-glass-card {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(226, 232, 240, 0.85);
-  border-radius: 20px;
-  padding: 34px 32px 28px;
-  box-shadow:
-    0 20px 48px -12px rgba(15, 23, 42, 0.08),
-    0 4px 14px -2px rgba(15, 23, 42, 0.03);
-}
-
-.ql-card-intro {
+.ql-hero-brand-name {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #ffffff;
   margin-bottom: 22px;
+  text-transform: lowercase;
 }
 
-.ql-card-title {
-  font-size: 24px;
+.ql-hero-headline {
+  font-size: 26px;
   font-weight: 800;
   letter-spacing: -0.4px;
-  color: #0f172a;
-  margin: 0 0 5px 0;
-  line-height: 1.25;
+  color: #ffffff;
+  margin: 0 0 12px 0;
+  line-height: 1.2;
 }
 
-.ql-card-description {
+.ql-hero-subtext {
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 28px 0;
+  max-width: 250px;
+}
+
+/* Ghost Outline Pill Button */
+.ql-hero-pill-btn {
+  border: 1.8px solid rgba(255, 255, 255, 0.9);
+  background: transparent;
+  color: #ffffff;
+  border-radius: 9999px;
+  padding: 10px 36px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit;
+}
+
+.ql-hero-pill-btn:hover {
+  background-color: #ffffff;
+  color: var(--ql-curve-primary-dark);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  transform: translateY(-1px);
+}
+
+.ql-hero-footnote {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 32px;
+}
+
+/* ── RIGHT FORM PANEL (WHITE CANVAS + PILL FORM) ─────────────────────────── */
+.ql-curved-form-area {
+  position: relative;
+  width: 56%;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 44px 48px;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.ql-form-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 380px;
+  margin: auto;
+}
+
+/* Heading */
+.ql-form-heading {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.ql-welcome-title {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--ql-curve-primary);
+  margin: 0 0 4px 0;
+  line-height: 1.15;
+}
+
+.ql-welcome-subtitle {
   font-size: 13.5px;
   color: #64748b;
   margin: 0;
-  line-height: 1.45;
 }
 
-/* ── ALERTS (FEEDBACK BANNERS) ───────────────────────────────────────────── */
-.ql-alert-banner {
+/* Feedback Alerts */
+.ql-curved-alert {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 11px 13px;
-  border-radius: 12px;
-  font-size: 13px;
-  line-height: 1.4;
-  margin-bottom: 18px;
+  padding: 10px 18px;
+  border-radius: 9999px;
+  font-size: 12.5px;
+  line-height: 1.35;
+  margin-bottom: 16px;
   cursor: pointer;
-  animation: qlSlideFade 0.2s ease-out;
+  animation: qlCurvedFade 0.2s ease-out;
 }
 
-@keyframes qlSlideFade {
-  from { opacity: 0; transform: translateY(-4px); }
+@keyframes qlCurvedFade {
+  from { opacity: 0; transform: translateY(-3px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.ql-alert-text-wrap {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  flex: 1;
+.ql-curved-alert-error {
+  background-color: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
 }
 
-.ql-alert-svg {
-  flex-shrink: 0;
+.ql-curved-alert-success {
+  background-color: #d1fae5;
+  border: 1px solid #6ee7b7;
+  color: #065f46;
 }
 
-.ql-alert-close-btn {
+.ql-alert-close {
   background: none;
   border: none;
-  font-size: 13px;
-  line-height: 1;
-  padding: 0 0 0 6px;
-  cursor: pointer;
-  opacity: 0.6;
   color: inherit;
-  transition: opacity 0.15s ease;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0 0 0 6px;
+  opacity: 0.6;
 }
 
-.ql-alert-close-btn:hover {
+.ql-alert-close:hover {
   opacity: 1;
 }
 
-.ql-alert-banner-error {
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #b91c1c;
-}
-
-.ql-alert-banner-success {
-  background-color: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #15803d;
-}
-
-/* ── GOOGLE BUTTON ───────────────────────────────────────────────────────── */
-.ql-google-button {
-  width: 100%;
-  height: 46px;
-  background-color: #ffffff;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: inherit;
-  color: #1e293b;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 11px;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-}
-
-.ql-google-button:hover:not(:disabled) {
-  background-color: #f8fafc;
-  border-color: #cbd5e1;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
-}
-
-.ql-google-button:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.ql-google-button:disabled {
-  opacity: 0.75;
-  cursor: wait;
-}
-
-.ql-google-g-icon {
-  flex-shrink: 0;
-}
-
-/* ── DIVIDER ─────────────────────────────────────────────────────────────── */
-.ql-or-divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 20px 0;
-}
-
-.ql-or-line {
-  flex: 1;
-  height: 1px;
-  background-color: #e2e8f0;
-}
-
-.ql-or-text {
-  font-size: 12px;
-  font-weight: 500;
-  color: #94a3b8;
-  white-space: nowrap;
-}
-
-/* ── FORM & INPUTS ───────────────────────────────────────────────────────── */
-.ql-login-form {
+/* Form */
+.ql-curved-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
-.ql-field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.ql-field-label-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-}
-
-.ql-field-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #334155;
-  user-select: none;
-}
-
-.ql-forgot-password-link {
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: 12px;
-  font-weight: 600;
-  color: #2563eb;
-  cursor: pointer;
-  font-family: inherit;
-  transition: color 0.15s ease;
-}
-
-.ql-forgot-password-link:hover {
-  color: #1d4ed8;
-  text-decoration: underline;
-}
-
-.ql-input-box {
+/* Pill Input Wrapper & Element */
+.ql-pill-input-wrap {
   position: relative;
-  display: flex;
-  align-items: center;
   width: 100%;
 }
 
-.ql-input-icon {
-  position: absolute;
-  left: 14px;
-  color: #94a3b8;
-  display: flex;
-  align-items: center;
-  pointer-events: none;
-  transition: color 0.15s ease;
-}
-
-.ql-input-element {
+.ql-pill-input {
   width: 100%;
   height: 48px;
-  background-color: #ffffff;
-  border: 1.5px solid #dde4f0;
-  border-radius: 12px;
-  padding: 0 16px 0 44px;
+  background-color: var(--ql-curve-pill-bg);
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  padding: 0 24px;
   font-size: 14px;
   font-family: inherit;
-  font-weight: 450;
+  font-weight: 500;
   color: #0f172a;
   outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: all 0.2s ease;
 }
 
-.ql-input-element::placeholder {
-  color: #94a3b8;
+.ql-pill-input::placeholder {
+  color: #64748b;
+  opacity: 0.75;
+  letter-spacing: 0.5px;
 }
 
-.ql-input-element:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3.5px rgba(37, 99, 235, 0.12);
+.ql-pill-input:focus {
+  background-color: #ffffff;
+  border-color: var(--ql-curve-primary);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.16);
 }
 
-.ql-input-box:focus-within .ql-input-icon {
-  color: #2563eb;
+.ql-pill-password-wrap {
+  display: flex;
+  align-items: center;
 }
 
-.ql-input-with-eye {
-  padding-right: 44px;
+.ql-pill-input-pwd {
+  padding-right: 50px;
 }
 
-.ql-eye-toggle-btn {
+.ql-pill-eye-btn {
   position: absolute;
-  right: 12px;
+  right: 16px;
   background: none;
   border: none;
   padding: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: color 0.15s ease, background-color 0.15s ease;
-}
-
-.ql-eye-toggle-btn:hover {
-  color: #2563eb;
-  background-color: #f1f5f9;
-}
-
-/* ── REMEMBER ME OPTIONS ─────────────────────────────────────────────────── */
-.ql-options-bar {
-  display: flex;
-  align-items: center;
-  margin-top: -2px;
-}
-
-.ql-remember-checkbox {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.ql-native-checkbox {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.ql-custom-box {
-  width: 17px;
-  height: 17px;
-  border-radius: 5px;
-  border: 1.5px solid #cbd5e1;
-  background-color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s ease;
-}
-
-.ql-custom-box.checked {
-  background-color: #2563eb;
-  border-color: #2563eb;
-}
-
-.ql-remember-text {
-  font-size: 13px;
-  color: #475569;
-  font-weight: 500;
-}
-
-/* ── SUBMIT CTA BUTTON ───────────────────────────────────────────────────── */
-.ql-auth-submit-btn {
-  width: 100%;
-  height: 48px;
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  color: #ffffff;
-  border: none;
-  border-radius: 12px;
-  font-size: 14.5px;
-  font-weight: 700;
-  font-family: inherit;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  margin-top: 4px;
-}
-
-.ql-auth-submit-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.45);
-  filter: brightness(1.02);
-}
-
-.ql-auth-submit-btn:hover:not(:disabled) .ql-submit-arrow {
-  transform: translateX(3px);
-}
-
-.ql-submit-arrow {
-  transition: transform 0.2s ease;
-}
-
-.ql-auth-submit-btn:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.ql-auth-submit-btn:disabled {
-  opacity: 0.75;
-  cursor: wait;
-}
-
-/* ── SPINNERS ────────────────────────────────────────────────────────────── */
-.ql-inline-spinner {
-  width: 15px;
-  height: 15px;
-  border: 2px solid rgba(37, 99, 235, 0.25);
-  border-top-color: #2563eb;
-  border-radius: 50%;
-  animation: qlRotate 0.7s linear infinite;
-  display: inline-block;
-}
-
-.ql-spinner-white {
-  border-color: rgba(255, 255, 255, 0.35);
-  border-top-color: #ffffff;
-}
-
-@keyframes qlRotate {
-  to { transform: rotate(360deg); }
-}
-
-/* ── FOOTER SWITCH PROMPT ────────────────────────────────────────────────── */
-.ql-card-footer {
-  text-align: center;
-  font-size: 13px;
   color: #64748b;
-  margin-top: 22px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: color 0.15s ease;
 }
 
-.ql-switch-mode-btn {
+.ql-pill-eye-btn:hover {
+  color: var(--ql-curve-primary);
+}
+
+/* Forgot Password Row */
+.ql-forgot-row {
+  text-align: center;
+  margin: -2px 0 6px 0;
+}
+
+.ql-forgot-text-link {
   background: none;
   border: none;
   padding: 0;
-  font-size: 13px;
-  font-weight: 700;
-  color: #2563eb;
+  font-size: 12.5px;
+  color: #64748b;
   cursor: pointer;
   font-family: inherit;
   transition: color 0.15s ease;
 }
 
-.ql-switch-mode-btn:hover {
-  color: #1d4ed8;
+.ql-forgot-text-link:hover {
+  color: var(--ql-curve-primary);
   text-decoration: underline;
 }
 
-.ql-security-note {
+/* Centered Pill Submit Button */
+.ql-submit-row {
   display: flex;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.ql-pill-submit-btn {
+  width: 170px;
+  height: 44px;
+  background-color: var(--ql-curve-primary);
+  color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  font-family: inherit;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  font-size: 11.5px;
-  color: #94a3b8;
-  margin-top: 20px;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ql-pill-submit-btn:hover:not(:disabled) {
+  background-color: var(--ql-curve-primary-dark);
+  box-shadow: 0 6px 20px rgba(5, 150, 105, 0.45);
+  transform: translateY(-1px);
+}
+
+.ql-pill-submit-btn:disabled {
+  opacity: 0.75;
+  cursor: wait;
+}
+
+.ql-curved-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: qlCurvedSpin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes qlCurvedSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Google Pill Button Row */
+.ql-google-pill-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.ql-pill-google-btn {
+  height: 40px;
+  padding: 0 22px;
+  background-color: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #1e293b;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.ql-pill-google-btn:hover:not(:disabled) {
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+.ql-pill-google-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+/* Bottom Switch Text */
+.ql-bottom-switch {
   text-align: center;
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 18px;
+}
+
+.ql-signup-text-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ql-curve-primary);
+  cursor: pointer;
+  font-family: inherit;
+  text-transform: lowercase;
+}
+
+.ql-signup-text-btn:hover {
+  text-decoration: underline;
 }
 
 /* ── REGISTER EMBED SUPPORT ──────────────────────────────────────────────── */
-.ql-register-card-override {
-  padding: 28px 30px;
-}
-
-.ql-register-card-override .ql-inner {
+.ql-register-embed-box {
   width: 100%;
 }
 
-.ql-register-card-override .ql-brand {
+.ql-register-embed-box .ql-inner {
+  width: 100%;
+}
+
+.ql-register-embed-box .ql-brand {
   display: none;
 }
 
-.ql-register-card-override .ql-card {
+.ql-register-embed-box .ql-card {
   padding: 0;
   border: none;
   box-shadow: none;
   background: transparent;
 }
 
-.ql-register-card-override .ql-card-title {
-  font-size: 22px;
+.ql-register-embed-box .ql-card-title {
+  font-size: 24px;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--ql-curve-primary);
   text-align: center;
   margin: 0 0 4px;
 }
 
-.ql-register-card-override .ql-card-sub {
+.ql-register-embed-box .ql-card-sub {
   font-size: 13px;
   color: #64748b;
   text-align: center;
   margin: 0 0 16px;
 }
 
-/* ── MOBILE RESPONSIVENESS ───────────────────────────────────────────────── */
-@media (max-width: 480px) {
-  .ql-auth-viewport {
-    padding: 24px 14px;
+.ql-register-embed-box .ql-field input {
+  border-radius: 9999px !important;
+  background-color: var(--ql-curve-pill-bg) !important;
+  border: 1px solid transparent !important;
+}
+
+.ql-register-embed-box .ql-field input:focus {
+  background-color: #ffffff !important;
+  border-color: var(--ql-curve-primary) !important;
+}
+
+.ql-register-embed-box .ql-submit {
+  border-radius: 9999px !important;
+  background-color: var(--ql-curve-primary) !important;
+}
+
+/* ── MOBILE RESPONSIVENESS (MATCHING MOCKUP FRAMES 2 & 3) ─────────────────── */
+@media (max-width: 800px) {
+  .ql-curved-canvas {
+    padding: 16px 12px;
   }
 
-  .ql-auth-glass-card {
-    padding: 26px 20px;
-    border-radius: 16px;
+  .ql-curved-card {
+    flex-direction: column;
+    max-width: 420px;
+    border-radius: 28px;
+    min-height: auto;
   }
 
-  .ql-card-title {
+  .ql-curved-hero {
+    width: 100%;
+    min-height: 220px;
+    padding: 32px 20px 48px;
+    border-bottom-left-radius: 48px;
+    border-bottom-right-radius: 48px;
+  }
+
+  .ql-hero-bulge-curve {
+    top: auto;
+    bottom: -60px;
+    right: 50%;
+    transform: translateX(50%);
+    width: 260px;
+    height: 120px;
+  }
+
+  .ql-curved-form-area {
+    width: 100%;
+    padding: 32px 24px 36px;
+  }
+
+  .ql-welcome-title {
+    font-size: 26px;
+  }
+
+  .ql-hero-headline {
     font-size: 22px;
   }
 
-  .ql-card-description {
-    font-size: 13px;
+  .ql-hero-subtext {
+    font-size: 12.5px;
+    margin-bottom: 20px;
   }
 
-  .ql-input-element,
-  .ql-auth-submit-btn,
-  .ql-google-button {
+  .ql-pill-input {
     height: 46px;
-    font-size: 14px;
   }
 }
