@@ -286,184 +286,184 @@ export function Login({
   };
 
   return (
-    <div className="ql-split-auth-page">
-      {/* ── LEFT PANEL: CLEAN WHITE LOG IN FORM ── */}
-      <div className="ql-auth-form-panel">
-        <div className="ql-form-content-box">
-          {/* Brand Logo */}
-          <div className="ql-brand-logo-wrap">
-            <img
-              src="/queueless-logo-card.png"
-              alt="QueueLess"
-              className="ql-brand-logo-img"
-            />
-          </div>
-
-          {mode === "register" ? (
-            <div className="ql-register-wrapper">
-              <RegisterPanel onSwitchToLogin={handleSwitchToLogin} />
+    <div className="ql-login-page">
+      <div className="ql-login-split">
+        {/* ── LEFT COLUMN: LOGIN FORM SECTION ── */}
+        <div className="ql-login-left">
+          <div className="ql-login-form-wrap">
+            {/* Brand Logo */}
+            <div className="ql-logo-box">
+              <img
+                src="/queueless-logo-card.png"
+                alt="QueueLess"
+                className="ql-brand-logo"
+              />
             </div>
-          ) : (
-            <>
-              {/* Heading & Subtitle */}
-              <h1 className="ql-form-title">Log In</h1>
-              <p className="ql-form-subtitle">Access your QueueLess account</p>
 
-              {/* Alerts */}
-              {loginError && (
-                <div className="ql-alert-banner ql-alert-error" role="alert" onClick={() => setLoginError("")}>
-                  <span>{loginError}</span>
-                  <button type="button" className="ql-alert-dismiss">✕</button>
-                </div>
-              )}
-              {loginSuccess && (
-                <div className="ql-alert-banner ql-alert-success" role="status" onClick={() => setLoginSuccess("")}>
-                  <span>{loginSuccess}</span>
-                  <button type="button" className="ql-alert-dismiss">✕</button>
-                </div>
-              )}
+            {mode === "register" ? (
+              <div className="ql-register-wrapper">
+                <RegisterPanel onSwitchToLogin={handleSwitchToLogin} />
+              </div>
+            ) : (
+              <>
+                {/* Heading & Subtitle */}
+                <h1 className="ql-title">Log In</h1>
+                <p className="ql-subtitle">Access your QueueLess account</p>
 
-              {/* Form */}
-              <form onSubmit={handleLoginSubmit} className="ql-login-form" noValidate>
-                {/* Email Address Input */}
-                <div className="ql-input-box">
-                  <span className="ql-box-icon">
-                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="2" y="4" width="20" height="16" rx="2" />
-                      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                    </svg>
-                  </span>
-                  <input
-                    id="ql-input-email"
-                    type="email"
-                    autoComplete="username email"
-                    placeholder="Email address"
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
-                    required
-                  />
-                </div>
+                {/* Alerts */}
+                {loginError && (
+                  <div className="ql-alert-banner ql-alert-error" role="alert" onClick={() => setLoginError("")}>
+                    <span>{loginError}</span>
+                    <button type="button" className="ql-alert-dismiss">✕</button>
+                  </div>
+                )}
+                {loginSuccess && (
+                  <div className="ql-alert-banner ql-alert-success" role="status" onClick={() => setLoginSuccess("")}>
+                    <span>{loginSuccess}</span>
+                    <button type="button" className="ql-alert-dismiss">✕</button>
+                  </div>
+                )}
 
-                {/* Password Input */}
-                <div className="ql-input-box">
-                  <span className="ql-box-icon">
-                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                    </svg>
-                  </span>
-                  <input
-                    id="ql-input-password"
-                    type={showLoginPassword ? "text" : "password"}
-                    autoComplete="current-password"
-                    placeholder="Password"
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    required
-                  />
+                {/* Form */}
+                <form onSubmit={handleLoginSubmit} className="ql-form" noValidate>
+                  {/* Email Field */}
+                  <div className="ql-input-group">
+                    <span className="ql-input-icon">
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="2" y="4" width="20" height="16" rx="2" />
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                      </svg>
+                    </span>
+                    <input
+                      id="ql-input-email"
+                      type="email"
+                      autoComplete="username email"
+                      placeholder="Email address"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  {/* Password Field */}
+                  <div className="ql-input-group">
+                    <span className="ql-input-icon">
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                    </span>
+                    <input
+                      id="ql-input-password"
+                      type={showLoginPassword ? "text" : "password"}
+                      autoComplete="current-password"
+                      placeholder="Password"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="ql-eye-btn"
+                      onClick={() => setShowLoginPassword(!showLoginPassword)}
+                      aria-label={showLoginPassword ? "Hide password" : "Show password"}
+                    >
+                      {showLoginPassword ? (
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      ) : (
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                          <line x1="1" y1="1" x2="23" y2="23" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Log In Button */}
                   <button
-                    type="button"
-                    className="ql-box-toggle"
-                    onClick={() => setShowLoginPassword(!showLoginPassword)}
-                    aria-label={showLoginPassword ? "Hide password" : "Show password"}
+                    type="submit"
+                    className="ql-btn-primary"
+                    disabled={isLoginLoading}
                   >
-                    {showLoginPassword ? (
-                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                        <circle cx="12" cy="12" r="3" />
-                      </svg>
+                    {isLoginLoading ? (
+                      <>
+                        <span className="ql-spinner-circle" />
+                        <span>Logging in...</span>
+                      </>
                     ) : (
-                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                        <line x1="1" y1="1" x2="23" y2="23" />
-                      </svg>
+                      <span>Log In &rarr;</span>
                     )}
                   </button>
+
+                  {/* Forgot Password Link (Below button, right-aligned) */}
+                  <div className="ql-forgot-wrap">
+                    <button
+                      type="button"
+                      className="ql-forgot-btn"
+                      onClick={handleSwitchToForgot}
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                </form>
+
+                {/* Divider */}
+                <div className="ql-divider">
+                  <span className="ql-div-line" />
+                  <span className="ql-div-text">or</span>
+                  <span className="ql-div-line" />
                 </div>
 
-                {/* Log In Button */}
+                {/* Continue with Google */}
                 <button
-                  type="submit"
-                  className="ql-btn-login-submit"
-                  disabled={isLoginLoading}
+                  type="button"
+                  className="ql-btn-google"
+                  onClick={handleGoogleClick}
+                  disabled={isGoogleLoading}
                 >
-                  {isLoginLoading ? (
+                  {isGoogleLoading ? (
                     <>
-                      <span className="ql-spinner-circle" />
-                      <span>Logging in...</span>
+                      <span className="ql-spinner-circle ql-spinner-dark" />
+                      <span>Connecting Google...</span>
                     </>
                   ) : (
-                    <span>Log In &rarr;</span>
+                    <>
+                      <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.11 0-5.74-2.1-6.68-4.93H1.36v3.15C3.33 21.35 7.4 24 12 24z" />
+                        <path fill="#FBBC05" d="M5.32 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.36A11.94 11.94 0 0 0 0 12c0 1.92.45 3.74 1.36 5.42l3.96-3.15z" />
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.4 0 3.33 2.65 1.36 6.58l3.96 3.15c.94-2.83 3.57-4.98 6.68-4.98z" />
+                      </svg>
+                      <span>Continue with Google</span>
+                    </>
                   )}
                 </button>
 
-                {/* Forgot Password Link (Below button, right-aligned) */}
-                <div className="ql-forgot-row">
+                {/* Sign Up Footer */}
+                <div className="ql-footer-prompt">
+                  <span>Don't have an account? </span>
                   <button
                     type="button"
-                    className="ql-forgot-link-btn"
-                    onClick={handleSwitchToForgot}
+                    className="ql-signup-btn"
+                    onClick={handleSwitchToRegister}
                   >
-                    Forgot password?
+                    Sign Up
                   </button>
                 </div>
-              </form>
-
-              {/* Divider */}
-              <div className="ql-or-divider-row">
-                <span className="ql-or-bar" />
-                <span className="ql-or-tag">or</span>
-                <span className="ql-or-bar" />
-              </div>
-
-              {/* Continue with Google */}
-              <button
-                type="button"
-                className="ql-btn-google-auth"
-                onClick={handleGoogleClick}
-                disabled={isGoogleLoading}
-              >
-                {isGoogleLoading ? (
-                  <>
-                    <span className="ql-spinner-circle ql-spinner-dark" />
-                    <span>Connecting Google...</span>
-                  </>
-                ) : (
-                  <>
-                    <svg width="20" height="20" viewBox="0 0 24 24">
-                      <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
-                      <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.11 0-5.74-2.1-6.68-4.93H1.36v3.15C3.33 21.35 7.4 24 12 24z" />
-                      <path fill="#FBBC05" d="M5.32 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.36A11.94 11.94 0 0 0 0 12c0 1.92.45 3.74 1.36 5.42l3.96-3.15z" />
-                      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.4 0 3.33 2.65 1.36 6.58l3.96 3.15c.94-2.83 3.57-4.98 6.68-4.98z" />
-                    </svg>
-                    <span>Continue with Google</span>
-                  </>
-                )}
-              </button>
-
-              {/* Sign Up Footer */}
-              <div className="ql-signup-prompt">
-                <span>Don't have an account? </span>
-                <button
-                  type="button"
-                  className="ql-signup-action"
-                  onClick={handleSwitchToRegister}
-                >
-                  Sign Up
-                </button>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* ── RIGHT PANEL: SMARTER QUEUE MANAGEMENT HERO ── */}
-      <div className="ql-auth-hero-panel">
-        <div className="ql-hero-content-wrap">
+        {/* ── RIGHT COLUMN: SEAMLESS ARTWORK (NO HARSH LINE) ── */}
+        <div className="ql-login-right">
           <img
-            src="/ql-right-hero-clean.png"
+            src="/ql-smarter-queue-hero.png"
             alt="Smarter Queue Management"
-            className="ql-right-hero-graphic"
+            className="ql-hero-artwork"
           />
         </div>
       </div>
