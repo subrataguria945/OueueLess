@@ -287,67 +287,45 @@ export function Login({
 
   return (
     <div className="ql-mockup-page">
-      {/* ── TOP RIGHT CORNER WAVE ── */}
+      {/* ── TOP RIGHT LAYERED CORNER WAVE (IDENTICAL TO MOCKUP) ── */}
       <svg
         className="ql-wave-tr"
-        viewBox="0 0 380 380"
+        viewBox="0 0 320 320"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
       >
         <defs>
-          <linearGradient id="qlWaveTrGrad" x1="100%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#4f9cf8" stopOpacity="0.95" />
-            <stop offset="60%" stopColor="#3b82f6" stopOpacity="0.85" />
-            <stop offset="100%" stopColor="#2563eb" stopOpacity="0.75" />
+          <linearGradient id="qlTrLightGrad" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#93c5fd" stopOpacity="0.85" />
+            <stop offset="100%" stopColor="#60a5fa" stopOpacity="0.65" />
+          </linearGradient>
+          <linearGradient id="qlTrDarkGrad" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#3b82f6" />
+            <stop offset="100%" stopColor="#1d4ed8" />
           </linearGradient>
         </defs>
+        {/* Layer 1: Outer soft sky blue curve */}
         <path
-          d="M 110,0 C 160,150 230,230 380,265 L 380,0 Z"
-          fill="url(#qlWaveTrGrad)"
+          d="M 50,0 C 90,110 170,195 320,225 L 320,0 Z"
+          fill="url(#qlTrLightGrad)"
         />
-      </svg>
-
-      {/* ── BOTTOM LEFT CORNER WAVE ── */}
-      <svg
-        className="ql-wave-bl"
-        viewBox="0 0 380 380"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-      >
-        <defs>
-          <linearGradient id="qlWaveBlGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#4f9cf8" stopOpacity="0.95" />
-            <stop offset="60%" stopColor="#3b82f6" stopOpacity="0.85" />
-            <stop offset="100%" stopColor="#2563eb" stopOpacity="0.75" />
-          </linearGradient>
-        </defs>
+        {/* Layer 2: Inner vibrant royal blue curve */}
         <path
-          d="M 0,115 C 150,145 230,225 265,380 L 0,380 Z"
-          fill="url(#qlWaveBlGrad)"
+          d="M 135,0 C 165,80 220,145 320,170 L 320,0 Z"
+          fill="url(#qlTrDarkGrad)"
         />
       </svg>
 
       {/* ── MAIN CONTENT CONTAINER ── */}
       <div className="ql-mockup-container">
-        {/* ── LEFT COLUMN: BRANDING & QUEUE ILLUSTRATION ── */}
+        {/* ── LEFT COLUMN: SEAMLESS ORIGINAL ARTWORK & BRANDING ── */}
         <div className="ql-mockup-left">
-          <div className="ql-left-logo-box">
-            <img
-              src="/queueless-logo-card.png"
-              alt="QueueLess Logo"
-              className="ql-left-brand-logo"
-            />
-          </div>
-
-          <div className="ql-left-illustration-box">
-            <img
-              src="/ql-queue-illustration.png"
-              alt="Queue Management Counter Scene"
-              className="ql-queue-img"
-            />
-          </div>
+          <img
+            src="/ql-left-hero-seamless.png"
+            alt="QueueLess Smart Queue Management"
+            className="ql-hero-graphic"
+          />
         </div>
 
         {/* ── RIGHT COLUMN: SIGN IN / REGISTER CARD ── */}
@@ -389,7 +367,7 @@ export function Login({
                 {/* Email Field */}
                 <div className="ql-form-field">
                   <span className="ql-field-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="2" y="4" width="20" height="16" rx="2" />
                       <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                     </svg>
@@ -408,7 +386,7 @@ export function Login({
                 {/* Password Field */}
                 <div className="ql-form-field">
                   <span className="ql-field-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                     </svg>
@@ -429,12 +407,12 @@ export function Login({
                     aria-label={showLoginPassword ? "Hide password" : "Show password"}
                   >
                     {showLoginPassword ? (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                         <circle cx="12" cy="12" r="3" />
                       </svg>
                     ) : (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
                         <line x1="1" y1="1" x2="23" y2="23" />
                       </svg>
@@ -498,7 +476,7 @@ export function Login({
                   </>
                 ) : (
                   <>
-                    <svg width="20" height="20" viewBox="0 0 24 24">
+                    <svg width="19" height="19" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
                       <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.11 0-5.74-2.1-6.68-4.93H1.36v3.15C3.33 21.35 7.4 24 12 24z" />
                       <path fill="#FBBC05" d="M5.32 14.27c-.24-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.36A11.94 11.94 0 0 0 0 12c0 1.92.45 3.74 1.36 5.42l3.96-3.15z" />
