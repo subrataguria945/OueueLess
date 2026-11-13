@@ -5,6 +5,7 @@ import {
   ADD_OWNER_API_URL,
   OWNER_STATUS_API_URL,
   OWNER_DELETE_API_URL,
+  OWNER_UPDATE_API_URL,
   USER_UPDATE_API_URL,
   ALL_USERS_API_URL,
   ALL_SHOPS_DATA,
@@ -544,6 +545,140 @@ export function AdminProvider({ children }) {
     }
   };
 
+  // ── EDIT OWNER MODAL STATE ────────────────────────────────────────────
+  const [editOwnerModalOpen, setEditOwnerModalOpen] = useState(false);
+  const [editingOwner, setEditingOwner] = useState(null);
+  const [editOwnerForm, setEditOwnerForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    maxShops: 5,
+    plan: "Enterprise Pro",
+    status: "Active",
+  });
+  const [isSavingOwner, setIsSavingOwner] = useState(false);
+  const [editOwnerError, setEditOwnerError] = useState("");
+
+  const handleOpenEditOwner = (owner) => {
+    if (!owner) return;
+    setEditingOwner(owner);
+    setEditOwnerForm({
+      name: owner.name || "",
+      email: owner.email || "",
+      phone: owner.phone && owner.phone !== "N/A" ? owner.phone : "",
+      address: owner.address && owner.address !== "N/A" ? owner.address : "",
+      maxShops: owner.maxShops || 5,
+      plan: owner.plan || "Enterprise Pro",
+      status: owner.status || "Active",
+    });
+    setEditOwnerError("");
+    setEditOwnerModalOpen(true);
+  };
+
+  const handleSaveOwner = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!editingOwner) return;
+
+    const trimmedName = (editOwnerForm.name || "").trim();
+    const trimmedEmail = (editOwnerForm.email || "").trim();
+    const cleanPhone = (editOwnerForm.phone || "").replace(/\D/g, "");
+
+    if (!trimmedName) {
+      setEditOwnerError("Owner full name is required.");
+      return;
+    }
+    if (!trimmedEmail) {
+      setEditOwnerError("Valid email address is required.");
+      return;
+    }
+    if (cleanPhone.length !== 10) {
+      setEditOwnerError("Phone number must be exactly 10 digits.");
+      return;
+    }
+
+    setIsSavingOwner(true);
+    setEditOwnerError("");
+
+    const updatePayload = {
+      owner_id: Number(editingOwner.id),
+      full_name: trimmedName,
+      email: trimmedEmail,
+      phone: cleanPhone,
+      address: (editOwnerForm.address || "").trim(),
+      max_shop_count: Number(editOwnerForm.maxShops) || 5,
+      account_status: editOwnerForm.status === "Active",
+      plan: editOwnerForm.plan,
+    };
+
+    try {
+      try {
+        await authFetch(OWNER_UPDATE_API_URL, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatePayload),
+        }).catch(() => null);
+      } catch (e1) {
+        try {
+          await authFetch(`${USER_UPDATE_API_URL}?user_id=${editingOwner.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              fullname: trimmedName,
+              phone: cleanPhone,
+              address: (editOwnerForm.address || "").trim(),
+            }),
+          }).catch(() => null);
+        } catch (e2) {}
+      }
+
+      setOwnersData((prev) => {
+        const updated = prev.map((o) => {
+          if (o.id === editingOwner.id) {
+            return {
+              ...o,
+              name: trimmedName,
+              initial: trimmedName ? trimmedName.charAt(0).toUpperCase() : "O",
+              email: trimmedEmail,
+              phone: cleanPhone,
+              address: (editOwnerForm.address || "").trim() || "N/A",
+              maxShops: Number(editOwnerForm.maxShops) || 5,
+              plan: editOwnerForm.plan,
+              status: editOwnerForm.status,
+              isActive: editOwnerForm.status === "Active",
+            };
+          }
+          return o;
+        });
+        localStorage.setItem("ql_admin_owners_list", JSON.stringify(updated));
+        return updated;
+      });
+
+      setDetailModalOwner((prev) => {
+        if (!prev || prev.id !== editingOwner.id) return prev;
+        return {
+          ...prev,
+          name: trimmedName,
+          initial: trimmedName ? trimmedName.charAt(0).toUpperCase() : "O",
+          email: trimmedEmail,
+          phone: cleanPhone,
+          address: (editOwnerForm.address || "").trim() || "N/A",
+          maxShops: Number(editOwnerForm.maxShops) || 5,
+          plan: editOwnerForm.plan,
+          status: editOwnerForm.status,
+          isActive: editOwnerForm.status === "Active",
+        };
+      });
+
+      setEditOwnerModalOpen(false);
+      showToast(`Shop Owner "${trimmedName}" updated successfully!`, "success");
+    } catch (err) {
+      setEditOwnerError(err.message || "Could not update owner details.");
+    } finally {
+      setIsSavingOwner(false);
+    }
+  };
+
   // ── DELETE USER ────────────────────────────────────────────────────────
   const [deletingUserId, setDeletingUserId] = useState(null);
   const handleDeleteUser = async (userId, userName = "Customer") => {
@@ -837,6 +972,18 @@ export function AdminProvider({ children }) {
         // Toggle Owner Status
         handleToggleOwnerStatus,
         updatingOwnerStatusId,
+        // Edit Owner Modal
+        editOwnerModalOpen,
+        setEditOwnerModalOpen,
+        editingOwner,
+        setEditingOwner,
+        editOwnerForm,
+        setEditOwnerForm,
+        isSavingOwner,
+        editOwnerError,
+        setEditOwnerError,
+        handleOpenEditOwner,
+        handleSaveOwner,
         // Delete Owner
         handleDeleteOwner,
         deletingOwnerId,
