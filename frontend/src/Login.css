@@ -221,6 +221,100 @@
   color: #0f172a;
 }
 
+/* ── PASSWORD STRENGTH INDICATOR ─────────────────────────────────────────── */
+.ql-strength-box {
+  margin-top: -3px;
+  margin-bottom: clamp(6px, 1vh, 10px);
+  animation: ql-fade-in 0.2s ease-out;
+}
+
+.ql-strength-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3.5px;
+}
+
+.ql-strength-text {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.ql-strength-badge {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.ql-strength-bars {
+  display: flex;
+  gap: 4px;
+  height: 3px;
+  margin-bottom: 5px;
+}
+
+.ql-strength-seg {
+  flex: 1;
+  border-radius: 2px;
+  transition: background 0.2s ease;
+}
+
+.ql-strength-reqs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.ql-req-chip {
+  font-size: 9.5px;
+  font-weight: 600;
+  padding: 1px 5.5px;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #94a3b8;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  transition: all 0.15s ease;
+}
+
+.ql-req-chip.ql-req-met {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+/* ── PASSWORD MATCH INDICATOR ────────────────────────────────────────────── */
+.ql-input-group.ql-input-match {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 2.5px rgba(16, 185, 129, 0.12) !important;
+}
+
+.ql-input-group.ql-input-mismatch {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 2.5px rgba(239, 68, 68, 0.12) !important;
+}
+
+.ql-match-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: -4px;
+  margin-bottom: clamp(6px, 1vh, 10px);
+  padding-left: 2px;
+  animation: ql-fade-in 0.2s ease-out;
+}
+
+.ql-match-indicator.ql-matched {
+  color: #10b981;
+}
+
+.ql-match-indicator.ql-mismatched {
+  color: #ef4444;
+}
+
 /* ── 7. PRIMARY SUBMIT BUTTON ("Log In ->" / "Sign Up ->") ───────────────── */
 .ql-btn-primary {
   width: 100%;

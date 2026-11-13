@@ -54,6 +54,26 @@ export function Login({
   const [sendingError, setSendingError] = useState("");
   const pendingInitiateRef = useRef(null);
 
+  /* ── Password Strength & Match Calculations ─────────── */
+  const hasMinLength = regPassword.length >= 8;
+  const hasUppercase = /[A-Z]/.test(regPassword);
+  const hasNumber = /[0-9]/.test(regPassword);
+  const hasSpecial = /[^A-Za-z0-9]/.test(regPassword);
+
+  const strengthScore = [hasMinLength, hasUppercase, hasNumber, hasSpecial].filter(Boolean).length;
+  const strengthInfo = (() => {
+    if (!regPassword) return { label: "", color: "#e2e8f0" };
+    if (strengthScore <= 1) return { label: "Weak", color: "#ef4444" };
+    if (strengthScore === 2) return { label: "Fair", color: "#f97316" };
+    if (strengthScore === 3) return { label: "Good", color: "#eab308" };
+    return { label: "Strong", color: "#10b981" };
+  })();
+
+  const isPasswordMatched =
+    regConfirmPassword.length > 0 && regPassword === regConfirmPassword;
+  const isPasswordMismatch =
+    regConfirmPassword.length > 0 && regPassword !== regConfirmPassword;
+
   const showTemporaryError = (msg, duration = 4000) => {
     if (forgotTimerRef.current) clearTimeout(forgotTimerRef.current);
     setLoginError(msg);
@@ -299,8 +319,12 @@ export function Login({
       setRegError("Please enter a valid 10-digit phone number.");
       return;
     }
-    if (regPassword.length < 6) {
-      setRegError("Password must be at least 6 characters long.");
+    if (regPassword.length < 8) {
+      setRegError("Password must be at least 8 characters long.");
+      return;
+    }
+    if (strengthScore < 2) {
+      setRegError("Password is too weak. Please include numbers, uppercase or special characters.");
       return;
     }
     if (regPassword !== regConfirmPassword) {
@@ -522,8 +546,45 @@ export function Login({
                     </button>
                   </div>
 
+                  {/* Password Strength Indicator */}
+                  {regPassword && (
+                    <div className="ql-strength-box">
+                      <div className="ql-strength-header">
+                        <span className="ql-strength-text">Password Strength:</span>
+                        <span className="ql-strength-badge" style={{ color: strengthInfo.color }}>
+                          {strengthInfo.label}
+                        </span>
+                      </div>
+                      <div className="ql-strength-bars">
+                        {[1, 2, 3, 4].map((seg) => (
+                          <div
+                            key={seg}
+                            className="ql-strength-seg"
+                            style={{
+                              background: seg <= strengthScore ? strengthInfo.color : "#e2e8f0",
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <div className="ql-strength-reqs">
+                        <span className={`ql-req-chip ${hasMinLength ? "ql-req-met" : ""}`}>
+                          {hasMinLength ? "✓" : "○"} 8+ chars
+                        </span>
+                        <span className={`ql-req-chip ${hasUppercase ? "ql-req-met" : ""}`}>
+                          {hasUppercase ? "✓" : "○"} Uppercase
+                        </span>
+                        <span className={`ql-req-chip ${hasNumber ? "ql-req-met" : ""}`}>
+                          {hasNumber ? "✓" : "○"} Number
+                        </span>
+                        <span className={`ql-req-chip ${hasSpecial ? "ql-req-met" : ""}`}>
+                          {hasSpecial ? "✓" : "○"} Symbol
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Confirm Password */}
-                  <div className="ql-input-group">
+                  <div className={`ql-input-group ${regConfirmPassword ? (isPasswordMatched ? "ql-input-match" : "ql-input-mismatch") : ""}`}>
                     <span className="ql-input-icon">
                       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
@@ -558,6 +619,29 @@ export function Login({
                       )}
                     </button>
                   </div>
+
+                  {/* Password Match Indicator */}
+                  {regConfirmPassword && (
+                    <div className={`ql-match-indicator ${isPasswordMatched ? "ql-matched" : "ql-mismatched"}`}>
+                      {isPasswordMatched ? (
+                        <>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                          <span>Passwords match</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="15" y1="9" x2="9" y2="15" />
+                            <line x1="9" y1="9" x2="15" y2="15" />
+                          </svg>
+                          <span>Passwords do not match</span>
+                        </>
+                      )}
+                    </div>
+                  )}
 
                   {/* Submit Button */}
                   <button
