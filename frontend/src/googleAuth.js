@@ -1,17 +1,14 @@
 // ==========================================================================
 // QUEUELESS — OFFICIAL GOOGLE AUTHENTICATION & BACKEND DATABASE SYNC
 // Opens Google's official OAuth Account Picker popup, fetches real Gmail & Name.
-// 1. Checks if the user already exists via /user/login.
-// 2. If exists -> logs in directly with email & password.
-// 3. If user does NOT exist -> registers automatically via /user/register/google.
-// (No mobile number required).
+// Sends payload { fullname, email, google_id } to:
+// POST https://queueless-backend-b2qh.onrender.com/user/google
+// Handles BOTH: registering brand new Google users, and logging in existing users!
 // ==========================================================================
 
-const BACKEND_BASE_URL =
-  import.meta.env.VITE_BACKEND_URL ||
-  "https://queueless-backend-b2qh.onrender.com";
-
-const GOOGLE_AUTH_PASSWORD = "GoogleOAuth@Pass123";
+export const GOOGLE_AUTH_API_URL =
+  import.meta.env.VITE_GOOGLE_AUTH_API_URL ||
+  "https://queueless-backend-b2qh.onrender.com/user/google";
 
 /**
  * Retrieves the configured Google OAuth Client ID
@@ -55,7 +52,7 @@ export async function syncGoogleUserWithDatabase(googleUser) {
   try {
     // 1. Call official backend Google Auth endpoint: POST /user/google
     // Handles BOTH: registering brand new Google users, and logging in existing Google users!
-    const res = await fetch(`${BACKEND_BASE_URL}/user/google`, {
+    const res = await fetch(GOOGLE_AUTH_API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -191,7 +188,7 @@ export async function triggerGoogleSignIn({ onSuccess, onError, onCancel }) {
               provider: "google",
             };
 
-            // Check database & sync: logs in if exists, registers via /user/register/google with google_id
+            // Check database & sync: logs in or registers via POST /user/google with google_id
             const syncResult = await syncGoogleUserWithDatabase(realGoogleUser);
 
             if (syncResult.ok) {
