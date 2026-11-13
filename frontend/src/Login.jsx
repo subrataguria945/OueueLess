@@ -147,6 +147,16 @@ export function Login({
       showTemporaryError("Your session has expired. Please sign in again.");
       return;
     }
+    // If arriving from explicit logout, purge all tokens and prevent auto-redirect
+    if (params.get("logout") === "true") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("ql_admin_token");
+      localStorage.removeItem("refresh_token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("role");
+      sessionStorage.clear();
+      return;
+    }
     // Auto-redirect if user already has an active session
     const existingToken =
       localStorage.getItem("token") ||

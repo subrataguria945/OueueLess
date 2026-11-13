@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { authFetch } from "../apiClient";
+import { authFetch, clearTokens } from "../apiClient";
 import {
   OWNERS_API_URL,
   ADD_OWNER_API_URL,
@@ -709,9 +709,17 @@ export function AdminProvider({ children }) {
 
   // ── LOGOUT ────────────────────────────────────────────────────────────
   const handleLogout = () => {
+    clearTokens();
+    localStorage.removeItem("token");
     localStorage.removeItem("ql_admin_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user");
     localStorage.removeItem("role");
-    window.location.href = "/login";
+    localStorage.removeItem("ql_admin_profile");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("refresh_token");
+    sessionStorage.clear();
+    window.location.href = "/login?logout=true";
   };
 
   return (

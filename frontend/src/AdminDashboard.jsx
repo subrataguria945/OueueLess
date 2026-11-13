@@ -17,6 +17,15 @@ import { SettingsPage } from "./admin/pages/SettingsPage";
 export { mapApiOwnerToDashboard, mapApiUserToDashboard, getOwnerPasswordStrength } from "./admin/adminData";
 
 export function AdminDashboard() {
+  const token =
+    localStorage.getItem("token") ||
+    localStorage.getItem("ql_admin_token") ||
+    sessionStorage.getItem("token");
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
   return (
     <AdminProvider>
       <AdminLayout>
