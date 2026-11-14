@@ -1,4 +1,5 @@
 from Modules.owner.database import get_connection
+from psycopg.types.json import Jsonb
 
 #create shop for owner
 def create_shop_for_owner(user_id: int, data: dict):
@@ -7,11 +8,12 @@ def create_shop_for_owner(user_id: int, data: dict):
             # Authenticated user-এর owner ID বের করো
             cur.execute(
                 """
-                SELECT ownerid
-                FROM public.users
-                WHERE userid = %s
-                  AND roleid = 2
-                  AND status = TRUE
+                SELECT o.ownerid
+                FROM public.owners o
+                JOIN public.users u ON u.userid = o.userid
+                WHERE u.userid = %s
+                  AND u.roleid = 2
+                  AND u.status = TRUE
                 """,
                 (user_id,),
             )
@@ -22,13 +24,11 @@ def create_shop_for_owner(user_id: int, data: dict):
 
             owner_id = user[0]
 
-            # Procedure-এর IN parameter order:
-            # owner_id, user_id, shop_name, description, address, city,
-            # state, pincode, phone, email, shop_image, opening_time, closing_time
+            operating_hours = data["operating_hours"]
             cur.execute(
                 """
                 CALL public.sp_create_shop(
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                     NULL, NULL, NULL
                 )
                 """,
@@ -44,8 +44,9 @@ def create_shop_for_owner(user_id: int, data: dict):
                     data["phone"],
                     data["email"],
                     data["shop_image"],
-                    data["opening_time"],
-                    data["closing_time"],
+                    data["max_daily_tokens"],
+                    data["is_queue_open"],
+                    Jsonb(operating_hours) if operating_hours is not None else None,
                 ),
             )
 
@@ -61,32 +62,34 @@ def create_shop_for_owner(user_id: int, data: dict):
                 "message": status_message,
             }
 
-#Update shop for owner
+
 def update_shop_for_owner(user_id: int, shop_id: int, data: dict):
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT ownerid
-                FROM public.users
-                WHERE userid = %s
-                  AND roleid = 2
-                  AND status = TRUE
+                SELECT o.ownerid
+                FROM public.owners o
+                JOIN public.users u ON u.userid = o.userid
+                WHERE u.userid = %s
+                  AND u.roleid = 2
+                  AND u.status = TRUE
                 """,
                 (user_id,),
             )
             user = cur.fetchone()
 
-            if user is None or user[0] is None:
+            if user is None:
                 return None
 
             owner_id = user[0]
+            hours = data["operating_hours"]
 
             cur.execute(
                 """
                 CALL public.sp_update_shop(
                     %s, %s, %s, %s, %s, %s, %s, %s,
-                    %s, %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s, %s, %s,
                     NULL, NULL
                 )
                 """,
@@ -103,8 +106,9 @@ def update_shop_for_owner(user_id: int, shop_id: int, data: dict):
                     data["phone"],
                     data["email"],
                     data["shop_image"],
-                    data["opening_time"],
-                    data["closing_time"],
+                    data["max_daily_tokens"],
+                    data["is_queue_open"],
+                    Jsonb(hours) if hours is not None else None,
                 ),
             )
 
@@ -113,38 +117,33 @@ def update_shop_for_owner(user_id: int, shop_id: int, data: dict):
                 raise RuntimeError("sp_update_shop returned no result")
 
             status_code, status_message = result
+            return {"status_code": status_code, "message": status_message}
 
-            return {
-                "status_code": status_code,
-                "message": status_message,
-            }
 
-#Delete shop for owner
 def delete_shop_for_owner(user_id: int, shop_id: int):
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT ownerid
-                FROM public.users
-                WHERE userid = %s
-                  AND roleid = 2
-                  AND status = TRUE
+                SELECT o.ownerid
+                FROM public.owners o
+                JOIN public.users u ON u.userid = o.userid
+                WHERE u.userid = %s
+                  AND u.roleid = 2
+                  AND u.status = TRUE
                 """,
                 (user_id,),
             )
             user = cur.fetchone()
 
-            if user is None or user[0] is None:
+            if user is None:
                 return None
-
-            owner_id = user[0]
 
             cur.execute(
                 """
                 CALL public.sp_delete_shop(%s, %s, %s, NULL, NULL)
                 """,
-                (shop_id, owner_id, user_id),
+                (shop_id, user[0], user_id),
             )
 
             result = cur.fetchone()
@@ -152,7 +151,4 @@ def delete_shop_for_owner(user_id: int, shop_id: int):
                 raise RuntimeError("sp_delete_shop returned no result")
 
             status_code, status_message = result
-            return {
-                "status_code": status_code,
-                "message": status_message,
-            }
+            return {"status_code": status_code, "message": status_message}
