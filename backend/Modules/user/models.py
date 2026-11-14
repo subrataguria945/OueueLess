@@ -46,14 +46,3 @@ class UpdateUserRequest(BaseModel):
     profile_image : str | None = None    
     address : str | None = None
 
-class UserDetail(BaseModel):
-    user_id: int
-    role :  str
-    full_name: str
-    profile_image: str | None = None
-    email: str
-    phone: str | None = None
-    address : str | None = None
-    email_verified : bool
-    account_status: bool
-    joined_date: datetime
