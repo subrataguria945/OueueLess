@@ -29,9 +29,21 @@ def create_shop_route(
         }
 
     if result["status_code"] == 0:
+        message = result["message"]
+
+        if message in {
+            "Maximum shop creation limit reached.",
+            "A shop with this name already exists for this owner.",
+            "Duplicate record detected. Shop creation rejected.",
+        }:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=message,
+            )
+
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=result["message"],
+            detail=message,
         )
 
     raise HTTPException(
@@ -40,7 +52,6 @@ def create_shop_route(
     )
 
 
-#update shop route-------------------------
 @router.put("/update")
 def update_shop_route(
     data: UpdateShopRequest,
@@ -70,6 +81,15 @@ def update_shop_route(
                 detail=message,
             )
 
+        if (
+            "already exists" in message
+            or "Duplicate record detected" in message
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=message,
+            )
+
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=message,
@@ -81,8 +101,7 @@ def update_shop_route(
     )
 
 
-#Delete shop route-------------------------
-@router.delete("/delete")
+@router.delete("/status")
 def delete_shop_route(
     data: DeleteShopRequest,
     user_id: int = Depends(require_active_user),
