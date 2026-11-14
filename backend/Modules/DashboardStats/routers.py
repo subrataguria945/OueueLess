@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from Library.DashboardStats.database import get_dashboard_stats
+from .database import get_dashboard_stats
 from Library.Security.gatekeeper import require_admin
 from .models import DashboardStats
 
