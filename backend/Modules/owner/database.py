@@ -275,3 +275,4 @@ def get_shops_details_from_db(owner_id: int, user_id: int):
             )
             return cur.fetchall()
 
+

@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { authFetch } from "../apiClient";
+import { authFetch, clearTokens } from "../apiClient";
 import {
   OWNERS_API_URL,
   ADD_OWNER_API_URL,
   OWNER_STATUS_API_URL,
   OWNER_DELETE_API_URL,
+  OWNER_UPDATE_API_URL,
   USER_UPDATE_API_URL,
   ALL_USERS_API_URL,
   ALL_SHOPS_DATA,
@@ -100,38 +101,41 @@ export function AdminProvider({ children }) {
   const [isUsersLoading, setIsUsersLoading] = useState(true);
   const [usersError, setUsersError] = useState(null);
 
-  // Initialize admin profile: Only department, accessLevel, and bio are read from localStorage
+  // Initialize admin profile from cached profile, logged user, or defaults
   const [adminProfile, setAdminProfile] = useState(() => {
     let loggedUser = {};
     try {
       loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
     } catch (e) {}
 
-    let localCustomFields = {
-      department: "System Architecture & Operations",
-      accessLevel: "Role Clearance (System Enforced)",
-      bio: "Master administrator for QueueLess platform, token moderation, shop subscriptions & system configuration.",
-    };
+    let savedProfile = {};
+    try {
+      const saved = localStorage.getItem("ql_admin_profile");
+      if (saved) savedProfile = JSON.parse(saved) || {};
+    } catch (e) {}
 
-    const saved = localStorage.getItem("ql_admin_profile");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === "object") {
-          localCustomFields = {
-            department: parsed.department || localCustomFields.department,
-            accessLevel: parsed.accessLevel || localCustomFields.accessLevel,
-            bio: parsed.bio !== undefined ? parsed.bio : localCustomFields.bio,
-          };
-        }
-      } catch (e) {}
-    }
+    const realName = (
+      savedProfile.name ||
+      loggedUser.fullname ||
+      loggedUser.full_name ||
+      loggedUser.name ||
+      ""
+    ).trim() || "Administrator";
 
-    const realName = loggedUser.fullname || loggedUser.name || "Sujit Kar";
-    const realPhone = loggedUser.phone && loggedUser.phone !== "+91 98765 43210" ? loggedUser.phone : "";
-    const realEmail = loggedUser.email || "admin@gmail.com";
-    const realAddress = loggedUser.address || "";
-    const realImage = loggedUser.profile_image || null;
+    const realPhone =
+      savedProfile.phone ||
+      (loggedUser.phone && loggedUser.phone !== "+91 98765 43210" ? loggedUser.phone : "");
+
+    const realEmail = savedProfile.email || loggedUser.email || "";
+    const realAddress = savedProfile.address || loggedUser.address || "";
+    const realImage =
+      savedProfile.avatarImg ||
+      loggedUser.profile_image ||
+      loggedUser.profileimage ||
+      null;
+    const realRole = savedProfile.role || loggedUser.role || "Super Admin";
+    const realJoined = savedProfile.joinedOn || "12 Jan 2026";
+    const realStatus = savedProfile.status || "Active";
 
     return {
       name: realName,
@@ -139,12 +143,15 @@ export function AdminProvider({ children }) {
       email: realEmail,
       phone: realPhone,
       address: realAddress,
-      role: loggedUser.role || "Super Admin",
-      joinedOn: "12 Jan 2026",
-      status: "Active",
-      department: localCustomFields.department,
-      accessLevel: localCustomFields.accessLevel,
-      bio: localCustomFields.bio,
+      role: realRole,
+      joinedOn: realJoined,
+      status: realStatus,
+      department: savedProfile.department || "System Architecture & Operations",
+      accessLevel: savedProfile.accessLevel || "Role Clearance (System Enforced)",
+      bio:
+        savedProfile.bio !== undefined
+          ? savedProfile.bio
+          : "Master administrator for QueueLess platform, token moderation, shop subscriptions & system configuration.",
       avatarBg: "#0f172a",
       avatarColor: "#ffffff",
       avatarImg: realImage,
@@ -160,9 +167,17 @@ export function AdminProvider({ children }) {
       const res = await authFetch(ALL_USERS_API_URL, { method: "GET" });
       const data = await res.json().catch(() => null);
 
-      if (res.ok && Array.isArray(data)) {
+      const userList = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.data)
+        ? data.data
+        : Array.isArray(data?.users)
+        ? data.users
+        : [];
+
+      if (res.ok && (Array.isArray(data) || userList.length >= 0)) {
         // Strictly only regular users (exclude Owner and Admin)
-        const onlyRegularUsers = data.filter(isRegularUser);
+        const onlyRegularUsers = userList.filter(isRegularUser);
 
         const mapped = onlyRegularUsers.map(mapApiUserToDashboard);
         setUsersData(mapped);
@@ -173,32 +188,83 @@ export function AdminProvider({ children }) {
           loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
         } catch (e) {}
 
-        const adminFromApi = data.find(
-          (u) =>
-            (loggedUser.email && u.email?.toLowerCase() === loggedUser.email.toLowerCase()) ||
-            (loggedUser.id && (u.user_id === loggedUser.id || u.user_id === loggedUser.userid)) ||
-            (loggedUser.userid && (u.user_id === loggedUser.userid || u.user_id === loggedUser.id)) ||
-            u.role?.toLowerCase() === "admin" ||
-            u.role?.toLowerCase() === "super admin"
-        );
+        const currentAdminId = Number(loggedUser.user_id ?? loggedUser.userid ?? loggedUser.id ?? 0);
+        const currentEmail = String(loggedUser.email || "").trim().toLowerCase();
+
+        // Find Admin record from /user/all:
+        // Priority 1: Match logged in user's ID
+        // Priority 2: Match logged in user's email
+        // Priority 3: First user in database with role "Admin" / "Super Admin" or user_role === 1
+        const adminFromApi =
+          (currentAdminId > 0 &&
+            userList.find((u) => Number(u.user_id ?? u.userid ?? u.id) === currentAdminId)) ||
+          (currentEmail &&
+            userList.find((u) => String(u.email || "").trim().toLowerCase() === currentEmail)) ||
+          userList.find((u) => {
+            const roleStr = String(u.role || "").trim().toLowerCase();
+            const roleNum = Number(u.user_role !== undefined ? u.user_role : u.role);
+            return roleNum === 1 || roleStr.includes("admin");
+          });
 
         if (adminFromApi) {
-          const apiName = (adminFromApi.full_name || adminFromApi.fullname || "").trim();
+          const apiName = (
+            adminFromApi.full_name ||
+            adminFromApi.fullname ||
+            adminFromApi.name ||
+            ""
+          ).trim();
           const apiEmail = adminFromApi.email || loggedUser.email || "";
-          const apiPhone = adminFromApi.phone || "";
+          const apiPhone = adminFromApi.phone || adminFromApi.mobile || "";
           const apiAddress = adminFromApi.address || "";
-          const apiImage = adminFromApi.profile_image || adminFromApi.profileimage || null;
+          const apiImage =
+            adminFromApi.profile_image ||
+            adminFromApi.profileimage ||
+            adminFromApi.avatarImg ||
+            null;
+          const apiRole =
+            adminFromApi.role && typeof adminFromApi.role === "string" && adminFromApi.role.trim()
+              ? adminFromApi.role
+              : Number(adminFromApi.user_role) === 1
+              ? "Super Admin"
+              : "Admin";
+          const apiStatus =
+            adminFromApi.account_status !== undefined
+              ? (adminFromApi.account_status ? "Active" : "Suspended")
+              : "Active";
 
-          setAdminProfile((prev) => ({
-            ...prev,
-            name: apiName || prev.name,
-            email: apiEmail || prev.email,
-            phone: apiPhone || prev.phone,
-            address: apiAddress || prev.address,
-            avatarImg: apiImage || prev.avatarImg,
-            status: adminFromApi.account_status !== undefined ? (adminFromApi.account_status ? "Active" : "Suspended") : prev.status,
-            role: adminFromApi.role || prev.role || "Super Admin",
-          }));
+          let formattedJoined = "";
+          if (adminFromApi.joined_date || adminFromApi.createdat) {
+            try {
+              const d = new Date(adminFromApi.joined_date || adminFromApi.createdat);
+              if (!isNaN(d.getTime())) {
+                formattedJoined = d.toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                });
+              }
+            } catch (e) {}
+          }
+
+          setAdminProfile((prev) => {
+            const nextProfile = {
+              ...prev,
+              name: apiName || prev.name,
+              email: apiEmail || prev.email,
+              phone: apiPhone || prev.phone,
+              address: apiAddress || prev.address,
+              avatarImg: apiImage !== undefined ? apiImage : prev.avatarImg,
+              status: apiStatus || prev.status,
+              role: apiRole || prev.role,
+              joinedOn: formattedJoined || prev.joinedOn,
+            };
+
+            try {
+              localStorage.setItem("ql_admin_profile", JSON.stringify(nextProfile));
+            } catch (e) {}
+
+            return nextProfile;
+          });
 
           try {
             const currentStoredUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -213,7 +279,7 @@ export function AdminProvider({ children }) {
                 phone: apiPhone || currentStoredUser.phone,
                 address: apiAddress || currentStoredUser.address,
                 profile_image: apiImage || currentStoredUser.profile_image,
-                role: adminFromApi.role || currentStoredUser.role,
+                role: apiRole || currentStoredUser.role,
               })
             );
           } catch (err) {}
@@ -479,6 +545,140 @@ export function AdminProvider({ children }) {
     }
   };
 
+  // ── EDIT OWNER MODAL STATE ────────────────────────────────────────────
+  const [editOwnerModalOpen, setEditOwnerModalOpen] = useState(false);
+  const [editingOwner, setEditingOwner] = useState(null);
+  const [editOwnerForm, setEditOwnerForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    maxShops: 5,
+    plan: "Enterprise Pro",
+    status: "Active",
+  });
+  const [isSavingOwner, setIsSavingOwner] = useState(false);
+  const [editOwnerError, setEditOwnerError] = useState("");
+
+  const handleOpenEditOwner = (owner) => {
+    if (!owner) return;
+    setEditingOwner(owner);
+    setEditOwnerForm({
+      name: owner.name || "",
+      email: owner.email || "",
+      phone: owner.phone && owner.phone !== "N/A" ? owner.phone : "",
+      address: owner.address && owner.address !== "N/A" ? owner.address : "",
+      maxShops: owner.maxShops || 5,
+      plan: owner.plan || "Enterprise Pro",
+      status: owner.status || "Active",
+    });
+    setEditOwnerError("");
+    setEditOwnerModalOpen(true);
+  };
+
+  const handleSaveOwner = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!editingOwner) return;
+
+    const trimmedName = (editOwnerForm.name || "").trim();
+    const trimmedEmail = (editOwnerForm.email || "").trim();
+    const cleanPhone = (editOwnerForm.phone || "").replace(/\D/g, "");
+
+    if (!trimmedName) {
+      setEditOwnerError("Owner full name is required.");
+      return;
+    }
+    if (!trimmedEmail) {
+      setEditOwnerError("Valid email address is required.");
+      return;
+    }
+    if (cleanPhone.length !== 10) {
+      setEditOwnerError("Phone number must be exactly 10 digits.");
+      return;
+    }
+
+    setIsSavingOwner(true);
+    setEditOwnerError("");
+
+    const updatePayload = {
+      owner_id: Number(editingOwner.id),
+      full_name: trimmedName,
+      email: trimmedEmail,
+      phone: cleanPhone,
+      address: (editOwnerForm.address || "").trim(),
+      max_shop_count: Number(editOwnerForm.maxShops) || 5,
+      account_status: editOwnerForm.status === "Active",
+      plan: editOwnerForm.plan,
+    };
+
+    try {
+      try {
+        await authFetch(OWNER_UPDATE_API_URL, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatePayload),
+        }).catch(() => null);
+      } catch (e1) {
+        try {
+          await authFetch(`${USER_UPDATE_API_URL}?user_id=${editingOwner.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              fullname: trimmedName,
+              phone: cleanPhone,
+              address: (editOwnerForm.address || "").trim(),
+            }),
+          }).catch(() => null);
+        } catch (e2) {}
+      }
+
+      setOwnersData((prev) => {
+        const updated = prev.map((o) => {
+          if (o.id === editingOwner.id) {
+            return {
+              ...o,
+              name: trimmedName,
+              initial: trimmedName ? trimmedName.charAt(0).toUpperCase() : "O",
+              email: trimmedEmail,
+              phone: cleanPhone,
+              address: (editOwnerForm.address || "").trim() || "N/A",
+              maxShops: Number(editOwnerForm.maxShops) || 5,
+              plan: editOwnerForm.plan,
+              status: editOwnerForm.status,
+              isActive: editOwnerForm.status === "Active",
+            };
+          }
+          return o;
+        });
+        localStorage.setItem("ql_admin_owners_list", JSON.stringify(updated));
+        return updated;
+      });
+
+      setDetailModalOwner((prev) => {
+        if (!prev || prev.id !== editingOwner.id) return prev;
+        return {
+          ...prev,
+          name: trimmedName,
+          initial: trimmedName ? trimmedName.charAt(0).toUpperCase() : "O",
+          email: trimmedEmail,
+          phone: cleanPhone,
+          address: (editOwnerForm.address || "").trim() || "N/A",
+          maxShops: Number(editOwnerForm.maxShops) || 5,
+          plan: editOwnerForm.plan,
+          status: editOwnerForm.status,
+          isActive: editOwnerForm.status === "Active",
+        };
+      });
+
+      setEditOwnerModalOpen(false);
+      showToast(`Shop Owner "${trimmedName}" updated successfully!`, "success");
+    } catch (err) {
+      setEditOwnerError(err.message || "Could not update owner details.");
+    } finally {
+      setIsSavingOwner(false);
+    }
+  };
+
   // ── DELETE USER ────────────────────────────────────────────────────────
   const [deletingUserId, setDeletingUserId] = useState(null);
   const handleDeleteUser = async (userId, userName = "Customer") => {
@@ -503,6 +703,122 @@ export function AdminProvider({ children }) {
     }
   };
 
+  // ── EDIT CUSTOMER / USER MODAL STATE ────────────────────────────────────
+  const [editUserModalOpen, setEditUserModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [editUserForm, setEditUserForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    status: "Active",
+  });
+  const [isSavingUser, setIsSavingUser] = useState(false);
+  const [editUserError, setEditUserError] = useState("");
+
+  const handleOpenEditUser = (user) => {
+    if (!user) return;
+    setEditingUser(user);
+    setEditUserForm({
+      name: user.name || "",
+      email: user.email || "",
+      phone: user.phone && user.phone !== "N/A" ? user.phone : "",
+      address: user.address && user.address !== "N/A" ? user.address : "",
+      status: user.status || "Active",
+    });
+    setEditUserError("");
+    setEditUserModalOpen(true);
+  };
+
+  const handleSaveUser = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!editingUser) return;
+
+    const trimmedName = (editUserForm.name || "").trim();
+    const trimmedEmail = (editUserForm.email || "").trim();
+    const cleanPhone = (editUserForm.phone || "").replace(/\D/g, "");
+
+    if (!trimmedName) {
+      setEditUserError("Customer full name is required.");
+      return;
+    }
+    if (!trimmedEmail) {
+      setEditUserError("Valid email address is required.");
+      return;
+    }
+    if (cleanPhone.length !== 10) {
+      setEditUserError("Phone number must be exactly 10 digits.");
+      return;
+    }
+
+    setIsSavingUser(true);
+    setEditUserError("");
+
+    const updatePayload = {
+      user_id: Number(editingUser.id),
+      fullname: trimmedName,
+      email: trimmedEmail,
+      phone: cleanPhone,
+      address: (editUserForm.address || "").trim(),
+      account_status: editUserForm.status === "Active",
+    };
+
+    try {
+      try {
+        const targetUrl = USER_UPDATE_API_URL.includes("?")
+          ? `${USER_UPDATE_API_URL}&user_id=${editingUser.id}`
+          : `${USER_UPDATE_API_URL}?user_id=${editingUser.id}`;
+        await authFetch(targetUrl, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatePayload),
+        }).catch(() => null);
+      } catch (err1) {}
+
+      // Update state in usersData
+      setUsersData((prev) => {
+        const updated = prev.map((u) => {
+          if (u.id === editingUser.id) {
+            return {
+              ...u,
+              name: trimmedName,
+              initial: trimmedName ? trimmedName.charAt(0).toUpperCase() : "U",
+              email: trimmedEmail,
+              phone: cleanPhone,
+              address: (editUserForm.address || "").trim() || "N/A",
+              status: editUserForm.status,
+              isActive: editUserForm.status === "Active",
+            };
+          }
+          return u;
+        });
+        return updated;
+      });
+
+      // Update selectedUserDetail if open
+      setSelectedUserDetail((prev) => {
+        if (!prev || prev.id !== editingUser.id) return prev;
+        return {
+          ...prev,
+          name: trimmedName,
+          initial: trimmedName ? trimmedName.charAt(0).toUpperCase() : "U",
+          email: trimmedEmail,
+          phone: cleanPhone,
+          address: (editUserForm.address || "").trim() || "N/A",
+          status: editUserForm.status,
+          isActive: editUserForm.status === "Active",
+        };
+      });
+
+      setEditUserModalOpen(false);
+      showToast(`Customer "${trimmedName}" updated successfully!`, "success");
+    } catch (err) {
+      setEditUserError(err.message || "Could not update customer details.");
+    } finally {
+      setIsSavingUser(false);
+    }
+  };
+
   // ── PROFILE PHOTO & DB SYNC ───────────────────────────────────────────
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [rawSelectedImage, setRawSelectedImage] = useState(null);
@@ -519,7 +835,7 @@ export function AdminProvider({ children }) {
       : USER_UPDATE_API_URL;
 
     const payload = {
-      fullname: adminProfile.name || loggedUser.fullname || "Sujit Kar",
+      fullname: adminProfile.name || loggedUser.fullname || "Administrator",
       phone: adminProfile.phone || loggedUser.phone || "",
       address: adminProfile.address || loggedUser.address || "",
       profile_image: newImage || "",
@@ -537,6 +853,11 @@ export function AdminProvider({ children }) {
         try {
           const updatedUser = { ...loggedUser, profile_image: newImage || null };
           localStorage.setItem("user", JSON.stringify(updatedUser));
+          const currentAdminProf = JSON.parse(localStorage.getItem("ql_admin_profile") || "{}");
+          localStorage.setItem(
+            "ql_admin_profile",
+            JSON.stringify({ ...currentAdminProf, avatarImg: newImage || null })
+          );
         } catch (e) {}
         fetchAdminProfile();
       } else {
@@ -632,14 +953,7 @@ export function AdminProvider({ children }) {
       };
       setAdminProfile(updatedProfile);
 
-      localStorage.setItem(
-        "ql_admin_profile",
-        JSON.stringify({
-          department: editAdminForm.department || "System Architecture & Operations",
-          accessLevel: editAdminForm.accessLevel || "Role Clearance (System Enforced)",
-          bio: editAdminForm.bio || "",
-        })
-      );
+      localStorage.setItem("ql_admin_profile", JSON.stringify(updatedProfile));
 
       showToast("Administrator profile updated successfully in database!", "success");
       setEditAdminModalOpen(false);
@@ -709,9 +1023,17 @@ export function AdminProvider({ children }) {
 
   // ── LOGOUT ────────────────────────────────────────────────────────────
   const handleLogout = () => {
+    clearTokens();
+    localStorage.removeItem("token");
     localStorage.removeItem("ql_admin_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user");
     localStorage.removeItem("role");
-    window.location.href = "/login";
+    localStorage.removeItem("ql_admin_profile");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("refresh_token");
+    sessionStorage.clear();
+    window.location.href = "/login?logout=true";
   };
 
   return (
@@ -766,12 +1088,36 @@ export function AdminProvider({ children }) {
         // Toggle Owner Status
         handleToggleOwnerStatus,
         updatingOwnerStatusId,
+        // Edit Owner Modal
+        editOwnerModalOpen,
+        setEditOwnerModalOpen,
+        editingOwner,
+        setEditingOwner,
+        editOwnerForm,
+        setEditOwnerForm,
+        isSavingOwner,
+        editOwnerError,
+        setEditOwnerError,
+        handleOpenEditOwner,
+        handleSaveOwner,
         // Delete Owner
         handleDeleteOwner,
         deletingOwnerId,
         // Delete User
         handleDeleteUser,
         deletingUserId,
+        // Edit User / Customer Modal
+        editUserModalOpen,
+        setEditUserModalOpen,
+        editingUser,
+        setEditingUser,
+        editUserForm,
+        setEditUserForm,
+        isSavingUser,
+        editUserError,
+        setEditUserError,
+        handleOpenEditUser,
+        handleSaveUser,
         // Profile Photo
         cropModalOpen,
         setCropModalOpen,

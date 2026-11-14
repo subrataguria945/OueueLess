@@ -1082,7 +1082,14 @@ body::-webkit-scrollbar,
 .adm-table-wrap {
   width: 100%;
   overflow-x: auto;
-  min-height: 270px;
+  overflow-y: visible;
+  min-height: 280px;
+  padding-bottom: 90px;
+  margin-bottom: -90px;
+}
+
+.adm-card:has(.adm-table-wrap) {
+  overflow: visible;
 }
 
 .adm-table {

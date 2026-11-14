@@ -15,6 +15,10 @@ export const OWNER_DELETE_API_URL =
   import.meta.env.VITE_OWNER_DELETE_API_URL ||
   `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/owner/delete`;
 
+export const OWNER_UPDATE_API_URL =
+  import.meta.env.VITE_OWNER_UPDATE_API_URL ||
+  `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/owner/update`;
+
 export const USER_UPDATE_API_URL =
   import.meta.env.VITE_USER_UPDATE_API_URL ||
   `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/user/update`;
