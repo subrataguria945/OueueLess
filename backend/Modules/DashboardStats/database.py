@@ -10,11 +10,11 @@ def get_dashboard_stats():
                 """
                 SELECT
                     statsid AS stats_id,
-                    totalusers AS total_users,
+                    totalusers AS total_customers,
                     totalowners AS total_owners,
                     totalshops AS total_shops,
-                    activeusers AS active_users,
-                    inactiveusers AS inactive_users,
+                    activeusers AS active_customers,
+                    inactiveusers AS inactive_customers,
                     activeowners AS active_owners,
                     inactiveowners AS inactive_owners,
                     activeshops AS active_shops,

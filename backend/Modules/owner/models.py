@@ -23,6 +23,7 @@ class UpdateOwner(BaseModel):
 
 
 
+
 # Request schema for toggling owner active/inactive status
 class UpdateOwnerStatusRequest(BaseModel):
     owner_id: int   

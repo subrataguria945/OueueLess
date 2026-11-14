@@ -103,6 +103,7 @@ def update_shop_route(
 
 # Deactivate shop route
 @router.put("/status")
+@router.delete("/delete")
 def delete_shop_route(
     data: DeleteShopRequest,
     user_id: int = Depends(require_active_user),
