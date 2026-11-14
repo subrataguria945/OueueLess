@@ -1,7 +1,9 @@
 from dotenv import load_dotenv
 from Modules.user.routers import router as user_router
 from Modules.owner.routers import router as owner_router
+from Modules.Admin.routers import router as admin_router
 from Modules.DashboardStats.routers import router as dashboard_router
+from Modules.shop.routers import router as shop_router
 
 load_dotenv()
 from fastapi import FastAPI
@@ -29,3 +31,7 @@ app.include_router(owner_router, prefix="/owner", tags=["Owner"])
 
 # Dashboard routes
 app.include_router(dashboard_router, prefix="/dashboard", tags=["Dashboard"])
+# Shop routes
+app.include_router(shop_router, prefix="/shop", tags=["Shop"])
+
+app.include_router(admin_router, prefix="/admin", tags=["Admin"])

@@ -1,6 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, EmailStr
-
+from typing import Any
 # Request schema for registering a new owner
 class AddOwnerRequest(BaseModel):
     fullname: str
@@ -21,19 +21,8 @@ class UpdateOwner(BaseModel):
     max_shop_count: int
     backup_id: int
 
-# Response schema for listing owners
-class OwnerDetail(BaseModel):
-    user_id: int
-    owner_id: int
-    full_name: str
-    profile_image: str | None = None
-    email: str
-    phone: str | None = None
-    address : str | None = None
-    shop_count: int
-    max_shop_count: int
-    account_status: bool
-    joined_date: datetime
+
+
 
 # Request schema for toggling owner active/inactive status
 class UpdateOwnerStatusRequest(BaseModel):
@@ -43,3 +32,27 @@ class UpdateOwnerStatusRequest(BaseModel):
 class DeleteOwnerRequest(BaseModel):
     user_id : int
     owner_id: int
+
+class GetShops(BaseModel):
+    owner_id : int
+
+class ShopDetails(BaseModel):
+    shop_id: int
+    owner_id: int
+    owner_user_id: int
+    owner_name: str
+    shop_name: str
+    description: str | None = None
+    address: str
+    city: str
+    state: str
+    pincode: str
+    phone: str
+    email: str | None = None
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime | None = None
+    shop_image: str | None = None
+    is_queue_open: bool | None = None
+    max_daily_tokens: int | None = None
+    operating_hours: dict[str, Any] | None = None

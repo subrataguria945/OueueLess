@@ -12,12 +12,7 @@ def get_connection():
         port=os.getenv("DB_PORT", "5432"),
     )
 
-# Fetch all users for admin view via sp_get_all_user_details
-def get_all_users_details():
-    with get_connection() as conn:
-        with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute("SELECT * FROM public.sp_get_all_user_details()")
-            return cur.fetchall()
+
 
 # Update user profile via sp_update_user stored procedure
 def update_user_indb(user_id, fullname, phone, profile_image , address):
