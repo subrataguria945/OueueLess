@@ -121,28 +121,181 @@
 
 
 
-CREATE OR REPLACE PROCEDURE public.sp_create_shop
+CREATE OR REPLACE PROCEDURE public.sp_update_shop
 (
-    IN p_owner_id INTEGER,
-    IN p_user_id INTEGER,
-    IN p_shop_name VARCHAR,
-    IN p_description VARCHAR,
-    IN p_address VARCHAR,
-    IN p_city VARCHAR,
-    IN p_state VARCHAR,
-    IN p_pincode VARCHAR,
-    IN p_phone VARCHAR,
-    IN p_email VARCHAR,
-    IN p_shop_image VARCHAR,
-    IN p_opening_time TIME,
-    IN p_closing_time TIME,
-
-    OUT p_shop_id INTEGER,
-    OUT p_status_code INTEGER,
-    OUT p_status_message VARCHAR
+    IN p_shop_id integer,
+    IN p_owner_id integer,
+    IN p_user_id integer,
+    IN p_shop_name character varying,
+    IN p_description character varying,
+    IN p_address character varying,
+    IN p_city character varying,
+    IN p_state character varying,
+    IN p_pincode character varying,
+    IN p_phone character varying,
+    IN p_email character varying,
+    IN p_shop_image character varying,
+    IN p_opening_time time without time zone,
+    IN p_closing_time time without time zone,
+    OUT p_status_code integer,
+    OUT p_status_message character varying
 )
 LANGUAGE plpgsql
-AS $$
+AS $procedure$
+DECLARE
+    v_opening_time time without time zone;
+    v_closing_time time without time zone;
+BEGIN
+
+    -- Initialize OUT parameters
+    p_status_code := 0;
+    p_status_message := NULL;
+
+    -- 1. Validate Shop ID
+    IF p_shop_id IS NULL OR p_shop_id <= 0 THEN
+        p_status_message := 'Invalid Shop ID.';
+        RETURN;
+    END IF;
+
+    -- 2. Validate Owner ID
+    IF p_owner_id IS NULL OR p_owner_id <= 0 THEN
+        p_status_message := 'Invalid Owner ID.';
+        RETURN;
+    END IF;
+
+    -- 3. Validate User ID
+    IF p_user_id IS NULL OR p_user_id <= 0 THEN
+        p_status_message := 'Invalid User ID.';
+        RETURN;
+    END IF;
+
+    -- 4. Check Owner Exists
+    IF NOT EXISTS (
+        SELECT 1 FROM public.owners WHERE ownerid = p_owner_id
+    ) THEN
+        p_status_message := 'Owner does not exist.';
+        RETURN;
+    END IF;
+
+    -- 5. Validate User Authorization
+    IF NOT EXISTS (
+        SELECT 1
+        FROM public.users
+        WHERE userid = p_user_id
+          AND status = TRUE
+          AND ownerid = p_owner_id
+          AND roleid = 2
+    ) THEN
+        p_status_message := 'User is invalid, inactive, or not authorized for this owner.';
+        RETURN;
+    END IF;
+
+    -- 6. Check Shop Exists and Belongs to Owner
+    IF NOT EXISTS (
+        SELECT 1
+        FROM public.shops
+        WHERE shopid = p_shop_id
+          AND ownerid = p_owner_id
+    ) THEN
+        p_status_message := 'Shop does not exist or does not belong to this owner.';
+        RETURN;
+    END IF;
+
+    -- 7. Validate Required Fields (Shop Name, Address, City)
+    IF p_shop_name IS NULL OR TRIM(p_shop_name) = '' THEN
+        p_status_message := 'Shop name is required.';
+        RETURN;
+    END IF;
+
+    IF p_address IS NULL OR TRIM(p_address) = '' THEN
+        p_status_message := 'Shop address is required.';
+        RETURN;
+    END IF;
+
+    IF p_city IS NULL OR TRIM(p_city) = '' THEN
+        p_status_message := 'City is required.';
+        RETURN;
+    END IF;
+
+    -- 8. Check Duplicate Shop Name for Same Owner
+    IF EXISTS (
+        SELECT 1
+        FROM public.shops
+        WHERE ownerid = p_owner_id
+          AND LOWER(TRIM(shopname)) = LOWER(TRIM(p_shop_name))
+          AND shopid <> p_shop_id
+    ) THEN
+        p_status_message := 'Another shop with this name already exists for this owner.';
+        RETURN;
+    END IF;
+
+    -- 9. Validate the resulting Opening & Closing Time
+    SELECT
+        COALESCE(p_opening_time, openingtime),
+        COALESCE(p_closing_time, closingtime)
+    INTO v_opening_time, v_closing_time
+    FROM public.shops
+    WHERE shopid = p_shop_id
+      AND ownerid = p_owner_id;
+
+    IF v_opening_time IS NOT NULL
+       AND v_closing_time IS NOT NULL
+       AND v_opening_time >= v_closing_time THEN
+        p_status_message := 'Closing time must be later than opening time.';
+        RETURN;
+    END IF;
+
+    -- 10. Update Shop Information (COALESCE prevents accidental NULL overwrite)
+    UPDATE public.shops
+    SET
+        shopname = TRIM(p_shop_name),
+        description = COALESCE(p_description, description),
+        address = TRIM(p_address),
+        city = TRIM(p_city),
+        state = COALESCE(p_state, state),
+        pincode = COALESCE(p_pincode, pincode),
+        phone = COALESCE(p_phone, phone),
+        email = COALESCE(p_email, email),
+        shopimage = COALESCE(p_shop_image, shopimage),
+        openingtime = COALESCE(p_opening_time, openingtime),
+        closingtime = COALESCE(p_closing_time, closingtime),
+        updatedat = CURRENT_TIMESTAMP
+    WHERE shopid = p_shop_id
+      AND ownerid = p_owner_id;
+
+    -- 11. Success Response
+    p_status_code := 1;
+    p_status_message := 'Shop updated successfully.';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        p_status_code := -1;
+        p_status_message := SQLERRM;
+
+END;
+$procedure$;
+
+CREATE OR REPLACE PROCEDURE public.sp_create_shop
+(
+    IN p_owner_id integer,
+    IN p_user_id integer,
+    IN p_shop_name character varying,
+    IN p_description character varying,
+    IN p_address character varying,
+    IN p_city character varying,
+    IN p_state character varying,
+    IN p_pincode character varying,
+    IN p_phone character varying,
+    IN p_email character varying,
+    IN p_shop_image character varying,
+    IN p_opening_time time without time zone,
+    IN p_closing_time time without time zone,
+    OUT p_shop_id integer,
+    OUT p_status_code integer,
+    OUT p_status_message character varying
+)
+LANGUAGE plpgsql
+AS $procedure$
 BEGIN
 
     -- Initialize output parameters
@@ -150,97 +303,89 @@ BEGIN
     p_status_code := 0;
     p_status_message := NULL;
 
-
     -- 1. Validate Owner ID
     IF p_owner_id IS NULL OR p_owner_id <= 0 THEN
-
         p_status_code := 0;
         p_status_message := 'Invalid Owner ID.';
         RETURN;
-
     END IF;
 
-
     -- 2. Check Owner Exists
-    IF NOT EXISTS
-    (
+    IF NOT EXISTS (
         SELECT 1
         FROM public.owners
         WHERE ownerid = p_owner_id
     ) THEN
-
         p_status_code := 0;
         p_status_message := 'Owner does not exist.';
         RETURN;
-
     END IF;
-
 
     -- 3. Validate User ID
     IF p_user_id IS NULL OR p_user_id <= 0 THEN
-
         p_status_code := 0;
         p_status_message := 'Invalid User ID.';
         RETURN;
-
     END IF;
 
-
-    
--- 4. Check User Exists, Active and Belongs to Owner
-IF NOT EXISTS
-(
-    SELECT 1
-    FROM public.users
-    WHERE userid = p_user_id
-      AND status = TRUE
-      AND ownerid = p_owner_id
-      AND roleid = 2
-) THEN
-
-    p_status_code := 0;
-    p_status_message := 'User is invalid, inactive, or does not belong to this owner.';
-    RETURN;
-
-END IF;
-
-
+    -- 4. Check User Exists, Active and Belongs to Owner
+    IF NOT EXISTS (
+        SELECT 1
+        FROM public.users
+        WHERE userid = p_user_id
+          AND status = TRUE
+          AND ownerid = p_owner_id
+          AND roleid = 2
+    ) THEN
+        p_status_code := 0;
+        p_status_message := 'User is invalid, inactive, or does not belong to this owner.';
+        RETURN;
+    END IF;
 
     -- 5. Validate Shop Name
     IF p_shop_name IS NULL OR TRIM(p_shop_name) = '' THEN
-
         p_status_code := 0;
         p_status_message := 'Shop name is required.';
         RETURN;
-
     END IF;
-
 
     -- 6. Validate Address
     IF p_address IS NULL OR TRIM(p_address) = '' THEN
-
         p_status_code := 0;
         p_status_message := 'Shop address is required.';
         RETURN;
-
     END IF;
-
 
     -- 7. Validate City
     IF p_city IS NULL OR TRIM(p_city) = '' THEN
-
         p_status_code := 0;
         p_status_message := 'City is required.';
         RETURN;
-
     END IF;
 
+    -- 8. Check Duplicate Shop Name for Same Owner
+    IF EXISTS (
+        SELECT 1
+        FROM public.shops
+        WHERE ownerid = p_owner_id
+          AND LOWER(TRIM(shopname)) = LOWER(TRIM(p_shop_name))
+    ) THEN
+        p_status_code := 0;
+        p_status_message := 'A shop with this name already exists for this owner.';
+        RETURN;
+    END IF;
 
-    -- 8. Insert New Shop
+    -- 9. Validate Opening & Closing Time
+    IF p_opening_time IS NOT NULL AND p_closing_time IS NOT NULL AND p_opening_time >= p_closing_time THEN
+        p_status_code := 0;
+        p_status_message := 'Closing time must be later than opening time.';
+        RETURN;
+    END IF;
+
+    -- 10. Insert New Shop
     INSERT INTO public.shops
     (
         ownerid,
-        userid,
         shopname,
         description,
         address,
@@ -259,7 +404,6 @@ END IF;
     VALUES
     (
         p_owner_id,
-        p_user_id,
         TRIM(p_shop_name),
         p_description,
         TRIM(p_address),
@@ -277,20 +421,15 @@ END IF;
     )
     RETURNING shopid INTO p_shop_id;
 
-
-    -- 9. Success Response
+    -- 11. Success Response
     p_status_code := 1;
     p_status_message := 'Shop created successfully.';
 
-
 EXCEPTION
-
     WHEN OTHERS THEN
-
         p_shop_id := NULL;
         p_status_code := -1;
         p_status_message := SQLERRM;
 
 END;
-$$;
-
+$procedure$;
