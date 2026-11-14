@@ -1,4 +1,4 @@
-from .database import delete_owner_indb, insert_owner_indb, update_owner_status_indb , update_owner_indb
+from .database import delete_owner_indb, insert_owner_indb, update_owner_status_indb , update_owner_indb , get_shops_details_from_db
 from Library.Notification.email import send_owner_invite_email
 from Library.Security.JWT import generate_owner_invite_token
 
@@ -86,3 +86,7 @@ def update_owner(input:dict):
             "status" : "failed",
             "message" : response.get("error")
         }  
+
+def get_shop_details(owner_id: int, user_id: int):
+    return get_shops_details_from_db(owner_id, user_id)
+  

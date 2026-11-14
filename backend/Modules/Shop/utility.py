@@ -12,3 +12,4 @@ def update_shop(user_id: int, shop_id: int, data: dict):
 # Utility function to delete shop details for a specific owner
 def delete_shop(user_id: int, shop_id: int):
     return delete_shop_for_owner(user_id, shop_id)
+

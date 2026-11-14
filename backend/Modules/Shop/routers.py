@@ -81,6 +81,7 @@ def update_shop_route(
     )
 
 
+
 #Delete shop route-------------------------
 @router.delete("/delete")
 def delete_shop_route(
