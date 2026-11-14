@@ -118,3 +118,41 @@ def update_shop_for_owner(user_id: int, shop_id: int, data: dict):
                 "status_code": status_code,
                 "message": status_message,
             }
+
+#Delete shop for owner
+def delete_shop_for_owner(user_id: int, shop_id: int):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT ownerid
+                FROM public.users
+                WHERE userid = %s
+                  AND roleid = 2
+                  AND status = TRUE
+                """,
+                (user_id,),
+            )
+            user = cur.fetchone()
+
+            if user is None or user[0] is None:
+                return None
+
+            owner_id = user[0]
+
+            cur.execute(
+                """
+                CALL public.sp_delete_shop(%s, %s, %s, NULL, NULL)
+                """,
+                (shop_id, owner_id, user_id),
+            )
+
+            result = cur.fetchone()
+            if result is None:
+                raise RuntimeError("sp_delete_shop returned no result")
+
+            status_code, status_message = result
+            return {
+                "status_code": status_code,
+                "message": status_message,
+            }

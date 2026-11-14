@@ -406,3 +406,82 @@ CALL public.sp_update_shop
 * **COALESCE Protection (No Accidental Overwrite):** আপডেট কুয়েরিতে `COALESCE(p_shop_image, shopimage)` ব্যবহার করায়, ইউজার যদি নতুন ছবি আপলোড না করে (`NULL` পাঠায়), তবে ডেটাবেসে আগে থেকে সেভ থাকা ছবির লিংক মুছে যাবে না। একই নিয়ম `description`, `state`, `pincode`, `phone`, `email`, `openingtime`, এবং `closingtime`-এর ক্ষেত্রেও কাজ করবে।
 * **Self-Exclude Duplicate Check:** আপডেট করার সময় `shopid <> p_shop_id` কন্ডিশন থাকায় ইউজার দোকানের নাম পরিবর্তন না করে অন্য তথ্য (যেমন ঠিকানা বা সময়) আপডেট করলে নিজস্ব নামের সাথে কনফ্লিক্ট হবে না।
 * **Strict Ownership & Role Check:** শুধুমাত্র সক্রিয় (`status = TRUE`) এবং ওই দোকানের আসল মালিক (`roleid = 2` ও `ownerid` ম্যাচিং) ছাড়া অন্য কেউ তথ্য পরিবর্তন করতে পারবে না।
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+# `sp_delete_shop` (Shop Delete / Deactivate Stored Procedure)
+
+## 1. SP-এর actual কাজটা কী?
+
+কোনো দোকানকে (Shop) ডেটাবেস থেকে পুরোপুরি মুছে না ফেলে নিরাপদে **Soft Delete** (অর্থাৎ নিষ্ক্রিয় বা Deactivate) করার জন্য এই Stored Procedure ব্যবহার করা হয়। এতে দোকানের পুরনো রেকর্ড ও ডেটা সুরক্ষিত থাকে, কিন্তু সিস্টেমে দোকানটি আর সক্রিয় দেখায় না। কাজটি করার আগে এটি ধাপে ধাপে নিচের বিষয়গুলো যাচাই (Validate) করে নেয়:
+
+1. **Shop ID** এবং **Owner ID** সঠিক (`> 0`) কি না তা check করে।
+2. ওই **Owner** ডেটাবেসে আসলেই আছে (exist করে) কি না তা যাচাই করে।
+3. যে ইউজার রিকোয়েস্ট পাঠিয়েছে, সে **Active** (`status = TRUE`), তার **Role ID `2` (Owner)**, এবং সে ওই নির্দিষ্ট **Owner-এর অধীনে** আছে কি না তা verify করে।
+4. **Ownership Check:** প্রদত্ত `shopid` আসলেই ওই `ownerid`-এর অধীনে আছে কি না তা নিশ্চিত করে, যাতে এক মালিক অন্য মালিকের দোকান বন্ধ করতে না পারে।
+5. **Active Status Check:** দোকানটি বর্তমানে চালু (`isactive = TRUE`) আছে কি না তা দেখে—যদি আগে থেকেই নিষ্ক্রিয় (`isactive = FALSE`) থাকে, তবে অযথা আপডেট না করে মেসেজ রিটার্ন করে।
+6. সব ঠিক থাকলে `public.shops` টেবিলে ওই দোকানের `isactive = FALSE` এবং `updatedat`-এ বর্তমান সময় বসিয়ে দেয় এবং `Status Code` ও `Status Message` রিটার্ন করে।
+
+---
+
+## 2. SP Calling Query
+
+```sql
+CALL public.sp_delete_shop
+(
+    5,      -- p_shop_id (Shop ID)
+    1,      -- p_owner_id (Owner ID)
+    3,      -- p_user_id (User ID)
+
+    NULL,   -- OUT: p_status_code
+    NULL    -- OUT: p_status_message
+);
+```
+
+---
+
+## 3. Inputs (IN Parameters)
+
+এই প্রসিডিউরে মোট **3টি Input Parameter** দিতে হয়:
+
+| Parameter | Data Type | সহজ বিবরণ (Description) | উদাহরণ (Example) |
+| :--- | :--- | :--- | :--- |
+| `p_shop_id` | `INTEGER` | যে Shop-টি deactivate (Soft Delete) করতে হবে তার ID | `5` |
+| `p_owner_id` | `INTEGER` | Shop-টির আসল Owner ID | `1` |
+| `p_user_id` | `INTEGER` | Delete/Deactivate রিকোয়েস্ট পাঠানো User-এর ID | `3` |
+
+---
+
+## 4. Possible Output (OUT Parameters)
+
+আউটপুট হিসেবে মোট **2টি Parameter** পাওয়া যায়:
+
+| Parameter | Data Type | সহজ বিবরণ (Description) |
+| :--- | :--- | :--- |
+| `p_status_code` | `INTEGER` | অপারেশনের রেজাল্ট কোড (`1` = Success, `0` = Validation Fail, `-1` = DB Error) |
+| `p_status_message` | `VARCHAR` | কাজটি সফল হলো না কেন ব্যর্থ হলো তার বিস্তারিত মেসেজ |
+
+### সম্ভাব্য আউটপুট পরিস্থিতি (Possible Output Scenarios)
+
+| Scenario | `p_status_code` | `p_status_message` |
+| :--- | :--- | :--- |
+| **সফলভাবে দোকান deactivate হলে** | `1` | `Shop deactivated successfully.` |
+| **Shop ID ভুল বা `<= 0` হলে** | `0` | `Invalid Shop ID.` |
+| **Owner ID ভুল বা `<= 0` হলে** | `0` | `Invalid Owner ID.` |
+| **Owner ডেটাবেসে না থাকলে** | `0` | `Owner does not exist.` |
+| **User ইনঅ্যাক্টিভ বা অনুমোদিত না হলে** | `0` | `User is invalid, inactive, or not authorized for this owner.` |
+| **দোকান না থাকলে বা অন্য Owner-এর হলে** | `0` | `Shop does not exist or does not belong to this owner.` |
+| **দোকানটি আগে থেকেই inactive থাকলে** | `0` | `Shop is already inactive.` |
+| **কোনো কারণে আপডেট না হলে** | `0` | `Shop could not be deactivated.` |
+| **ডেটাবেস জনিত কোনো এরর হলে** | `-1` | `SQLERRM` *(ডেটাবেসের আসল এরর মেসেজ)* |
+
+---
+
+## 5. Any Critical Scenario (গুরুত্বপূর্ণ ও জটিল বিষয়সমূহ)
+
+* **Soft Delete vs Hard Delete:** এই প্রসিডিউরটি টেবিল থেকে রো (`ROW`) মুছে ফেলে না, বরং `isactive = FALSE` করে দেয়। ফলে ভবিষ্যতে ওই দোকানের পুরনো বুকিং, কিউ (Queue) হিস্ট্রি বা অডিট রিপোর্ট দেখতে কোনো সমস্যা হবে না।
+* **Idempotency (একই রিকোয়েস্ট বারবার এলে):** যদি কোনো দোকান ইতিমধ্যেই নিষ্ক্রিয় (`isactive = FALSE`) অবস্থায় থাকে এবং ইউজার আবার সেটিকে ডিলিট করার রিকোয়েস্ট পাঠায়, তবে প্রসিডিউরটি `Shop is already inactive.` মেসেজ দিয়ে সেটি আটকে দেবে এবং `updatedat` টাইমস্ট্যাম্প অযথা পরিবর্তন করবে না।
+* **Cross-Owner Protection:** এক Owner যেন কোনোভাবেই অন্য Owner-এর `shopid` দিয়ে দোকান বন্ধ করতে না পারে, তার জন্য `WHERE shopid = p_shop_id AND ownerid = p_owner_id` কন্ডিশনটি কঠোরভাবে ব্যবহার করা হয়েছে।
+* **User ID Input Check (Optional Improvement):** `p_user_id` চেক করার আগে `IF p_user_id IS NULL OR p_user_id <= 0` কন্ডিশন যোগ করলে ইনভ্যালিড বা নেগেটিভ User ID দিলে আরও স্পষ্ট `'Invalid User ID.'` মেসেজ পাওয়া যাবে।

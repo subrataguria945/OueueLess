@@ -29,3 +29,7 @@ class UpdateShopRequest(BaseModel):
     shop_image: str | None = None
     opening_time: time | None = None
     closing_time: time | None = None
+
+#Delete shop request model
+class DeleteShopRequest(BaseModel):
+    shop_id: int
