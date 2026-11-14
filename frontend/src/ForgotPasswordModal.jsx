@@ -5,7 +5,12 @@ const FORGOT_PASSWORD_API_URL =
   import.meta.env.VITE_FORGOT_PASSWORD_API_URL ||
   "https://queueless-backend-b2qh.onrender.com/user/password/forget";
 
-export function ForgotPasswordModal({ isOpen, onClose, email = "" }) {
+const RESET_PASSWORD_API_URL =
+  import.meta.env.VITE_RESET_PASSWORD_API_URL ||
+  "https://queueless-backend-b2qh.onrender.com/user/password/reset";
+
+export function ForgotPasswordModal({ isOpen, onClose }) {
+  const [token, setToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -14,6 +19,17 @@ export function ForgotPasswordModal({ isOpen, onClose, email = "" }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const newPasswordRef = useRef(null);
+
+  // Read reset token from URL if available
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      const urlToken = searchParams.get("token") || searchParams.get("reset_token") || "";
+      if (urlToken) {
+        setToken(urlToken);
+      }
+    }
+  }, [isOpen]);
 
   // Strong password checks
   const hasMinLength = newPassword.length >= 8;
@@ -104,24 +120,41 @@ export function ForgotPasswordModal({ isOpen, onClose, email = "" }) {
     setIsLoading(true);
 
     try {
-      const res = await fetch(FORGOT_PASSWORD_API_URL, {
+      const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+      const effectiveToken = (token || searchParams?.get("token") || searchParams?.get("reset_token") || "").trim();
+
+      const res = await fetch(RESET_PASSWORD_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: (email || "").trim(),
-          new_password: newPassword,
+          reset_token: effectiveToken,
+          newpassword: newPassword,
           confirm_password: confirmPassword,
-          password: newPassword,
         }),
       });
 
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok || data?.status === "failed" || data?.status === "error") {
-        const errorMsg =
+        const rawError =
           (Array.isArray(data?.detail) ? data.detail.map((d) => d.msg).join(", ") : data?.detail) ||
           data?.message ||
-          data?.error;
+          data?.error ||
+          "";
+
+        let errorMsg = rawError;
+        const lowerErr = String(rawError).toLowerCase();
+
+        if (rawError === "ERR_OTP_REQUIRED" || lowerErr.includes("err_otp_required")) {
+          errorMsg = "Backend error (ERR_OTP_REQUIRED): Database procedure 'sp_manage_password' requires OTP verification. Please ask the backend developer to update the procedure for link-based reset.";
+        } else if (lowerErr.includes("invalid token")) {
+          errorMsg = "This reset link is invalid or has already been used. Please request a new link.";
+        } else if (lowerErr.includes("expired")) {
+          errorMsg = "This reset link has expired (valid for 5 minutes). Please request a new reset link.";
+        } else if (lowerErr.includes("token is required")) {
+          errorMsg = "Reset token missing from URL. Please click the reset link sent to your email.";
+        }
+
         if (errorMsg) {
           setError(errorMsg);
           setIsLoading(false);
@@ -164,14 +197,14 @@ export function ForgotPasswordModal({ isOpen, onClose, email = "" }) {
       style={{
         position: "fixed",
         inset: 0,
-        backgroundColor: "rgba(15, 23, 42, 0.65)",
-        backdropFilter: "blur(6px)",
-        WebkitBackdropFilter: "blur(6px)",
+        backgroundColor: "rgba(15, 23, 42, 0.45)",
+        backdropFilter: "blur(5px)",
+        WebkitBackdropFilter: "blur(5px)",
         zIndex: 99999,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "16px",
+        padding: "20px",
         boxSizing: "border-box",
         animation: "qlFadeIn 0.2s ease-out",
       }}
@@ -180,11 +213,14 @@ export function ForgotPasswordModal({ isOpen, onClose, email = "" }) {
       <div
         style={{
           width: "100%",
-          maxWidth: "400px",
+          maxWidth: "520px",
+          maxHeight: "92vh",
+          overflowY: "auto",
+          WebkitOverflowScrolling: "touch",
           backgroundColor: "#ffffff",
           borderRadius: "20px",
-          padding: "28px 24px 22px",
-          boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.04)",
+          padding: "36px 32px 30px",
+          boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05)",
           position: "relative",
           boxSizing: "border-box",
           fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
@@ -237,7 +273,7 @@ export function ForgotPasswordModal({ isOpen, onClose, email = "" }) {
               borderRadius: "14px",
               backgroundColor: "#eff6ff",
               border: "1px solid #dbeafe",
-              color: "#1960f7",
+              color: "#2563eb",
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
@@ -270,29 +306,6 @@ export function ForgotPasswordModal({ isOpen, onClose, email = "" }) {
           >
             Enter your new password and confirm it below.
           </p>
-          {email && (
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                backgroundColor: "#f1f5f9",
-                color: "#1e293b",
-                fontSize: "12.5px",
-                fontWeight: "550",
-                padding: "5px 12px",
-                borderRadius: "20px",
-                marginTop: "10px",
-                border: "1px solid #e2e8f0",
-              }}
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="4" width="20" height="16" rx="2" />
-                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-              </svg>
-              <span>{email}</span>
-            </div>
-          )}
         </div>
 
         {/* Error Alert */}
@@ -383,8 +396,8 @@ export function ForgotPasswordModal({ isOpen, onClose, email = "" }) {
               disabled={isLoading || Boolean(success)}
               style={inputStyle}
               onFocus={(e) => {
-                e.target.style.borderColor = "#1960f7";
-                e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)";
+                e.target.style.borderColor = "#2563eb";
+                e.target.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.14)";
               }}
               onBlur={(e) => {
                 e.target.style.borderColor = "#dde4f0";
@@ -508,8 +521,8 @@ export function ForgotPasswordModal({ isOpen, onClose, email = "" }) {
               disabled={isLoading || Boolean(success)}
               style={inputStyle}
               onFocus={(e) => {
-                e.target.style.borderColor = "#1960f7";
-                e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)";
+                e.target.style.borderColor = "#2563eb";
+                e.target.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.14)";
               }}
               onBlur={(e) => {
                 e.target.style.borderColor = "#dde4f0";
@@ -571,7 +584,7 @@ export function ForgotPasswordModal({ isOpen, onClose, email = "" }) {
             style={{
               width: "100%",
               height: "46px",
-              backgroundColor: "#1960f7",
+              backgroundColor: "#2563eb",
               color: "#ffffff",
               border: "none",
               borderRadius: "11px",
@@ -587,10 +600,10 @@ export function ForgotPasswordModal({ isOpen, onClose, email = "" }) {
               transition: "background-color 0.15s, transform 0.1s",
             }}
             onMouseEnter={(e) => {
-              if (!isLoading && !success) e.currentTarget.style.backgroundColor = "#124cd4";
+              if (!isLoading && !success) e.currentTarget.style.backgroundColor = "#1d4ed8";
             }}
             onMouseLeave={(e) => {
-              if (!isLoading && !success) e.currentTarget.style.backgroundColor = "#1960f7";
+              if (!isLoading && !success) e.currentTarget.style.backgroundColor = "#2563eb";
             }}
           >
             {isLoading ? (

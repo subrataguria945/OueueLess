@@ -39,25 +39,28 @@ export function GooglePhoneModal({ isOpen, googleUser, onSubmit, onCancel }) {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: "rgba(15, 23, 42, 0.65)",
-        backdropFilter: "blur(6px)",
-        WebkitBackdropFilter: "blur(6px)",
+        backgroundColor: "rgba(15, 23, 42, 0.45)",
+        backdropFilter: "blur(5px)",
+        WebkitBackdropFilter: "blur(5px)",
         zIndex: 9999,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "16px",
+        padding: "20px",
       }}
       onClick={onCancel}
     >
       <div
         style={{
           width: "100%",
-          maxWidth: "420px",
+          maxWidth: "520px",
+          maxHeight: "92vh",
+          overflowY: "auto",
+          WebkitOverflowScrolling: "touch",
           backgroundColor: "#ffffff",
           borderRadius: "20px",
-          padding: "28px 24px 24px",
-          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+          padding: "36px 32px 30px",
+          boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.2)",
           border: "1px solid #e2e8f0",
           fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
           boxSizing: "border-box",
@@ -105,7 +108,7 @@ export function GooglePhoneModal({ isOpen, googleUser, onSubmit, onCancel }) {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "#1960f7",
+              color: "#2563eb",
             }}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -202,8 +205,8 @@ export function GooglePhoneModal({ isOpen, googleUser, onSubmit, onCancel }) {
                   fontFamily: "inherit",
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = "#1960f7";
-                  e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)";
+                  e.target.style.borderColor = "#2563eb";
+                  e.target.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.14)";
                 }}
                 onBlur={(e) => {
                   e.target.style.borderColor = "#dde4f0";
@@ -227,7 +230,7 @@ export function GooglePhoneModal({ isOpen, googleUser, onSubmit, onCancel }) {
               height: "44px",
               background: isSubmitting
                 ? "#94a3b8"
-                : "linear-gradient(135deg, #1960f7 0%, #0d47a1 100%)",
+                : "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
               color: "#ffffff",
               border: "none",
               borderRadius: "10px",

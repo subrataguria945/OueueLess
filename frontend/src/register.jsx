@@ -237,7 +237,7 @@ export function RegisterPanel({ onSwitchToLogin }) {
               onChange={(e) => setName(e.target.value)}
               required
               style={regInputStyle}
-              onFocus={(e) => { e.target.style.borderColor = "#1960f7"; e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)"; }}
+              onFocus={(e) => { e.target.style.borderColor = "#2563eb"; e.target.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.14)"; }}
               onBlur={(e) => { e.target.style.borderColor = "#dde4f0"; e.target.style.boxShadow = "none"; }}
             />
           </div>
@@ -257,7 +257,7 @@ export function RegisterPanel({ onSwitchToLogin }) {
               onChange={(e) => setEmail(e.target.value)}
               required
               style={regInputStyle}
-              onFocus={(e) => { e.target.style.borderColor = "#1960f7"; e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)"; }}
+              onFocus={(e) => { e.target.style.borderColor = "#2563eb"; e.target.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.14)"; }}
               onBlur={(e) => { e.target.style.borderColor = "#dde4f0"; e.target.style.boxShadow = "none"; }}
             />
           </div>
@@ -278,7 +278,7 @@ export function RegisterPanel({ onSwitchToLogin }) {
               required
               maxLength={10}
               style={regInputStyle}
-              onFocus={(e) => { e.target.style.borderColor = "#1960f7"; e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)"; }}
+              onFocus={(e) => { e.target.style.borderColor = "#2563eb"; e.target.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.14)"; }}
               onBlur={(e) => { e.target.style.borderColor = "#dde4f0"; e.target.style.boxShadow = "none"; }}
             />
           </div>
@@ -298,7 +298,7 @@ export function RegisterPanel({ onSwitchToLogin }) {
               onChange={(e) => setPassword(e.target.value)}
               required
               style={{ ...regInputStyle, paddingRight: "46px" }}
-              onFocus={(e) => { e.target.style.borderColor = "#1960f7"; e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)"; }}
+              onFocus={(e) => { e.target.style.borderColor = "#2563eb"; e.target.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.14)"; }}
               onBlur={(e) => { e.target.style.borderColor = "#dde4f0"; e.target.style.boxShadow = "none"; }}
             />
             <button type="button" className="ql-eye-btn" onClick={() => setShowPassword(!showPassword)} aria-label="Toggle password">
@@ -382,7 +382,7 @@ export function RegisterPanel({ onSwitchToLogin }) {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               style={{ ...regInputStyle, paddingRight: "46px" }}
-              onFocus={(e) => { e.target.style.borderColor = "#1960f7"; e.target.style.boxShadow = "0 0 0 3px rgba(25,96,247,0.12)"; }}
+              onFocus={(e) => { e.target.style.borderColor = "#2563eb"; e.target.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.14)"; }}
               onBlur={(e) => { e.target.style.borderColor = "#dde4f0"; e.target.style.boxShadow = "none"; }}
             />
             <button type="button" className="ql-eye-btn" onClick={() => setShowConfirmPassword(!showConfirmPassword)} aria-label="Toggle confirm password">
@@ -410,8 +410,8 @@ export function RegisterPanel({ onSwitchToLogin }) {
             <span
               className="ql-cb-box"
               style={{
-                backgroundColor: agreeTerms ? "#1960f7" : "#ffffff",
-                borderColor: agreeTerms ? "#1960f7" : "#cbd5e1",
+                backgroundColor: agreeTerms ? "#2563eb" : "#ffffff",
+                borderColor: agreeTerms ? "#2563eb" : "#cbd5e1",
               }}
             >
               {agreeTerms && (
@@ -460,22 +460,12 @@ export function RegisterPanel({ onSwitchToLogin }) {
 /* ── Standalone Register Page Component ──────────────────── */
 export function Register({ onSwitchToLogin }) {
   return (
-    <div className="ql-root ql-mode-register">
-      <div className="ql-forms-stage">
-        <div className="ql-panel ql-panel-register" style={{ opacity: 1, pointerEvents: "auto", transform: "none" }}>
+    <div className="ql-auth-page ql-mode-register">
+      <div className="ql-auth-form-column" style={{ width: "100%", minHeight: "100vh" }}>
+        <div className="ql-auth-card-wrapper">
           <RegisterPanel onSwitchToLogin={onSwitchToLogin} />
         </div>
       </div>
-
-      <div className="ql-hero-overlay" style={{ transform: "translateX(0)" }}>
-        <img
-          src="/hero-left.png?v=5"
-          alt="Queueless — Be a Part of a Smarter Tomorrow."
-          className="ql-hero-img ql-hero-register"
-          style={{ opacity: 1, transform: "none" }}
-        />
-      </div>
-
     </div>
   );
 }
