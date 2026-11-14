@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-def generate_access_token(user_id , email):
+def generate_access_token(user_id : int , email : str):
     payload ={
         "user_id" : user_id,
         "email" : email,

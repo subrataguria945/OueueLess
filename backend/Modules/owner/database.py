@@ -13,12 +13,7 @@ def get_connection():
     )
 
 
-# Fetch all owners and their shop details for admin
-def get_all_owners_details(admin_id):
-    with get_connection() as conn:
-        with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute("SELECT * FROM public.sp_get_all_owners_details(%s)", (admin_id,))
-            return cur.fetchall()
+
 
 
 
@@ -269,4 +264,15 @@ def update_owner_indb(admin_user_id,owner_id,fullname,email,phone,address,max_sh
     finally:
        if con:
            con.close() 
-           con.close()           
+
+# Fetch shop details for an owner
+def get_shops_details_from_db(owner_id: int, user_id: int):
+    with get_connection() as conn:
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute(
+                "SELECT * FROM public.sp_get_owner_shops_by_ids(%s, %s)",
+                (owner_id, user_id),
+            )
+            return cur.fetchall()
+
+
