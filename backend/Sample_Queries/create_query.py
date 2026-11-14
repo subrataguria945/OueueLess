@@ -75,23 +75,18 @@ def create_shop_table_query():
 
         Phone VARCHAR(15) NOT NULL,
         Email VARCHAR(255) NULL,
+        ShopImage VARCHAR NULL,
+        OpeningTime TIME NULL,
+        ClosingTime TIME NULL,
 
         IsActive BOOLEAN NOT NULL DEFAULT TRUE,
 
         CreatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         UpdatedAt TIMESTAMP NULL,
 
-        UserID INTEGER NOT NULL,
-
         CONSTRAINT FK_Shops_Owners
             FOREIGN KEY (OwnerID)
             REFERENCES owners(OwnerID)
-            ON UPDATE CASCADE
-            ON DELETE RESTRICT,
-
-        CONSTRAINT FK_Shops_Users
-            FOREIGN KEY (UserID)
-            REFERENCES users(UserID)
             ON UPDATE CASCADE
             ON DELETE RESTRICT,
 
