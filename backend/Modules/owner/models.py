@@ -21,20 +21,7 @@ class UpdateOwner(BaseModel):
     max_shop_count: int
     backup_id: int
 
-# Response schema for listing owners
-class OwnerDetail(BaseModel):
-    user_id: int
-    owner_id: int
-    full_name: str
-    profile_image: str | None = None
-    email: str
-    phone: str | None = None
-    address: str | None = None
-    shop_count: int
-    max_shop_count: int
-    account_status: bool
-    joined_date: datetime
-    shop_details: str | None = None
+
 
 
 # Request schema for toggling owner active/inactive status
