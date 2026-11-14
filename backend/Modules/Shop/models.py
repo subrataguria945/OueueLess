@@ -1,4 +1,3 @@
-from datetime import time
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
@@ -45,17 +44,18 @@ class CreateShopRequest(BaseModel):
 
 class UpdateShopRequest(BaseModel):
     shop_id: int
-    shop_name: str  | None = None
+    shop_name: str
     description: str | None = None
-    address: str | None = None
-    city: str | None = None
+    address: str
+    city: str
     state: str | None = None
     pincode: str | None = None
-    phone: str  | None = None
+    phone: str | None = None
     email: EmailStr | None = None
     shop_image: str | None = None
-    opening_time: time | None = None
-    closing_time: time | None = None
+    max_daily_tokens: int | None = Field(default=None, gt=0)
+    is_queue_open: bool | None = None
+    operating_hours: OperatingHours | None = None
 
 #Shop details model
 class ShopDetail(BaseModel):

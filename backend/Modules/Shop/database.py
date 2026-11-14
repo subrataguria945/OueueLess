@@ -24,7 +24,7 @@ def create_shop_for_owner(user_id: int, data: dict):
 
             owner_id = user[0]
 
-            operating_hours = data["operating_hours"]
+            operating_hours = data.get("operating_hours")
             cur.execute(
                 """
                 CALL public.sp_create_shop(
@@ -35,17 +35,17 @@ def create_shop_for_owner(user_id: int, data: dict):
                 (
                     owner_id,
                     user_id,
-                    data["shop_name"],
-                    data["description"],
-                    data["address"],
-                    data["city"],
-                    data["state"],
-                    data["pincode"],
-                    data["phone"],
-                    data["email"],
-                    data["shop_image"],
-                    data["max_daily_tokens"],
-                    data["is_queue_open"],
+                    data.get("shop_name"),
+                    data.get("description"),
+                    data.get("address"),
+                    data.get("city"),
+                    data.get("state"),
+                    data.get("pincode"),
+                    data.get("phone"),
+                    data.get("email"),
+                    data.get("shop_image"),
+                    data.get("max_daily_tokens"),
+                    data.get("is_queue_open"),
                     Jsonb(operating_hours) if operating_hours is not None else None,
                 ),
             )
@@ -83,7 +83,7 @@ def update_shop_for_owner(user_id: int, shop_id: int, data: dict):
                 return None
 
             owner_id = user[0]
-            hours = data["operating_hours"]
+            hours = data.get("operating_hours")
 
             cur.execute(
                 """
@@ -97,17 +97,17 @@ def update_shop_for_owner(user_id: int, shop_id: int, data: dict):
                     shop_id,
                     owner_id,
                     user_id,
-                    data["shop_name"],
-                    data["description"],
-                    data["address"],
-                    data["city"],
-                    data["state"],
-                    data["pincode"],
-                    data["phone"],
-                    data["email"],
-                    data["shop_image"],
-                    data["max_daily_tokens"],
-                    data["is_queue_open"],
+                    data.get("shop_name"),
+                    data.get("description"),
+                    data.get("address"),
+                    data.get("city"),
+                    data.get("state"),
+                    data.get("pincode"),
+                    data.get("phone"),
+                    data.get("email"),
+                    data.get("shop_image"),
+                    data.get("max_daily_tokens"),
+                    data.get("is_queue_open"),
                     Jsonb(hours) if hours is not None else None,
                 ),
             )
