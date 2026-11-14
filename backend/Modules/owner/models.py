@@ -34,7 +34,6 @@ class OwnerDetail(BaseModel):
     max_shop_count: int
     account_status: bool
     joined_date: datetime
-    shop_details: str | None = None
 
 # Request schema for toggling owner active/inactive status
 class UpdateOwnerStatusRequest(BaseModel):
