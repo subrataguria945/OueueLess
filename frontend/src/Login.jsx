@@ -208,6 +208,10 @@ export function Login({
       localStorage.setItem("token", token);
       localStorage.setItem("ql_admin_token", token);
       sessionStorage.setItem("token", token);
+      if (user?.refresh_token) {
+        localStorage.setItem("refresh_token", user.refresh_token);
+        sessionStorage.setItem("refresh_token", user.refresh_token);
+      }
     }
     if (user) {
       localStorage.setItem("user", JSON.stringify(user));
@@ -308,12 +312,23 @@ export function Login({
           user_role: 1,
         };
 
+        const refreshToken =
+          data.refresh_token ||
+          data.refreshToken ||
+          data.data?.refresh_token;
+
         if (token) {
           if (rememberMe) {
             localStorage.setItem("token", token);
             localStorage.setItem("ql_admin_token", token);
+            if (refreshToken) {
+              localStorage.setItem("refresh_token", refreshToken);
+            }
           } else {
             sessionStorage.setItem("token", token);
+            if (refreshToken) {
+              sessionStorage.setItem("refresh_token", refreshToken);
+            }
           }
         }
 
