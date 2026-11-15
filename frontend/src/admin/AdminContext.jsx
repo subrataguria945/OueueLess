@@ -621,14 +621,17 @@ export function AdminProvider({ children }) {
     if (!editingOwner) return;
 
     const trimmedName = (editOwnerForm.name || "").trim();
-    const trimmedEmail = (editOwnerForm.email || "").trim();
+    const trimmedEmail = (editOwnerForm.email || "").trim().toLowerCase();
     const cleanPhone = (editOwnerForm.phone || "").replace(/\D/g, "");
+    const address = (editOwnerForm.address || "").trim();
+    const max_shop_count = Number(editOwnerForm.maxShops) || 5;
+    const ownerId = Number(editingOwner.id || editingOwner.owner_id);
 
     if (!trimmedName) {
       setEditOwnerError("Owner full name is required.");
       return;
     }
-    if (!trimmedEmail) {
+    if (!trimmedEmail || !trimmedEmail.includes("@")) {
       setEditOwnerError("Valid email address is required.");
       return;
     }
@@ -636,84 +639,66 @@ export function AdminProvider({ children }) {
       setEditOwnerError("Phone number must be exactly 10 digits.");
       return;
     }
+    if (isNaN(max_shop_count) || max_shop_count < 1) {
+      setEditOwnerError("Allowed Store Outlets Quota must be at least 1.");
+      return;
+    }
 
     setIsSavingOwner(true);
     setEditOwnerError("");
 
-    const updatePayload = {
-      owner_id: Number(editingOwner.id),
-      full_name: trimmedName,
-      email: trimmedEmail,
-      phone: cleanPhone,
-      address: (editOwnerForm.address || "").trim(),
-      max_shop_count: Number(editOwnerForm.maxShops) || 5,
-      account_status: editOwnerForm.status === "Active",
-      plan: editOwnerForm.plan,
-    };
-
     try {
-      try {
-        await authFetch(OWNER_UPDATE_API_URL, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatePayload),
-        }).catch(() => null);
-      } catch (e1) {
+      // 1. Call official backend API: PUT /owner/update
+      const res = await authFetch(OWNER_UPDATE_API_URL, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          owner_id: ownerId,
+          fullname: trimmedName,
+          email: trimmedEmail,
+          phone: cleanPhone,
+          address: address,
+          max_shop_count: max_shop_count,
+          backup_id: 1,
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || data?.status === "failed" || data?.status === "error") {
+        const errorMsg =
+          (Array.isArray(data?.detail)
+            ? data.detail.map((d) => d.msg).join(", ")
+            : data?.detail) ||
+          data?.message ||
+          data?.error ||
+          "Failed to update owner details in database.";
+        setEditOwnerError(errorMsg);
+        setIsSavingOwner(false);
+        return;
+      }
+
+      // 2. If status was changed in the edit modal, also update status via PUT /owner/status
+      if (editOwnerForm.status && editOwnerForm.status !== editingOwner.status) {
         try {
-          await authFetch(`${USER_UPDATE_API_URL}?user_id=${editingOwner.id}`, {
+          await authFetch(OWNER_STATUS_API_URL, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              fullname: trimmedName,
-              phone: cleanPhone,
-              address: (editOwnerForm.address || "").trim(),
+              owner_id: ownerId,
+              new_status: editOwnerForm.status === "Active",
             }),
-          }).catch(() => null);
-        } catch (e2) {}
+          });
+        } catch (_) {}
       }
 
-      setOwnersData((prev) => {
-        const updated = prev.map((o) => {
-          if (o.id === editingOwner.id) {
-            return {
-              ...o,
-              name: trimmedName,
-              initial: trimmedName ? trimmedName.charAt(0).toUpperCase() : "O",
-              email: trimmedEmail,
-              phone: cleanPhone,
-              address: (editOwnerForm.address || "").trim() || "N/A",
-              maxShops: Number(editOwnerForm.maxShops) || 5,
-              plan: editOwnerForm.plan,
-              status: editOwnerForm.status,
-              isActive: editOwnerForm.status === "Active",
-            };
-          }
-          return o;
-        });
-        localStorage.setItem("ql_admin_owners_list", JSON.stringify(updated));
-        return updated;
-      });
-
-      setDetailModalOwner((prev) => {
-        if (!prev || prev.id !== editingOwner.id) return prev;
-        return {
-          ...prev,
-          name: trimmedName,
-          initial: trimmedName ? trimmedName.charAt(0).toUpperCase() : "O",
-          email: trimmedEmail,
-          phone: cleanPhone,
-          address: (editOwnerForm.address || "").trim() || "N/A",
-          maxShops: Number(editOwnerForm.maxShops) || 5,
-          plan: editOwnerForm.plan,
-          status: editOwnerForm.status,
-          isActive: editOwnerForm.status === "Active",
-        };
-      });
+      // 3. Re-fetch live owner records from database to keep everything in sync
+      await fetchOwners();
 
       setEditOwnerModalOpen(false);
-      showToast(`Shop Owner "${trimmedName}" updated successfully!`, "success");
+      showToast(`Shop Owner "${trimmedName}" updated successfully in database!`, "success");
     } catch (err) {
-      setEditOwnerError(err.message || "Could not update owner details.");
+      setEditOwnerError(err?.message || "Could not update owner details. Please try again.");
     } finally {
       setIsSavingOwner(false);
     }
