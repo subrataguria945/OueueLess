@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useAdmin } from "../AdminContext";
 import { getOwnerPasswordStrength } from "../adminData";
 
@@ -18,12 +18,36 @@ export function AddOwnerModal() {
     handleAddOwnerSubmit,
   } = useAdmin();
 
+  // Reset form whenever modal opens to prevent browser autofill or stale values
+  useEffect(() => {
+    if (addOwnerModalOpen) {
+      setNewOwnerForm({
+        fullname: "",
+        name: "",
+        email: "",
+        phone: "",
+        password: "",
+        confirmPassword: "",
+        max_shop_count: 5,
+        maxShops: 5,
+        address: "",
+      });
+      setAddOwnerError("");
+      setShowAddOwnerPassword(false);
+      setShowAddOwnerConfirmPassword(false);
+    }
+  }, [addOwnerModalOpen, setNewOwnerForm, setAddOwnerError, setShowAddOwnerPassword, setShowAddOwnerConfirmPassword]);
+
   if (!addOwnerModalOpen) return null;
 
-  const todayStr = new Date().toISOString().split("T")[0];
-  const passwordStrength = getOwnerPasswordStrength(newOwnerForm.password);
+  const passwordStrength = getOwnerPasswordStrength(newOwnerForm.password || "");
   const isPasswordStrong = passwordStrength === 4;
-  const canSubmit = !isAddingOwner && isPasswordStrong;
+  const isPasswordMatching = Boolean(
+    newOwnerForm.password &&
+    newOwnerForm.confirmPassword &&
+    newOwnerForm.password === newOwnerForm.confirmPassword
+  );
+  const canSubmit = !isAddingOwner && isPasswordStrong && isPasswordMatching;
 
   return (
     <div className="adm-modal-backdrop" onClick={() => setAddOwnerModalOpen(false)}>
@@ -52,6 +76,12 @@ export function AddOwnerModal() {
         )}
 
         <form onSubmit={handleAddOwnerSubmit} autoComplete="off" className="adm-modal-form">
+          {/* Honeypot traps to prevent aggressive browser autofill of saved admin credentials */}
+          <div style={{ position: "absolute", left: "-9999px", top: "-9999px", height: 0, width: 0, opacity: 0, overflow: "hidden" }} aria-hidden="true">
+            <input type="text" name="chrome_prevent_username_autofill" tabIndex={-1} autoComplete="off" />
+            <input type="password" name="chrome_prevent_password_autofill" tabIndex={-1} autoComplete="new-password" />
+          </div>
+
           <div className="adm-modal-body">
             {/* Row 1: Name & Email */}
             <div className="adm-form-grid">
@@ -62,6 +92,9 @@ export function AddOwnerModal() {
                 <input
                   type="text"
                   required
+                  name="new_owner_fullname"
+                  id="new_owner_fullname"
+                  autoComplete="off"
                   className="adm-input"
                   placeholder="e.g. Ramesh Kumar"
                   value={newOwnerForm.fullname || newOwnerForm.name || ""}
@@ -80,6 +113,9 @@ export function AddOwnerModal() {
                 <input
                   type="email"
                   required
+                  name="new_owner_email"
+                  id="new_owner_email"
+                  autoComplete="off"
                   className="adm-input"
                   placeholder="e.g. ramesh@example.com"
                   value={newOwnerForm.email}
@@ -100,6 +136,8 @@ export function AddOwnerModal() {
                 <input
                   type="tel"
                   required
+                  name="new_owner_phone"
+                  id="new_owner_phone"
                   maxLength={10}
                   className="adm-input"
                   placeholder="e.g. 9876543210"
@@ -120,6 +158,8 @@ export function AddOwnerModal() {
                 <input
                   type="number"
                   required
+                  name="new_owner_max_shop_count"
+                  id="new_owner_max_shop_count"
                   min={1}
                   max={50}
                   className="adm-input"
@@ -147,6 +187,9 @@ export function AddOwnerModal() {
               <input
                 type="text"
                 required
+                name="new_owner_address"
+                id="new_owner_address"
+                autoComplete="off"
                 className="adm-input"
                 placeholder="e.g. 12, Main Road, Salt Lake, Kolkata, WB"
                 value={newOwnerForm.address}
@@ -175,6 +218,9 @@ export function AddOwnerModal() {
                     <input
                       type={showAddOwnerPassword ? "text" : "password"}
                       required
+                      name="new_owner_password"
+                      id="new_owner_password"
+                      autoComplete="new-password"
                       className="adm-input"
                       placeholder="Minimum 8 characters"
                       value={newOwnerForm.password}
@@ -195,14 +241,39 @@ export function AddOwnerModal() {
                 </div>
 
                 <div className="adm-field">
-                  <label className="adm-label">
-                    Confirm Password <span className="req">*</span>
-                  </label>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
+                    <label className="adm-label" style={{ marginBottom: 0 }}>
+                      Confirm Password <span className="req">*</span>
+                    </label>
+                    {newOwnerForm.confirmPassword && (
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: 700,
+                          color: isPasswordMatching ? "#16a34a" : "#dc2626",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "3px",
+                        }}
+                      >
+                        {isPasswordMatching ? "✓ Passwords Match" : "✕ Passwords Not Match"}
+                      </span>
+                    )}
+                  </div>
                   <div className="adm-password-wrapper">
                     <input
                       type={showAddOwnerConfirmPassword ? "text" : "password"}
                       required
-                      className="adm-input"
+                      name="new_owner_confirm_password"
+                      id="new_owner_confirm_password"
+                      autoComplete="new-password"
+                      className={`adm-input ${
+                        newOwnerForm.confirmPassword
+                          ? isPasswordMatching
+                            ? "adm-input-success"
+                            : "adm-input-danger"
+                          : ""
+                      }`}
                       placeholder="Re-enter password"
                       value={newOwnerForm.confirmPassword}
                       onChange={(e) => {
@@ -222,7 +293,7 @@ export function AddOwnerModal() {
                 </div>
               </div>
 
-              {/* Password Strength Meter */}
+              {/* Password Strength & Match Status Box */}
               <div className="adm-strength-box">
                 <div className="adm-strength-header">
                   <span className="adm-strength-label">Password Strength:</span>
@@ -248,9 +319,54 @@ export function AddOwnerModal() {
                 </div>
                 <p className="adm-strength-hint">
                   {isPasswordStrong
-                    ? "✓ Strong password criteria met. Register button is unlocked."
-                    : "🔒 Register button is locked: Password must include uppercase, lowercase, number, and special symbol (min 8 chars)."}
+                    ? "✓ Strong password criteria met."
+                    : "🔒 Password must include uppercase, lowercase, number, and special symbol (min 8 chars)."}
                 </p>
+
+                {/* Password Match Status Row */}
+                <div
+                  style={{
+                    marginTop: "10px",
+                    paddingTop: "8px",
+                    borderTop: "1px dashed var(--adm-border)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <span className="adm-strength-label">Password Match:</span>
+                  {!newOwnerForm.confirmPassword ? (
+                    <span style={{ fontSize: "11.5px", color: "var(--adm-text-muted)" }}>
+                      Enter confirm password to verify
+                    </span>
+                  ) : isPasswordMatching ? (
+                    <span
+                      style={{
+                        fontSize: "11.5px",
+                        fontWeight: 700,
+                        color: "#16a34a",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
+                    >
+                      ✓ Passwords Match
+                    </span>
+                  ) : (
+                    <span
+                      style={{
+                        fontSize: "11.5px",
+                        fontWeight: 700,
+                        color: "#dc2626",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
+                    >
+                      ✕ Passwords Do Not Match
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -269,7 +385,13 @@ export function AddOwnerModal() {
               type="submit"
               className="adm-btn adm-btn-primary"
               disabled={!canSubmit}
-              title={!isPasswordStrong ? "Password must reach Strong level to register owner" : "Register Owner"}
+              title={
+                !isPasswordStrong
+                  ? "Password must reach Strong level to register owner"
+                  : !isPasswordMatching
+                  ? "Confirm password must match login password"
+                  : "Register Owner"
+              }
             >
               {isAddingOwner ? "Registering on Server..." : "Register Owner"}
             </button>
