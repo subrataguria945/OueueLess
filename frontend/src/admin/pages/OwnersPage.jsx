@@ -60,7 +60,7 @@ export function OwnersPage() {
   });
 
   return (
-    <div className="adm-page-body">
+    <div className="adm-page-body adm-table-page-body">
       {/* Page Header */}
       <div className="adm-page-header">
         <div>
@@ -127,7 +127,7 @@ export function OwnersPage() {
       )}
 
       {/* Table Card */}
-      <div className="adm-card">
+      <div className="adm-card adm-table-card">
         <div className="adm-table-wrap">
           <table className="adm-table">
             <thead>

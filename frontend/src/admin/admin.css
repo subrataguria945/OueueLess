@@ -133,7 +133,9 @@ body::-webkit-scrollbar,
 
 .adm-root {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
   background-color: var(--adm-bg);
   color: var(--adm-text);
   font-family: var(--adm-font);
@@ -377,6 +379,9 @@ body::-webkit-scrollbar,
   margin-left: 240px;
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
   min-width: 0;
   transition: margin-left 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -388,6 +393,7 @@ body::-webkit-scrollbar,
 /* ── TOPBAR ───────────────────────────────────────────────────────────── */
 .adm-topbar {
   height: 60px;
+  flex-shrink: 0;
   background-color: var(--adm-surface);
   border-bottom: 1px solid var(--adm-border);
   padding: 0 24px;
@@ -588,9 +594,13 @@ body::-webkit-scrollbar,
 /* ── PAGE CONTAINER ───────────────────────────────────────────────────── */
 .adm-page-container {
   flex: 1;
+  min-height: 0;
   padding: 18px 22px;
   background-color: var(--adm-bg);
   min-width: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 @media (max-width: 1300px) {
@@ -1090,6 +1100,105 @@ body::-webkit-scrollbar,
 
 .adm-card:has(.adm-table-wrap) {
   overflow: visible;
+}
+
+/* ── DEDICATED DIRECTORY TABLE LAYOUT (OWNERS & CUSTOMERS) ────────────── */
+/* The table card scrolls internally while the page stays fixed */
+.adm-table-page-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+.adm-table-page-body .adm-page-header {
+  flex-shrink: 0;
+  margin-bottom: 12px;
+}
+
+.adm-table-page-body .adm-filter-bar {
+  flex-shrink: 0;
+  margin-bottom: 12px;
+}
+
+.adm-table-page-body .adm-alert {
+  flex-shrink: 0;
+  margin-bottom: 12px;
+}
+
+.adm-card.adm-table-card {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.adm-card.adm-table-card .adm-table-wrap {
+  flex: 1 !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: auto !important;
+  padding-bottom: 24px !important;
+  margin-bottom: 0 !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(148, 163, 184, 0.45) transparent !important;
+}
+
+.adm-root .adm-card.adm-table-card .adm-table-wrap::-webkit-scrollbar {
+  display: block !important;
+  width: 6px !important;
+  height: 6px !important;
+}
+
+.adm-root .adm-card.adm-table-card .adm-table-wrap::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.adm-root .adm-card.adm-table-card .adm-table-wrap::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.45) !important;
+  border-radius: 999px !important;
+}
+
+.adm-root .adm-card.adm-table-card .adm-table-wrap::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(100, 116, 139, 0.75) !important;
+}
+
+.adm-card.adm-table-card .adm-table th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+  background-color: var(--adm-surface-subtle) !important;
+  box-shadow: 0 1px 0 var(--adm-border) !important;
+}
+
+.adm-card.adm-table-card .adm-table-footer {
+  flex-shrink: 0 !important;
+  border-top: 1px solid var(--adm-border) !important;
+  background-color: var(--adm-surface) !important;
+  z-index: 5 !important;
+}
+
+@media (max-width: 768px) {
+  .adm-root,
+  .adm-main-wrap {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .adm-page-container {
+    overflow-y: visible !important;
+    height: auto !important;
+  }
+  .adm-table-page-body {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+  .adm-card.adm-table-card {
+    height: auto !important;
+    max-height: 75vh !important;
+  }
 }
 
 .adm-table {
