@@ -69,12 +69,36 @@ export function AdminProvider({ children }) {
     setIsOwnersLoading(true);
     setOwnersError(null);
     try {
-      const res = await authFetch(OWNERS_API_URL, { method: "GET" });
-      const data = await res.json().catch(() => null);
-      if (res.ok && Array.isArray(data)) {
-        const mapped = data.map(mapApiOwnerToDashboard);
+      let res = await authFetch(OWNERS_API_URL, { method: "GET" });
+      let data = await res.json().catch(() => null);
+
+      // Fallback if 404 (endpoint routing mismatch)
+      if ((!res.ok || !data) && res.status === 404) {
+        const fallbackUrl = OWNERS_API_URL.includes("/admin/owners/all")
+          ? OWNERS_API_URL.replace("/admin/owners/all", "/owner/all")
+          : OWNERS_API_URL.replace("/owner/all", "/admin/owners/all");
+        try {
+          const fallbackRes = await authFetch(fallbackUrl, { method: "GET" });
+          if (fallbackRes.ok) {
+            res = fallbackRes;
+            data = await fallbackRes.json().catch(() => null);
+          }
+        } catch (_) {}
+      }
+
+      const ownerList = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.owners)
+        ? data.owners
+        : Array.isArray(data?.data)
+        ? data.data
+        : null;
+
+      if (res.ok && ownerList !== null) {
+        const mapped = ownerList.map(mapApiOwnerToDashboard);
         setOwnersData(mapped);
         localStorage.setItem("ql_admin_owners_list", JSON.stringify(mapped));
+        setOwnersError(null);
       } else {
         setOwnersError(data?.detail || data?.message || "Failed to load owners.");
       }
@@ -164,8 +188,22 @@ export function AdminProvider({ children }) {
     setIsUsersLoading(true);
     setUsersError(null);
     try {
-      const res = await authFetch(ALL_USERS_API_URL, { method: "GET" });
-      const data = await res.json().catch(() => null);
+      let res = await authFetch(ALL_USERS_API_URL, { method: "GET" });
+      let data = await res.json().catch(() => null);
+
+      // Fallback if 404 (endpoint routing mismatch)
+      if ((!res.ok || !data) && res.status === 404) {
+        const fallbackUrl = ALL_USERS_API_URL.includes("/admin/users/all")
+          ? ALL_USERS_API_URL.replace("/admin/users/all", "/user/all")
+          : ALL_USERS_API_URL.replace("/user/all", "/admin/users/all");
+        try {
+          const fallbackRes = await authFetch(fallbackUrl, { method: "GET" });
+          if (fallbackRes.ok) {
+            res = fallbackRes;
+            data = await fallbackRes.json().catch(() => null);
+          }
+        } catch (_) {}
+      }
 
       const userList = Array.isArray(data)
         ? data
@@ -175,7 +213,8 @@ export function AdminProvider({ children }) {
         ? data.users
         : [];
 
-      if (res.ok && (Array.isArray(data) || userList.length >= 0)) {
+      if (res.ok && (Array.isArray(data) || Array.isArray(data?.users) || userList.length >= 0)) {
+        setUsersError(null);
         // Strictly only regular users (exclude Owner and Admin)
         const onlyRegularUsers = userList.filter(isRegularUser);
 

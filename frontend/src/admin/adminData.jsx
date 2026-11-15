@@ -1,7 +1,7 @@
 // Admin Data & API Configuration
 export const OWNERS_API_URL =
   import.meta.env.VITE_OWNERS_API_URL ||
-  `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/owner/all`;
+  `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/admin/owners/all`;
 
 export const ADD_OWNER_API_URL =
   import.meta.env.VITE_ADD_OWNER_API_URL ||
@@ -25,7 +25,11 @@ export const USER_UPDATE_API_URL =
 
 export const ALL_USERS_API_URL =
   import.meta.env.VITE_ALL_USERS_API_URL ||
-  `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/user/all`;
+  `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/admin/users/all`;
+
+export const ALL_SHOPS_API_URL =
+  import.meta.env.VITE_SHOPS_API_URL ||
+  `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/admin/shops/all`;
 
 export const STAT_METRICS = [
   { id: "owners", label: "Total Owners", value: "128", trend: "+12%", context: "from last month" },
