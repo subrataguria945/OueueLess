@@ -1,17 +1,19 @@
 import React from "react";
 import { Link } from "react-router";
 import { useAdmin } from "../AdminContext";
-import { STAT_METRICS, TOP_SHOPS, REVENUE_BARS, TIMELINE_ACTIVITIES } from "../adminData";
+import { STAT_METRICS, TOP_SHOPS, REVENUE_BARS, TIMELINE_ACTIVITIES, isRegularUser } from "../adminData";
 
 export function OverviewPage() {
   const { ownersData, usersData, shopsData } = useAdmin();
 
-  // Dynamic values based on live state if available
+  // Dynamic values based strictly on real state
+  const regularUsersCount = (usersData || []).filter((u) => isRegularUser(u, ownersData)).length;
+
   const metrics = [
-    { id: "owners", label: "Registered Owners", value: ownersData.length || "6", trend: "+12%", context: "active merchants", link: "/admin/owners" },
-    { id: "shops", label: "Active Store Queues", value: shopsData.length || "6", trend: "+8%", context: "live counter stores", link: "/admin/shops" },
-    { id: "users", label: "Queue Customers", value: usersData.length || "1", trend: "+25%", context: "verified app users", link: "/admin/users" },
-    { id: "revenue", label: "Platform Revenue", value: "₹ 2,45,680", trend: "+32%", context: "from last month", link: "/admin/payments" },
+    { id: "owners", label: "Registered Owners", value: ownersData?.length ?? 0, trend: "Live", context: "active merchants", link: "/admin/owners" },
+    { id: "shops", label: "Active Store Queues", value: shopsData?.length ?? 0, trend: "Live", context: "live counter stores", link: "/admin/shops" },
+    { id: "users", label: "Queue Customers", value: regularUsersCount, trend: "Live", context: "verified app users", link: "/admin/users" },
+    { id: "revenue", label: "Platform Revenue", value: "₹ 0", trend: "--", context: "current period", link: "/admin/payments" },
   ];
 
   return (
@@ -87,27 +89,34 @@ export function OverviewPage() {
             </Link>
           </div>
           <div className="adm-card-body">
-            <div className="adm-list-group">
-              {TOP_SHOPS.map((s) => (
-                <Link
-                  key={s.rank}
-                  to={`/admin/shops/${s.rank}`}
-                  className="adm-list-item"
-                  style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}
-                  title="View live counter queue"
-                >
-                  <div className="adm-rank-badge">#{s.rank}</div>
-                  <div className="adm-list-item-info">
-                    <div className="adm-list-item-title">{s.name}</div>
-                    <div className="adm-list-item-sub">{s.owner}</div>
-                  </div>
-                  <div className="adm-list-item-metric">
-                    <span className="adm-font-semibold">{s.users}</span>
-                    <span className="adm-text-muted"> tokens</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
+            {shopsData && shopsData.length > 0 ? (
+              <div className="adm-list-group">
+                {shopsData.slice(0, 5).map((s, index) => (
+                  <Link
+                    key={s.id || index}
+                    to={`/admin/shops/${s.id}`}
+                    className="adm-list-item"
+                    style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}
+                    title="View live counter queue"
+                  >
+                    <div className="adm-rank-badge">#{index + 1}</div>
+                    <div className="adm-list-item-info">
+                      <div className="adm-list-item-title">{s.name}</div>
+                      <div className="adm-list-item-sub">{s.owner}</div>
+                    </div>
+                    <div className="adm-list-item-metric">
+                      <span className="adm-font-semibold">{s.dailyTokens ?? 0}</span>
+                      <span className="adm-text-muted"> tokens</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div style={{ padding: "36px 12px", textAlign: "center", color: "var(--adm-text-muted)", fontSize: "13px" }}>
+                <span style={{ fontSize: "28px", display: "block", marginBottom: "8px" }}>🏪</span>
+                No active counter shops registered yet.
+              </div>
+            )}
           </div>
         </div>
       </div>

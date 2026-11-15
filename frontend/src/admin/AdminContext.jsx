@@ -8,6 +8,7 @@ import {
   OWNER_UPDATE_API_URL,
   USER_UPDATE_API_URL,
   ALL_USERS_API_URL,
+  ALL_SHOPS_API_URL,
   ALL_SHOPS_DATA,
   SUBSCRIPTION_PLANS,
   DEFAULT_SUBSCRIBERS_DATA,
@@ -116,7 +117,7 @@ export function AdminProvider({ children }) {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.filter(isRegularUser);
+          return parsed;
         }
       } catch (e) {}
     }
@@ -215,10 +216,8 @@ export function AdminProvider({ children }) {
 
       if (res.ok && (Array.isArray(data) || Array.isArray(data?.users) || userList.length >= 0)) {
         setUsersError(null);
-        // Strictly only regular users (exclude Owner and Admin)
-        const onlyRegularUsers = userList.filter(isRegularUser);
-
-        const mapped = onlyRegularUsers.map(mapApiUserToDashboard);
+        // Load all platform users directly from /admin/users/all API
+        const mapped = userList.map(mapApiUserToDashboard);
         setUsersData(mapped);
         localStorage.setItem("ql_admin_users_list", JSON.stringify(mapped));
 
@@ -335,22 +334,92 @@ export function AdminProvider({ children }) {
 
   const fetchAdminProfile = fetchUsers;
 
-  useEffect(() => {
-    fetchOwners();
-    fetchUsers();
-  }, [fetchOwners, fetchUsers]);
-
-  // ── SHOPS & SUBSCRIPTIONS STATE ───────────────────────────────────────
+  // ── SHOPS STATE ───────────────────────────────────────────────────────
   const [shopsData, setShopsData] = useState(() => {
     const saved = localStorage.getItem("ql_admin_shops_list");
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // If cached shops contain dummy names like Coffee Hub, discard them
+          if (parsed.some((s) => String(s.id).startsWith("shop-") || s.name === "Coffee Hub")) {
+            localStorage.removeItem("ql_admin_shops_list");
+            return [];
+          }
+          return parsed;
+        }
       } catch (e) {}
     }
-    return ALL_SHOPS_DATA;
+    return [];
   });
+  const [isShopsLoading, setIsShopsLoading] = useState(false);
+  const [shopsError, setShopsError] = useState(null);
 
+  const fetchShops = useCallback(async () => {
+    setIsShopsLoading(true);
+    setShopsError(null);
+    try {
+      let res = await authFetch(ALL_SHOPS_API_URL, { method: "GET" });
+      let data = await res.json().catch(() => null);
+
+      if ((!res.ok || !data) && res.status === 404) {
+        const fallbackUrl = ALL_SHOPS_API_URL.includes("/admin/shops/all")
+          ? ALL_SHOPS_API_URL.replace("/admin/shops/all", "/shop/all")
+          : ALL_SHOPS_API_URL.replace("/shop/all", "/admin/shops/all");
+        try {
+          const fallbackRes = await authFetch(fallbackUrl, { method: "GET" });
+          if (fallbackRes.ok) {
+            res = fallbackRes;
+            data = await fallbackRes.json().catch(() => null);
+          }
+        } catch (_) {}
+      }
+
+      const shopList = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.shops)
+        ? data.shops
+        : Array.isArray(data?.data)
+        ? data.data
+        : null;
+
+      if (res.ok && shopList !== null) {
+        const mapped = shopList.map((s) => ({
+          id: s.shop_id || s.id,
+          name: s.shop_name || s.name || "Store Counter",
+          owner: s.owner_name || s.owner || "Owner",
+          ownerId: s.owner_id,
+          category: s.category || "General",
+          phone: s.phone || "—",
+          status: s.status || "Active",
+          currentServing: s.current_token || s.currentServing || "--",
+          waitingCount: s.waiting_count ?? s.waitingCount ?? 0,
+          avgWaitTime: s.average_wait_time ? `${s.average_wait_time} mins` : (s.avgWaitTime || "--"),
+          dailyTokens: s.daily_tokens ?? 0,
+          location: s.address || s.location || "Store Location",
+          timing: s.timing || "Regular Hours",
+          image: s.image || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80",
+        }));
+        setShopsData(mapped);
+        localStorage.setItem("ql_admin_shops_list", JSON.stringify(mapped));
+      } else {
+        setShopsData([]);
+        localStorage.removeItem("ql_admin_shops_list");
+      }
+    } catch (err) {
+      setShopsData([]);
+    } finally {
+      setIsShopsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchOwners();
+    fetchUsers();
+    fetchShops();
+  }, [fetchOwners, fetchUsers, fetchShops]);
+
+  // ── SUBSCRIPTIONS STATE ───────────────────────────────────────────────
   const [subscribersList, setSubscribersList] = useState(() => {
     const saved = localStorage.getItem("ql_admin_subscribers_list");
     if (saved) {
@@ -1091,6 +1160,9 @@ export function AdminProvider({ children }) {
         fetchAdminProfile,
         shopsData,
         setShopsData,
+        isShopsLoading,
+        shopsError,
+        fetchShops,
         subscribersList,
         setSubscribersList,
         subscriptionPlans,

@@ -7,6 +7,7 @@ export function UsersPage() {
   const navigate = useNavigate();
   const {
     usersData,
+    ownersData,
     isUsersLoading,
     usersError,
     fetchUsers,
@@ -43,9 +44,9 @@ export function UsersPage() {
     };
   }, [openMenuUserId]);
 
-  // Strictly filter regular users (Only "User" / "Customer", never "Owner" or "Admin")
+  // Strictly filter: ONLY regular Users/Customers (exclude Admin and Shop Owners)
   const filteredUsers = usersData.filter((u) => {
-    if (!isRegularUser(u)) return false;
+    if (!isRegularUser(u, ownersData)) return false;
 
     const q = searchQuery.toLowerCase().trim();
     const matchSearch =
@@ -67,7 +68,7 @@ export function UsersPage() {
         <div>
           <h1 className="adm-page-title">Users Directory</h1>
           <p className="adm-page-desc">
-            Direct database list of regular platform users and queue token holders (strictly excluding Owners & Admin).
+            Monitor and manage registered platform customer users and queue accounts.
           </p>
         </div>
       </div>
@@ -322,8 +323,8 @@ export function UsersPage() {
 
         {/* Table Footer */}
         <div className="adm-table-footer">
-          <span>Showing {filteredUsers.length} regular user{filteredUsers.length === 1 ? "" : "s"} (Excludes Admin & Shop Owners)</span>
-          <span className="adm-text-muted">Live database sync</span>
+          <span>Showing {filteredUsers.length} total user{filteredUsers.length === 1 ? "" : "s"}</span>
+          <span className="adm-text-muted">Live synchronization with database</span>
         </div>
       </div>
     </div>

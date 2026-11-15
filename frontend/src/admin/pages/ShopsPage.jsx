@@ -6,6 +6,8 @@ export function ShopsPage() {
   const navigate = useNavigate();
   const {
     shopsData,
+    isShopsLoading,
+    fetchShops,
     searchQuery,
     setSearchQuery,
     shopCategoryFilter,
@@ -67,57 +69,89 @@ export function ShopsPage() {
         </div>
       </div>
 
-      {/* Shops Grid */}
-      <div className="adm-shops-grid">
-        {filteredShops.map((shop) => {
-          const isOpen = shop.status === "Active";
-          return (
-            <div key={shop.id} className="adm-shop-card">
-              <div className="adm-shop-card-image-wrap">
-                <img src={shop.image} alt={shop.name} className="adm-shop-card-img" />
-                <span className={`adm-badge ${isOpen ? "adm-badge-success" : "adm-badge-neutral"} adm-shop-status-badge`}>
-                  {shop.status}
-                </span>
-              </div>
-
-              <div className="adm-shop-card-body">
-                <div className="adm-shop-cat">{shop.category}</div>
-                <h3 className="adm-shop-title">{shop.name}</h3>
-                <div className="adm-shop-sub">Owner: {shop.owner} • {shop.location}</div>
-
-                <div className="adm-shop-metrics">
-                  <div className="adm-shop-metric-item">
-                    <span className="adm-shop-metric-label">Serving</span>
-                    <span className="adm-shop-metric-val" style={{ color: "#2563eb" }}>{shop.currentServing}</span>
-                  </div>
-                  <div className="adm-shop-metric-item">
-                    <span className="adm-shop-metric-label">Waiting</span>
-                    <span className="adm-shop-metric-val">{shop.waitingCount}</span>
-                  </div>
-                  <div className="adm-shop-metric-item">
-                    <span className="adm-shop-metric-label">Avg Wait</span>
-                    <span className="adm-shop-metric-val">{shop.avgWaitTime}</span>
-                  </div>
+      {/* Shops Grid or Empty State */}
+      {isShopsLoading ? (
+        <div className="adm-card" style={{ padding: "60px 20px", textAlign: "center" }}>
+          <div className="adm-loading-spinner" />
+          <h3 style={{ marginTop: "12px", fontSize: "16px", color: "var(--adm-text)" }}>Loading Registered Shops...</h3>
+          <p style={{ color: "var(--adm-text-muted)", fontSize: "13px" }}>Connecting with counter stores database</p>
+        </div>
+      ) : filteredShops.length === 0 ? (
+        <div className="adm-card" style={{ padding: "60px 20px", textAlign: "center" }}>
+          <span style={{ fontSize: "40px" }}>🏪</span>
+          <h3 style={{ margin: "14px 0 6px", fontSize: "18px", color: "var(--adm-text)" }}>
+            {searchQuery || shopCategoryFilter !== "All" ? "No Matching Shops Found" : "No Registered Shops"}
+          </h3>
+          <p style={{ color: "var(--adm-text-muted)", fontSize: "13px", maxWidth: "420px", margin: "0 auto 16px" }}>
+            {searchQuery || shopCategoryFilter !== "All"
+              ? "No store counters match your current filter or search criteria."
+              : "There are currently no store outlets or counter queues registered in the system."}
+          </p>
+          {(searchQuery || shopCategoryFilter !== "All") && (
+            <button
+              type="button"
+              className="adm-btn adm-btn-secondary"
+              onClick={() => {
+                setSearchQuery("");
+                setShopCategoryFilter("All");
+              }}
+            >
+              Reset Filters
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="adm-shops-grid">
+          {filteredShops.map((shop) => {
+            const isOpen = shop.status === "Active";
+            return (
+              <div key={shop.id} className="adm-shop-card">
+                <div className="adm-shop-card-image-wrap">
+                  <img src={shop.image} alt={shop.name} className="adm-shop-card-img" />
+                  <span className={`adm-badge ${isOpen ? "adm-badge-success" : "adm-badge-neutral"} adm-shop-status-badge`}>
+                    {shop.status}
+                  </span>
                 </div>
 
-                <div className="adm-shop-card-actions">
-                  <button
-                    type="button"
-                    className="adm-btn adm-btn-secondary adm-btn-sm"
-                    style={{ flex: 1 }}
-                    onClick={() => {
-                      setSelectedShopDetail(shop);
-                      navigate(`/admin/shops/${shop.id}`);
-                    }}
-                  >
-                    View Live Queue &rarr;
-                  </button>
+                <div className="adm-shop-card-body">
+                  <div className="adm-shop-cat">{shop.category}</div>
+                  <h3 className="adm-shop-title">{shop.name}</h3>
+                  <div className="adm-shop-sub">Owner: {shop.owner} • {shop.location}</div>
+
+                  <div className="adm-shop-metrics">
+                    <div className="adm-shop-metric-item">
+                      <span className="adm-shop-metric-label">Serving</span>
+                      <span className="adm-shop-metric-val" style={{ color: "#2563eb" }}>{shop.currentServing}</span>
+                    </div>
+                    <div className="adm-shop-metric-item">
+                      <span className="adm-shop-metric-label">Waiting</span>
+                      <span className="adm-shop-metric-val">{shop.waitingCount}</span>
+                    </div>
+                    <div className="adm-shop-metric-item">
+                      <span className="adm-shop-metric-label">Avg Wait</span>
+                      <span className="adm-shop-metric-val">{shop.avgWaitTime}</span>
+                    </div>
+                  </div>
+
+                  <div className="adm-shop-card-actions">
+                    <button
+                      type="button"
+                      className="adm-btn adm-btn-secondary adm-btn-sm"
+                      style={{ flex: 1 }}
+                      onClick={() => {
+                        setSelectedShopDetail(shop);
+                        navigate(`/admin/shops/${shop.id}`);
+                      }}
+                    >
+                      View Live Queue &rarr;
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

@@ -222,7 +222,7 @@ export function OwnersPage() {
                         {owner.address || "—"}
                       </td>
                       <td style={{ textAlign: "center", whiteSpace: "nowrap" }}>
-                        <span className="adm-badge adm-badge-neutral">{owner.maxShops || 5} Shops</span>
+                        <span className="adm-badge adm-badge-neutral">{owner.maxShops ?? 0} Shops</span>
                       </td>
                       <td style={{ textAlign: "center", whiteSpace: "nowrap" }}>
                         <span className={`adm-badge ${isActive ? "adm-badge-success" : "adm-badge-danger"}`}>

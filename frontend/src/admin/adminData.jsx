@@ -62,98 +62,7 @@ export const REVENUE_BARS = [
   { month: "Dec", val: 41, heightPct: 95 },
 ];
 
-export const ALL_SHOPS_DATA = [
-  {
-    id: "shop-1",
-    name: "Coffee Hub",
-    category: "Café & Dining",
-    owner: "Ananya Das",
-    phone: "+91 98765 43210",
-    status: "Active",
-    currentServing: "QL-042",
-    waitingCount: 14,
-    avgWaitTime: "8 mins",
-    dailyTokens: 128,
-    location: "Contai, Purba Medinipur, WB",
-    timing: "9:00 AM – 10:00 PM",
-    image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "shop-2",
-    name: "Quick Care Clinic",
-    category: "Healthcare",
-    owner: "Priya Ghosh",
-    phone: "+91 98765 43212",
-    status: "Active",
-    currentServing: "QC-018",
-    waitingCount: 9,
-    avgWaitTime: "12 mins",
-    dailyTokens: 84,
-    location: "Salt Lake Sector V, Kolkata, WB",
-    timing: "8:00 AM – 8:00 PM",
-    image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=600&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "shop-3",
-    name: "Tasty Bites Restaurant",
-    category: "Café & Dining",
-    owner: "Rahul Sen",
-    phone: "+91 98765 43211",
-    status: "Active",
-    currentServing: "TB-067",
-    waitingCount: 22,
-    avgWaitTime: "15 mins",
-    dailyTokens: 96,
-    location: "Park Street, Kolkata, WB",
-    timing: "11:00 AM – 11:00 PM",
-    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "shop-4",
-    name: "FitLife Gym & Spa",
-    category: "Fitness",
-    owner: "Sujit Paul",
-    phone: "+91 98765 43213",
-    status: "Closed",
-    currentServing: "FL-000",
-    waitingCount: 0,
-    avgWaitTime: "--",
-    dailyTokens: 72,
-    location: "New Town Action Area I, Kolkata, WB",
-    timing: "6:00 AM – 10:00 PM",
-    image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "shop-5",
-    name: "The Book Nook Store",
-    category: "Retail",
-    owner: "Arjun Roy",
-    phone: "+91 98765 43214",
-    status: "Active",
-    currentServing: "BN-031",
-    waitingCount: 5,
-    avgWaitTime: "5 mins",
-    dailyTokens: 68,
-    location: "College Street, Kolkata, WB",
-    timing: "10:00 AM – 9:00 PM",
-    image: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=600&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "shop-6",
-    name: "Apex Electronics Care",
-    category: "Services",
-    owner: "Ananya Das",
-    phone: "+91 98765 43210",
-    status: "Active",
-    currentServing: "AE-014",
-    waitingCount: 7,
-    avgWaitTime: "18 mins",
-    dailyTokens: 45,
-    location: "Chandni Chowk, Kolkata, WB",
-    timing: "10:30 AM – 8:30 PM",
-    image: "https://images.unsplash.com/photo-1581092921461-eab62e97a780?w=600&auto=format&fit=crop&q=80",
-  },
-];
+export const ALL_SHOPS_DATA = [];
 
 export const SUBSCRIPTION_PLANS = [
   {
@@ -378,8 +287,16 @@ export function mapApiOwnerToDashboard(apiOwner) {
   const email = apiOwner.email || "";
   const phone = apiOwner.phone || "N/A";
   const address = apiOwner.address || "N/A";
-  const shops = Number(apiOwner.shop_count ?? apiOwner.shops ?? 0);
-  const maxShops = Number(apiOwner.max_shop_count ?? 5);
+  const shops = Number(
+    apiOwner.shop_count ??
+    (Array.isArray(apiOwner.shops) ? apiOwner.shops.length : apiOwner.shops) ??
+    (Array.isArray(apiOwner.shop_details) ? apiOwner.shop_details.length : 0) ??
+    0
+  );
+  const maxShops =
+    apiOwner.max_shop_count !== undefined && apiOwner.max_shop_count !== null
+      ? Number(apiOwner.max_shop_count)
+      : 0;
   const isActive =
     apiOwner.account_status !== undefined
       ? Boolean(apiOwner.account_status)
@@ -401,7 +318,9 @@ export function mapApiOwnerToDashboard(apiOwner) {
   }
 
   let parsedShopDetails = [];
-  if (apiOwner.shop_details) {
+  if (Array.isArray(apiOwner.shops) && apiOwner.shops.length > 0) {
+    parsedShopDetails = apiOwner.shops;
+  } else if (apiOwner.shop_details) {
     try {
       if (
         typeof apiOwner.shop_details === "string" &&
@@ -427,14 +346,14 @@ export function mapApiOwnerToDashboard(apiOwner) {
     maxShops,
     status,
     joinedOn,
-    plan: status === "Active" ? "Enterprise Pro" : "Starter Trial",
-    city: address && address !== "N/A" ? address : "Kolkata, WB",
+    plan: "",
+    city: address && address !== "N/A" ? address : "—",
     kycStatus: "KYC Verified",
-    billingCycle: "Annual (₹ 14,999/yr)",
-    totalTokens: shops * 1420 + 350,
-    monthlyRevenue: `₹ ${(shops * 4500 + 1200).toLocaleString()}`,
+    billingCycle: "Standard",
+    totalTokens: shops,
+    monthlyRevenue: "₹ 0",
     lastActive: "Today",
-    notes: "Verified platform merchant.",
+    notes: "",
     shopDetails: apiOwner.shop_details,
     parsedShopDetails,
   };
@@ -447,14 +366,70 @@ export function getRoleBadgeClass(role) {
   return "adm-badge-role-user";
 }
 
-export function isRegularUser(user) {
+export function isRegularUser(user, ownersList = []) {
   if (!user) return false;
+
+  const email = String(user.email || "").toLowerCase().trim();
+  const name = String(user.name || user.full_name || user.fullname || "").toLowerCase().trim();
   const r = String(user.role || "").toLowerCase().trim();
-  const rawRole = user.user_role !== undefined ? user.user_role : user.role;
+  const rawRole =
+    user.user_role !== undefined
+      ? user.user_role
+      : user.rawUser?.user_role !== undefined
+      ? user.rawUser.user_role
+      : user.role_id;
   const roleNum = Number(rawRole);
-  if (r.includes("owner") || roleNum === 2) return false;
-  if (r.includes("admin") || roleNum === 1) return false;
-  return r === "user" || r === "customer" || roleNum === 3 || !r;
+
+  // 1. Exclude Admin
+  if (
+    roleNum === 1 ||
+    r === "admin" ||
+    r === "super admin" ||
+    email === "admin@gmail.com" ||
+    email.startsWith("admin@") ||
+    name === "admin"
+  ) {
+    return false;
+  }
+
+  // 2. Exclude Shop Owner by role / email
+  if (
+    roleNum === 3 ||
+    r === "owner" ||
+    r === "shop owner" ||
+    email.includes(".owner@")
+  ) {
+    return false;
+  }
+
+  // 3. Exclude if present in registered owners list
+  let owners = Array.isArray(ownersList) && ownersList.length > 0 ? ownersList : [];
+  if (owners.length === 0) {
+    try {
+      const saved = localStorage.getItem("ql_admin_owners_list");
+      if (saved) owners = JSON.parse(saved) || [];
+    } catch (_) {}
+  }
+
+  if (owners.length > 0) {
+    const isOwner = owners.some((o) => {
+      const oEmail = String(o.email || "").toLowerCase().trim();
+      const oPhone = String(o.phone || "").replace(/\D/g, "");
+      const uPhone = String(user.phone || "").replace(/\D/g, "");
+      const oId = Number(o.id || o.owner_id);
+      const uId = Number(user.id || user.user_id);
+
+      return (
+        (oEmail && email && oEmail === email) ||
+        (oPhone && uPhone && oPhone.length >= 10 && oPhone === uPhone) ||
+        (oId > 0 && uId > 0 && oId === uId && o.name?.toLowerCase() === name)
+      );
+    });
+
+    if (isOwner) return false;
+  }
+
+  return true;
 }
 
 export function mapApiUserToDashboard(apiUser) {
@@ -462,10 +437,49 @@ export function mapApiUserToDashboard(apiUser) {
   const name = (apiUser.full_name || apiUser.fullname || apiUser.name || "").trim() || "User";
   const initial = name ? name.charAt(0).toUpperCase() : "U";
   const avatarImg = apiUser.profile_image || apiUser.profileimage || apiUser.avatarImg || null;
-  const email = apiUser.email || "";
+  const email = (apiUser.email || "").trim().toLowerCase();
   const phone = apiUser.phone || "N/A";
   const address = apiUser.address || "N/A";
-  const role = apiUser.role || "User";
+
+  // Determine user role (1 = Admin, 3 = Shop Owner, 2 = Customer/User)
+  let role = "User";
+  const rawRole = apiUser.user_role !== undefined ? apiUser.user_role : apiUser.role_id;
+  const roleNum = Number(rawRole);
+  const roleStr = String(apiUser.role || apiUser.role_name || "").toLowerCase().trim();
+
+  // Check if this user is in cached owners list
+  let isOwnerFromList = false;
+  try {
+    const savedOwners = JSON.parse(localStorage.getItem("ql_admin_owners_list") || "[]");
+    if (Array.isArray(savedOwners)) {
+      isOwnerFromList = savedOwners.some(
+        (o) => o.email && email && o.email.toLowerCase().trim() === email
+      );
+    }
+  } catch (_) {}
+
+  if (
+    roleNum === 1 ||
+    roleStr === "admin" ||
+    roleStr === "super admin" ||
+    email === "admin@gmail.com" ||
+    email.startsWith("admin@") ||
+    name.toLowerCase() === "admin"
+  ) {
+    role = "Admin";
+  } else if (
+    roleNum === 3 ||
+    roleStr === "owner" ||
+    roleStr === "shop owner" ||
+    email.includes(".owner@") ||
+    isOwnerFromList
+  ) {
+    role = "Owner";
+  } else if (roleNum === 2 || roleStr === "user" || roleStr === "customer") {
+    role = "User";
+  } else if (apiUser.role && typeof apiUser.role === "string" && apiUser.role.trim()) {
+    role = apiUser.role.trim();
+  }
   const isActive =
     apiUser.account_status !== undefined
       ? Boolean(apiUser.account_status)
