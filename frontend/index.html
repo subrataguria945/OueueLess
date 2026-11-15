@@ -11,6 +11,30 @@
     <link rel="preconnect" href="https://queueless-backend-b2qh.onrender.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+      /* ── HIDE SCROLLBAR GLOBALLY (ALL PAGES & ELEMENTS REMAIN SCROLLABLE) ── */
+      html,
+      body,
+      *,
+      *::before,
+      *::after {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+      }
+      html::-webkit-scrollbar,
+      body::-webkit-scrollbar,
+      *::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        background: transparent !important;
+      }
+      *::-webkit-scrollbar-track,
+      *::-webkit-scrollbar-thumb {
+        background: transparent !important;
+        border: none !important;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

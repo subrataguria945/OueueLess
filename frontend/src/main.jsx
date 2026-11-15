@@ -23,8 +23,6 @@ createRoot(document.getElementById('root')).render(
             <Route path="/login" element={<Login />}></Route>
             <Route path="/register" element={<Register />}></Route>
             <Route path="/forgot-password" element={<ForgotPassword />}></Route>
-            <Route path="/admin" element={<AdminDashboard />}></Route>
-            <Route path="/admin/dashboard" element={<AdminDashboard />}></Route>
             <Route path="/admin/*" element={<AdminDashboard />}></Route>
         </Routes>
     </BrowserRouter>
