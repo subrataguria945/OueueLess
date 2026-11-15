@@ -4,6 +4,7 @@ import { ForgotPasswordModal } from "./ForgotPasswordModal";
 import { EmailOtpModal } from "./EmailOtpModal";
 import { initiateSignup, verifySignupOtp } from "./authApi";
 import { triggerGoogleSignIn } from "./googleAuth";
+import { checkIsAdmin } from "./authRole";
 
 const API_BASE = (
   import.meta.env.VITE_API_URL ||
@@ -161,13 +162,48 @@ export function Login({
       sessionStorage.getItem("token");
 
     if (existingToken && window.location.pathname === "/login") {
-      window.location.href = "/admin";
+      let storedUser = null;
+      try {
+        storedUser = JSON.parse(localStorage.getItem("user") || sessionStorage.getItem("user") || "null");
+      } catch {}
+      const storedRole = localStorage.getItem("role") || sessionStorage.getItem("role") || storedUser?.role;
+
+      if (checkIsAdmin({ user: storedUser, role: storedRole, token: existingToken, email: storedUser?.email })) {
+        window.location.href = "/admin";
+      } else {
+        localStorage.removeItem("token");
+        localStorage.removeItem("ql_admin_token");
+        localStorage.removeItem("user");
+        localStorage.removeItem("role");
+        sessionStorage.clear();
+      }
     }
   }, []);
 
   /* ── Google Sign-In ────────────────────────────────── */
   const handleGoogleSuccess = (user, token, isNew, message) => {
     setIsGoogleLoading(false);
+
+    const isAdmin = checkIsAdmin({
+      user,
+      token,
+      user_role: user?.user_role,
+      role: user?.role,
+      email: user?.email,
+    });
+
+    if (!isAdmin) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("ql_admin_token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("role");
+      sessionStorage.clear();
+      setLoginError(
+        "Access restricted: This portal is currently available to administrators only. The User Portal is under development and will be available soon."
+      );
+      return;
+    }
+
     if (token) {
       localStorage.setItem("token", token);
       localStorage.setItem("ql_admin_token", token);
@@ -175,9 +211,9 @@ export function Login({
     }
     if (user) {
       localStorage.setItem("user", JSON.stringify(user));
-      if (user.role) localStorage.setItem("role", user.role);
+      localStorage.setItem("role", "ADMIN");
     }
-    setLoginSuccess(message || "Signed in with Google successfully! Redirecting...");
+    setLoginSuccess(message || "Signed in as Administrator! Redirecting...");
     setTimeout(() => {
       window.location.href = "/admin";
     }, 800);
@@ -238,10 +274,38 @@ export function Login({
           data.jwt ||
           data.data?.token;
 
-        const user = data.user || data.data?.user || {
+        const returnedUser = data.user || data.data?.user || null;
+
+        // Check if the authenticated account is an Administrator
+        const isAdmin = checkIsAdmin({
+          data,
+          token,
+          user: returnedUser,
+          user_role: data.user_role ?? data.roleid ?? data.role_id ?? returnedUser?.user_role ?? returnedUser?.roleid,
+          role: data.role ?? returnedUser?.role,
+          email: cleanEmail,
+        });
+
+        if (!isAdmin) {
+          // Regular user / customer / non-admin: reject entry into admin panel
+          localStorage.removeItem("token");
+          localStorage.removeItem("ql_admin_token");
+          localStorage.removeItem("user");
+          localStorage.removeItem("role");
+          sessionStorage.clear();
+
+          setIsLoginLoading(false);
+          setLoginError(
+            "Access restricted: This portal is currently available to administrators only. The User Portal is under development and will be available soon."
+          );
+          return;
+        }
+
+        const user = returnedUser || {
           email: cleanEmail,
           name: data.name || cleanEmail.split("@")[0],
-          role: data.role || data.user_role || "ADMIN",
+          role: "ADMIN",
+          user_role: 1,
         };
 
         if (token) {
@@ -257,14 +321,14 @@ export function Login({
           const userPayload = JSON.stringify(user);
           if (rememberMe) {
             localStorage.setItem("user", userPayload);
-            localStorage.setItem("role", user.role || "ADMIN");
+            localStorage.setItem("role", "ADMIN");
           } else {
             sessionStorage.setItem("user", userPayload);
-            sessionStorage.setItem("role", user.role || "ADMIN");
+            sessionStorage.setItem("role", "ADMIN");
           }
         }
 
-        setLoginSuccess("Login successful! Redirecting to dashboard...");
+        setLoginSuccess("Administrator login successful! Redirecting to dashboard...");
         setTimeout(() => {
           window.location.href = "/admin";
         }, 600);
