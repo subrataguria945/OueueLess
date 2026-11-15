@@ -379,13 +379,14 @@ export function AdminProvider({ children }) {
   const [showAddOwnerConfirmPassword, setShowAddOwnerConfirmPassword] = useState(false);
 
   const [newOwnerForm, setNewOwnerForm] = useState({
+    fullname: "",
     name: "",
     email: "",
     phone: "",
     password: "",
     confirmPassword: "",
+    max_shop_count: 5,
     maxShops: 5,
-    joinedDate: new Date().toISOString().split("T")[0],
     address: "",
   });
 
@@ -393,16 +394,16 @@ export function AdminProvider({ children }) {
     e.preventDefault();
     setAddOwnerError("");
 
-    const fullname = (newOwnerForm.name || "").trim();
+    const fullname = (newOwnerForm.fullname || newOwnerForm.name || "").trim();
     const email = (newOwnerForm.email || "").trim().toLowerCase();
     const cleanPhone = (newOwnerForm.phone || "").replace(/\D/g, "");
     const password = (newOwnerForm.password || "").trim();
     const confirmPassword = (newOwnerForm.confirmPassword || "").trim();
     const address = (newOwnerForm.address || "").trim();
-    const maxShops = Number(newOwnerForm.maxShops || 5);
+    const max_shop_count = Number(newOwnerForm.max_shop_count ?? newOwnerForm.maxShops ?? 5);
 
     if (!fullname) {
-      setAddOwnerError("Please enter Owner Name.");
+      setAddOwnerError("Please enter Owner Full Name.");
       return;
     }
     if (!email || !email.includes("@")) {
@@ -413,9 +414,8 @@ export function AdminProvider({ children }) {
       setAddOwnerError("Phone number must be exactly 10 digits.");
       return;
     }
-    const today = new Date().toISOString().split("T")[0];
-    if (newOwnerForm.joinedDate && newOwnerForm.joinedDate > today) {
-      setAddOwnerError("Joined Date cannot be in the future (cannot exceed today).");
+    if (isNaN(max_shop_count) || max_shop_count < 1) {
+      setAddOwnerError("Max Shop Count must be at least 1.");
       return;
     }
     if (!address) {
@@ -458,7 +458,7 @@ export function AdminProvider({ children }) {
           password,
           phone: cleanPhone.length === 10 ? cleanPhone : cleanPhone.slice(-10),
           address,
-          max_shop_count: maxShops,
+          max_shop_count,
           backup_id: 1,
         }),
       });
@@ -481,13 +481,14 @@ export function AdminProvider({ children }) {
       setIsAddingOwner(false);
       setAddOwnerModalOpen(false);
       setNewOwnerForm({
+        fullname: "",
         name: "",
         email: "",
         phone: "",
         password: "",
         confirmPassword: "",
+        max_shop_count: 5,
         maxShops: 5,
-        joinedDate: new Date().toISOString().split("T")[0],
         address: "",
       });
       setShowAddOwnerPassword(false);

@@ -57,16 +57,16 @@ export function AddOwnerModal() {
             <div className="adm-form-grid">
               <div className="adm-field">
                 <label className="adm-label">
-                  Owner Full Name <span className="req">*</span>
+                  Owner Full Name (fullname) <span className="req">*</span>
                 </label>
                 <input
                   type="text"
                   required
                   className="adm-input"
                   placeholder="e.g. Ramesh Kumar"
-                  value={newOwnerForm.name}
+                  value={newOwnerForm.fullname || newOwnerForm.name || ""}
                   onChange={(e) => {
-                    setNewOwnerForm({ ...newOwnerForm, name: e.target.value });
+                    setNewOwnerForm({ ...newOwnerForm, fullname: e.target.value, name: e.target.value });
                     if (addOwnerError) setAddOwnerError("");
                   }}
                   autoFocus
@@ -75,7 +75,7 @@ export function AddOwnerModal() {
 
               <div className="adm-field">
                 <label className="adm-label">
-                  Email Address <span className="req">*</span>
+                  Email Address (email) <span className="req">*</span>
                 </label>
                 <input
                   type="email"
@@ -91,11 +91,11 @@ export function AddOwnerModal() {
               </div>
             </div>
 
-            {/* Row 2: Phone & Joined Date */}
+            {/* Row 2: Phone & Max Shop Count */}
             <div className="adm-form-grid">
               <div className="adm-field">
                 <label className="adm-label">
-                  Contact Phone Number (10 Digits) <span className="req">*</span>
+                  Contact Phone Number (phone) <span className="req">*</span>
                 </label>
                 <input
                   type="tel"
@@ -115,31 +115,34 @@ export function AddOwnerModal() {
 
               <div className="adm-field">
                 <label className="adm-label">
-                  Joined Date <span className="req">*</span>
+                  Max Shop Count (max_shop_count) <span className="req">*</span>
                 </label>
                 <input
-                  type="date"
+                  type="number"
                   required
-                  max={todayStr}
+                  min={1}
+                  max={50}
                   className="adm-input"
-                  value={newOwnerForm.joinedDate}
+                  placeholder="e.g. 5"
+                  value={newOwnerForm.max_shop_count ?? newOwnerForm.maxShops ?? 5}
                   onChange={(e) => {
-                    const selected = e.target.value;
-                    if (selected > todayStr) {
-                      setAddOwnerError("Joined Date cannot be in the future (cannot exceed today).");
-                      return;
-                    }
-                    setNewOwnerForm({ ...newOwnerForm, joinedDate: selected });
+                    const val = parseInt(e.target.value, 10);
+                    setNewOwnerForm({
+                      ...newOwnerForm,
+                      max_shop_count: isNaN(val) ? "" : val,
+                      maxShops: isNaN(val) ? "" : val,
+                    });
                     if (addOwnerError) setAddOwnerError("");
                   }}
                 />
+                <span className="adm-field-hint">Maximum number of shops this owner can register</span>
               </div>
             </div>
 
             {/* Row 3: Address */}
             <div className="adm-field">
               <label className="adm-label">
-                Business / Residential Address <span className="req">*</span>
+                Business / Residential Address (address) <span className="req">*</span>
               </label>
               <input
                 type="text"
