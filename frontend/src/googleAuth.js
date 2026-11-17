@@ -8,7 +8,7 @@
 
 export const GOOGLE_AUTH_API_URL =
   import.meta.env.VITE_GOOGLE_AUTH_API_URL ||
-  "https://queueless-backend-b2qh.onrender.com/user/google";
+  "https://queueless-backend-b2qh.onrender.com/auth/google";
 
 /**
  * Retrieves the configured Google OAuth Client ID
@@ -50,9 +50,8 @@ export async function syncGoogleUserWithDatabase(googleUser) {
   ).trim();
 
   try {
-    // 1. Call official backend Google Auth endpoint: POST /user/google
-    // Handles BOTH: registering brand new Google users, and logging in existing Google users!
-    const res = await fetch(GOOGLE_AUTH_API_URL, {
+    // 1. Call official backend Google Auth endpoint: POST /auth/google
+    let res = await fetch(GOOGLE_AUTH_API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -61,6 +60,23 @@ export async function syncGoogleUserWithDatabase(googleUser) {
         google_id: googleId,
       }),
     });
+
+    if (!res.ok && res.status === 404) {
+      try {
+        const fallbackRes = await fetch("https://queueless-backend-b2qh.onrender.com/user/google", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fullname,
+            email,
+            google_id: googleId,
+          }),
+        });
+        if (fallbackRes.ok || fallbackRes.status !== 404) {
+          res = fallbackRes;
+        }
+      } catch (_) {}
+    }
 
     const data = await res.json().catch(() => ({}));
 

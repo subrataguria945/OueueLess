@@ -1,13 +1,22 @@
 // ==========================================================================
 // QUEUELESS — OFFICIAL BACKEND AUTHENTICATION API SERVICE
 // Connects to FastAPI backend endpoints on Render:
-// - POST /user/register/initiate (Sends OTP to Gmail & returns signup_token)
-// - POST /user/register/verify   (Verifies OTP & creates user in database)
+// - POST /auth/register/initiate (Sends OTP to Gmail & returns signup_token)
+// - POST /auth/register/verify   (Verifies OTP & creates user in database)
 // ==========================================================================
 
 const BACKEND_BASE_URL =
   import.meta.env.VITE_BACKEND_URL ||
+  import.meta.env.VITE_API_URL ||
   "https://queueless-backend-b2qh.onrender.com";
+
+export const SIGNUP_INITIATE_API_URL =
+  import.meta.env.VITE_SIGNUP_INITIATE_API_URL ||
+  `${BACKEND_BASE_URL}/auth/register/initiate`;
+
+export const SIGNUP_VERIFY_API_URL =
+  import.meta.env.VITE_SIGNUP_VERIFY_API_URL ||
+  `${BACKEND_BASE_URL}/auth/register/verify`;
 
 /**
  * Wakes up Render backend immediately when application opens.
@@ -48,16 +57,34 @@ export async function initiateSignup({ fullname, email, phone, user_role = 3 }) 
   if (!cleanPhone || cleanPhone.length !== 10) throw new Error("Please enter a valid 10-digit phone number.");
 
   try {
-    const response = await fetch(`${BACKEND_BASE_URL}/user/register/initiate`, {
+    let response = await fetch(SIGNUP_INITIATE_API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         fullname: cleanFullname,
         email: cleanEmail,
         phone: cleanPhone,
-        user_role: Number(user_role) || 3,
       }),
     });
+
+    // Fallback if legacy route is expected
+    if (!response.ok && response.status === 404) {
+      try {
+        const fallbackRes = await fetch(`${BACKEND_BASE_URL}/user/register/initiate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fullname: cleanFullname,
+            email: cleanEmail,
+            phone: cleanPhone,
+            user_role: Number(user_role) || 3,
+          }),
+        });
+        if (fallbackRes.ok || fallbackRes.status !== 404) {
+          response = fallbackRes;
+        }
+      } catch (_) {}
+    }
 
     const data = await response.json().catch(() => ({}));
 
@@ -112,7 +139,7 @@ export async function verifySignupOtp({ signup_token, otp, password }) {
   }
 
   try {
-    const response = await fetch(`${BACKEND_BASE_URL}/user/register/verify`, {
+    let response = await fetch(SIGNUP_VERIFY_API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -121,6 +148,24 @@ export async function verifySignupOtp({ signup_token, otp, password }) {
         password,
       }),
     });
+
+    // Fallback if legacy route is expected
+    if (!response.ok && response.status === 404) {
+      try {
+        const fallbackRes = await fetch(`${BACKEND_BASE_URL}/user/register/verify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            signup_token: cleanToken,
+            otp: cleanOtp,
+            password,
+          }),
+        });
+        if (fallbackRes.ok || fallbackRes.status !== 404) {
+          response = fallbackRes;
+        }
+      } catch (_) {}
+    }
 
     const data = await response.json().catch(() => ({}));
 

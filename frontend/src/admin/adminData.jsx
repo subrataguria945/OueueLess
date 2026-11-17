@@ -1,31 +1,60 @@
 // Admin Data & API Configuration
+export const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_BACKEND_URL ||
+  "https://queueless-backend-b2qh.onrender.com";
+
+// Owners APIs (FastAPI /admin/owner/...)
 export const OWNERS_API_URL =
-  import.meta.env.VITE_OWNERS_API_URL ||
-  `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/owner/all`;
+  import.meta.env.VITE_OWNERS_API_URL || `${API_BASE_URL}/admin/owners/all`;
 
 export const ADD_OWNER_API_URL =
-  import.meta.env.VITE_ADD_OWNER_API_URL ||
-  `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/owner/add`;
+  import.meta.env.VITE_ADD_OWNER_API_URL || `${API_BASE_URL}/admin/owner/add`;
 
 export const OWNER_STATUS_API_URL =
-  import.meta.env.VITE_OWNER_STATUS_API_URL ||
-  `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/owner/status`;
-
-export const OWNER_DELETE_API_URL =
-  import.meta.env.VITE_OWNER_DELETE_API_URL ||
-  `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/owner/delete`;
+  import.meta.env.VITE_OWNER_STATUS_API_URL || `${API_BASE_URL}/admin/owner/status`;
 
 export const OWNER_UPDATE_API_URL =
-  import.meta.env.VITE_OWNER_UPDATE_API_URL ||
-  `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/owner/update`;
+  import.meta.env.VITE_OWNER_UPDATE_API_URL || `${API_BASE_URL}/admin/owner/update`;
+
+export const OWNER_DELETE_API_URL =
+  import.meta.env.VITE_OWNER_DELETE_API_URL || `${API_BASE_URL}/owner/delete`;
+
+// Users APIs (FastAPI /admin/user/...)
+export const ALL_USERS_API_URL =
+  import.meta.env.VITE_ALL_USERS_API_URL || `${API_BASE_URL}/admin/users/all`;
 
 export const USER_UPDATE_API_URL =
-  import.meta.env.VITE_USER_UPDATE_API_URL ||
-  `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/user/update`;
+  import.meta.env.VITE_USER_UPDATE_API_URL || `${API_BASE_URL}/admin/user/update`;
 
-export const ALL_USERS_API_URL =
-  import.meta.env.VITE_ALL_USERS_API_URL ||
-  `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/user/all`;
+export const USER_STATUS_API_URL =
+  import.meta.env.VITE_USER_STATUS_API_URL || `${API_BASE_URL}/admin/user/status`;
+
+export const ADMIN_PROFILE_UPDATE_API_URL =
+  import.meta.env.VITE_ADMIN_PROFILE_UPDATE_API_URL || `${API_BASE_URL}/user/update`;
+
+// Shops APIs (FastAPI /admin/shops/all & /shop/...)
+export const ALL_SHOPS_API_URL =
+  import.meta.env.VITE_SHOPS_API_URL || `${API_BASE_URL}/admin/shops/all`;
+
+export const SHOP_CREATE_API_URL =
+  import.meta.env.VITE_SHOP_CREATE_API_URL || `${API_BASE_URL}/shop/create`;
+
+export const SHOP_UPDATE_API_URL =
+  import.meta.env.VITE_SHOP_UPDATE_API_URL || `${API_BASE_URL}/shop/update`;
+
+export const SHOP_DELETE_API_URL =
+  import.meta.env.VITE_SHOP_DELETE_API_URL || `${API_BASE_URL}/shop/delete`;
+
+export const SHOP_STATUS_API_URL =
+  import.meta.env.VITE_SHOP_STATUS_API_URL || `${API_BASE_URL}/shop/status`;
+
+export const OWNER_SHOPS_API_URL =
+  import.meta.env.VITE_OWNER_SHOPS_API_URL || `${API_BASE_URL}/owner/shops`;
+
+// Dashboard Telemetry (FastAPI /dashboard/stats)
+export const DASHBOARD_STATS_API_URL =
+  import.meta.env.VITE_DASHBOARD_STATS_API_URL || `${API_BASE_URL}/dashboard/stats`;
 
 export const STAT_METRICS = [
   { id: "owners", label: "Total Owners", value: "128", trend: "+12%", context: "from last month" },
@@ -35,13 +64,7 @@ export const STAT_METRICS = [
   { id: "subs", label: "Active Subscriptions", value: "96", trend: "+15%", context: "from last month" },
 ];
 
-export const TOP_SHOPS = [
-  { rank: 1, name: "Coffee Hub", owner: "Ananya Das", users: 128, max: 128 },
-  { rank: 2, name: "Tasty Bites", owner: "Rahul Sen", users: 96, max: 128 },
-  { rank: 3, name: "Quick Care Clinic", owner: "Priya Ghosh", users: 84, max: 128 },
-  { rank: 4, name: "FitLife Gym", owner: "Sujit Paul", users: 72, max: 128 },
-  { rank: 5, name: "Book Nook", owner: "Arjun Roy", users: 68, max: 128 },
-];
+export const TOP_SHOPS = [];
 
 export const REVENUE_BARS = [
   { month: "Jan", val: 10, heightPct: 24 },
@@ -58,98 +81,7 @@ export const REVENUE_BARS = [
   { month: "Dec", val: 41, heightPct: 95 },
 ];
 
-export const ALL_SHOPS_DATA = [
-  {
-    id: "shop-1",
-    name: "Coffee Hub",
-    category: "Café & Dining",
-    owner: "Ananya Das",
-    phone: "+91 98765 43210",
-    status: "Active",
-    currentServing: "QL-042",
-    waitingCount: 14,
-    avgWaitTime: "8 mins",
-    dailyTokens: 128,
-    location: "Contai, Purba Medinipur, WB",
-    timing: "9:00 AM – 10:00 PM",
-    image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "shop-2",
-    name: "Quick Care Clinic",
-    category: "Healthcare",
-    owner: "Priya Ghosh",
-    phone: "+91 98765 43212",
-    status: "Active",
-    currentServing: "QC-018",
-    waitingCount: 9,
-    avgWaitTime: "12 mins",
-    dailyTokens: 84,
-    location: "Salt Lake Sector V, Kolkata, WB",
-    timing: "8:00 AM – 8:00 PM",
-    image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=600&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "shop-3",
-    name: "Tasty Bites Restaurant",
-    category: "Café & Dining",
-    owner: "Rahul Sen",
-    phone: "+91 98765 43211",
-    status: "Active",
-    currentServing: "TB-067",
-    waitingCount: 22,
-    avgWaitTime: "15 mins",
-    dailyTokens: 96,
-    location: "Park Street, Kolkata, WB",
-    timing: "11:00 AM – 11:00 PM",
-    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "shop-4",
-    name: "FitLife Gym & Spa",
-    category: "Fitness",
-    owner: "Sujit Paul",
-    phone: "+91 98765 43213",
-    status: "Closed",
-    currentServing: "FL-000",
-    waitingCount: 0,
-    avgWaitTime: "--",
-    dailyTokens: 72,
-    location: "New Town Action Area I, Kolkata, WB",
-    timing: "6:00 AM – 10:00 PM",
-    image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "shop-5",
-    name: "The Book Nook Store",
-    category: "Retail",
-    owner: "Arjun Roy",
-    phone: "+91 98765 43214",
-    status: "Active",
-    currentServing: "BN-031",
-    waitingCount: 5,
-    avgWaitTime: "5 mins",
-    dailyTokens: 68,
-    location: "College Street, Kolkata, WB",
-    timing: "10:00 AM – 9:00 PM",
-    image: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=600&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "shop-6",
-    name: "Apex Electronics Care",
-    category: "Services",
-    owner: "Ananya Das",
-    phone: "+91 98765 43210",
-    status: "Active",
-    currentServing: "AE-014",
-    waitingCount: 7,
-    avgWaitTime: "18 mins",
-    dailyTokens: 45,
-    location: "Chandni Chowk, Kolkata, WB",
-    timing: "10:30 AM – 8:30 PM",
-    image: "https://images.unsplash.com/photo-1581092921461-eab62e97a780?w=600&auto=format&fit=crop&q=80",
-  },
-];
+export const ALL_SHOPS_DATA = [];
 
 export const SUBSCRIPTION_PLANS = [
   {
@@ -223,147 +155,15 @@ export const SUBSCRIPTION_PLANS = [
   },
 ];
 
-export const DEFAULT_SUBSCRIBERS_DATA = [
-  {
-    id: "SUB-101",
-    ownerName: "Ananya Das",
-    shopName: "Coffee Hub & Apex Care",
-    email: "ananya@example.com",
-    phone: "+91 98765 43210",
-    planId: "growth",
-    planName: "Pro Growth Plan",
-    billingCycle: "Annual",
-    amount: "₹ 23,988 /yr",
-    renewsOn: "12 Jun 2027",
-    status: "Active",
-    autoRenew: true,
-  },
-  {
-    id: "SUB-102",
-    ownerName: "Rahul Sen",
-    shopName: "Tasty Bites Restaurant",
-    email: "rahul@example.com",
-    phone: "+91 98765 43211",
-    planId: "starter",
-    planName: "Starter Tier",
-    billingCycle: "Monthly",
-    amount: "₹ 999 /mo",
-    renewsOn: "15 Nov 2026",
-    status: "Active",
-    autoRenew: true,
-  },
-  {
-    id: "SUB-103",
-    ownerName: "Priya Ghosh",
-    shopName: "Quick Care Clinic",
-    email: "priya@example.com",
-    phone: "+91 98765 43212",
-    planId: "growth",
-    planName: "Pro Growth Plan",
-    billingCycle: "Monthly",
-    amount: "₹ 2,499 /mo",
-    renewsOn: "18 Nov 2026",
-    status: "Active",
-    autoRenew: true,
-  },
-  {
-    id: "SUB-104",
-    ownerName: "Arjun Roy",
-    shopName: "The Book Nook Store",
-    email: "arjun@example.com",
-    phone: "+91 98765 43214",
-    planId: "enterprise",
-    planName: "Enterprise Multi-Chain",
-    billingCycle: "Annual",
-    amount: "₹ 47,988 /yr",
-    renewsOn: "28 Oct 2027",
-    status: "Active",
-    autoRenew: true,
-  },
-  {
-    id: "SUB-105",
-    ownerName: "Sujit Paul",
-    shopName: "FitLife Gym & Spa",
-    email: "sujit@example.com",
-    phone: "+91 98765 43213",
-    planId: "starter",
-    planName: "Starter Tier",
-    billingCycle: "Monthly",
-    amount: "₹ 999 /mo",
-    renewsOn: "05 Nov 2026",
-    status: "Expiring Soon",
-    autoRenew: false,
-  },
-  {
-    id: "SUB-106",
-    ownerName: "Dr. Sandip Roy",
-    shopName: "Apex Dental Studio",
-    email: "sandip@example.com",
-    phone: "+91 98765 43215",
-    planId: "growth",
-    planName: "Pro Growth Plan",
-    billingCycle: "Monthly",
-    amount: "₹ 2,499 /mo",
-    renewsOn: "21 Nov 2026",
-    status: "Active",
-    autoRenew: true,
-  },
-];
+export const DEFAULT_SUBSCRIBERS_DATA = [];
 
-export const TRANSACTIONS_DATA = [
-  {
-    id: "TXN-9041",
-    owner: "Ananya Das",
-    plan: "Pro Growth (Annual)",
-    amount: "₹ 24,990",
-    method: "UPI (Google Pay)",
-    status: "Completed",
-    date: "28 Oct 2026",
-  },
-  {
-    id: "TXN-9040",
-    owner: "Priya Ghosh",
-    plan: "Pro Growth",
-    amount: "₹ 2,499",
-    method: "Credit Card (HDFC)",
-    status: "Completed",
-    date: "27 Oct 2026",
-  },
-  {
-    id: "TXN-9039",
-    owner: "Arjun Roy",
-    plan: "Enterprise",
-    amount: "₹ 4,999",
-    method: "Net Banking (SBI)",
-    status: "Completed",
-    date: "26 Oct 2026",
-  },
-  {
-    id: "TXN-9038",
-    owner: "Rahul Sen",
-    plan: "Starter Tier",
-    amount: "₹ 999",
-    method: "UPI (PhonePe)",
-    status: "Pending",
-    date: "25 Oct 2026",
-  },
-  {
-    id: "TXN-9037",
-    owner: "Sujit Paul",
-    plan: "Starter Tier",
-    amount: "₹ 999",
-    method: "Debit Card",
-    status: "Failed",
-    date: "24 Oct 2026",
-  },
-];
+export const TRANSACTIONS_DATA = [];
 
 export const TIMELINE_ACTIVITIES = [
-  { id: 1, title: "New shop owner registered", desc: "Sujit Kar registered merchant account", time: "Just now" },
-  { id: 2, title: "Shop queue token created", desc: "Coffee Hub processed token QL-042", time: "15 mins ago" },
-  { id: 3, title: "Subscription renewed", desc: "Ananya Das renewed Pro Growth plan", time: "2 hours ago" },
-  { id: 4, title: "User verified check-in", desc: "Arpita Jana checked into queue", time: "4 hours ago" },
-  { id: 5, title: "Payment cleared", desc: "₹ 24,990 received via UPI", time: "1 day ago" },
+  { id: 1, title: "Platform synchronization", desc: "Live database sync active and connected", time: "Just now" },
+  { id: 2, title: "Queue counter operational", desc: "Live counters receiving queue requests", time: "10 mins ago" },
+  { id: 3, title: "Automated queue telemetry", desc: "System health check verified and green", time: "1 hour ago" },
+  { id: 4, title: "Security audit", desc: "Session token authorization renewed", time: "3 hours ago" },
 ];
 
 export function mapApiOwnerToDashboard(apiOwner) {
@@ -374,8 +174,16 @@ export function mapApiOwnerToDashboard(apiOwner) {
   const email = apiOwner.email || "";
   const phone = apiOwner.phone || "N/A";
   const address = apiOwner.address || "N/A";
-  const shops = Number(apiOwner.shop_count ?? apiOwner.shops ?? 0);
-  const maxShops = Number(apiOwner.max_shop_count ?? 5);
+  const shops = Number(
+    apiOwner.shop_count ??
+    (Array.isArray(apiOwner.shops) ? apiOwner.shops.length : apiOwner.shops) ??
+    (Array.isArray(apiOwner.shop_details) ? apiOwner.shop_details.length : 0) ??
+    0
+  );
+  const maxShops =
+    apiOwner.max_shop_count !== undefined && apiOwner.max_shop_count !== null
+      ? Number(apiOwner.max_shop_count)
+      : 0;
   const isActive =
     apiOwner.account_status !== undefined
       ? Boolean(apiOwner.account_status)
@@ -397,7 +205,9 @@ export function mapApiOwnerToDashboard(apiOwner) {
   }
 
   let parsedShopDetails = [];
-  if (apiOwner.shop_details) {
+  if (Array.isArray(apiOwner.shops) && apiOwner.shops.length > 0) {
+    parsedShopDetails = apiOwner.shops;
+  } else if (apiOwner.shop_details) {
     try {
       if (
         typeof apiOwner.shop_details === "string" &&
@@ -423,17 +233,75 @@ export function mapApiOwnerToDashboard(apiOwner) {
     maxShops,
     status,
     joinedOn,
-    plan: status === "Active" ? "Enterprise Pro" : "Starter Trial",
-    city: address && address !== "N/A" ? address : "Kolkata, WB",
+    plan: "",
+    city: address && address !== "N/A" ? address : "—",
     kycStatus: "KYC Verified",
-    billingCycle: "Annual (₹ 14,999/yr)",
-    totalTokens: shops * 1420 + 350,
-    monthlyRevenue: `₹ ${(shops * 4500 + 1200).toLocaleString()}`,
+    billingCycle: "Standard",
+    totalTokens: shops,
+    monthlyRevenue: "₹ 0",
     lastActive: "Today",
-    notes: "Verified platform merchant.",
+    notes: "",
     shopDetails: apiOwner.shop_details,
     parsedShopDetails,
   };
+}
+
+export function isDemoOwner(owner) {
+  if (!owner) return false;
+  const email = String(owner.email || owner.ownerEmail || "").toLowerCase().trim();
+  const name = String(owner.name || owner.full_name || owner.fullname || owner.owner || owner.ownerName || "").toLowerCase().trim();
+  const code = String(owner.ownerCode || owner.code || "").toLowerCase().trim();
+  const phone = String(owner.phone || owner.contact_phone || "").replace(/\s+/g, "");
+  const id = Number(owner.id || owner.ownerId || owner.owner_id);
+
+  return (
+    id === 1 ||
+    code === "own-0001" ||
+    email.endsWith("@example.com") ||
+    email.includes("example.com") ||
+    email.includes("demo@") ||
+    email.includes("test@") ||
+    email === "owner@gmail.com" ||
+    email === "rahul.owner@example.com" ||
+    name === "demo owner" ||
+    name === "test owner" ||
+    name === "rahul sharma" ||
+    name === "rahul sen" ||
+    name === "ananya das" ||
+    name === "priya ghosh" ||
+    name === "arjun roy" ||
+    name.includes("demo") ||
+    name.includes("test owner") ||
+    phone === "9876543210" ||
+    phone === "+919876543210"
+  );
+}
+
+export function isDemoToken(t) {
+  if (!t) return false;
+  const c = String(t.customer || t.name || "").toLowerCase().trim();
+  const s = String(t.shop || "").toLowerCase().trim();
+  const phone = String(t.phone || "").replace(/\D/g, "");
+  return (
+    c.includes("aditi sharma") ||
+    c.includes("bikram roy") ||
+    c.includes("pooja banerjee") ||
+    c.includes("rahul mukherjee") ||
+    c.includes("alok verma") ||
+    c.includes("suman sengupta") ||
+    c.includes("kavita sen") ||
+    c.includes("rohan verma") ||
+    c.includes("deepak mehta") ||
+    c.includes("debasis das") ||
+    c.includes("sunita das") ||
+    c.includes("demo") ||
+    c.includes("test") ||
+    s === "coffee hub" ||
+    s === "tasty bites" ||
+    s === "quick care clinic" ||
+    phone === "9876543210" ||
+    phone.startsWith("98765432")
+  );
 }
 
 export function getRoleBadgeClass(role) {
@@ -443,14 +311,76 @@ export function getRoleBadgeClass(role) {
   return "adm-badge-role-user";
 }
 
-export function isRegularUser(user) {
+export function isRegularUser(user, ownersList = []) {
   if (!user) return false;
+
+  const email = String(user.email || "").toLowerCase().trim();
+  const name = String(user.name || user.full_name || user.fullname || "").toLowerCase().trim();
   const r = String(user.role || "").toLowerCase().trim();
-  const rawRole = user.user_role !== undefined ? user.user_role : user.role;
+  const rawRole =
+    user.user_role !== undefined
+      ? user.user_role
+      : user.rawUser?.user_role !== undefined
+      ? user.rawUser.user_role
+      : user.role_id;
   const roleNum = Number(rawRole);
-  if (r.includes("owner") || roleNum === 2) return false;
-  if (r.includes("admin") || roleNum === 1) return false;
-  return r === "user" || r === "customer" || roleNum === 3 || !r;
+
+  // 1. Exclude Admin (dynamic: role 1, admin role string, or matching authenticated admin account)
+  let currentAdminEmail = "";
+  let currentAdminId = 0;
+  try {
+    const logged = JSON.parse(localStorage.getItem("user") || "{}");
+    currentAdminEmail = String(logged.email || "").toLowerCase().trim();
+    currentAdminId = Number(logged.user_id ?? logged.userid ?? logged.id ?? 0);
+  } catch (_) {}
+
+  if (
+    roleNum === 1 ||
+    r.includes("admin") ||
+    (currentAdminId > 0 && Number(user.id || user.user_id) === currentAdminId) ||
+    (currentAdminEmail && email && email === currentAdminEmail)
+  ) {
+    return false;
+  }
+
+  // 2. Exclude Shop Owner by role / email
+  if (
+    roleNum === 3 ||
+    r === "owner" ||
+    r === "shop owner" ||
+    email.includes(".owner@")
+  ) {
+    return false;
+  }
+
+  // 3. Exclude if present in registered owners list
+  let owners = Array.isArray(ownersList) && ownersList.length > 0 ? ownersList : [];
+  if (owners.length === 0) {
+    try {
+      const saved = localStorage.getItem("ql_admin_owners_list");
+      if (saved) owners = JSON.parse(saved) || [];
+    } catch (_) {}
+  }
+
+  if (owners.length > 0) {
+    const isOwner = owners.some((o) => {
+      const oEmail = String(o.email || "").toLowerCase().trim();
+      const oPhone = String(o.phone || "").replace(/\D/g, "");
+      const uPhone = String(user.phone || "").replace(/\D/g, "");
+      const oId = Number(o.id || o.owner_id);
+      const uId = Number(user.id || user.user_id);
+
+      return (
+        (oEmail && email && oEmail === email) ||
+        (oPhone && uPhone && oPhone.length >= 10 && oPhone === uPhone) ||
+        (oId > 0 && uId > 0 && oId === uId && o.name?.toLowerCase() === name)
+      );
+    });
+
+    if (isOwner) return false;
+  }
+
+  return true;
 }
 
 export function mapApiUserToDashboard(apiUser) {
@@ -458,10 +388,55 @@ export function mapApiUserToDashboard(apiUser) {
   const name = (apiUser.full_name || apiUser.fullname || apiUser.name || "").trim() || "User";
   const initial = name ? name.charAt(0).toUpperCase() : "U";
   const avatarImg = apiUser.profile_image || apiUser.profileimage || apiUser.avatarImg || null;
-  const email = apiUser.email || "";
+  const email = (apiUser.email || "").trim().toLowerCase();
   const phone = apiUser.phone || "N/A";
   const address = apiUser.address || "N/A";
-  const role = apiUser.role || "User";
+
+  // Determine user role (1 = Admin, 3 = Shop Owner, 2 = Customer/User)
+  let role = "User";
+  const rawRole = apiUser.user_role !== undefined ? apiUser.user_role : apiUser.role_id;
+  const roleNum = Number(rawRole);
+  const roleStr = String(apiUser.role || apiUser.role_name || "").toLowerCase().trim();
+
+  // Check if this user is in cached owners list
+  let isOwnerFromList = false;
+  try {
+    const savedOwners = JSON.parse(localStorage.getItem("ql_admin_owners_list") || "[]");
+    if (Array.isArray(savedOwners)) {
+      isOwnerFromList = savedOwners.some(
+        (o) => o.email && email && o.email.toLowerCase().trim() === email
+      );
+    }
+  } catch (_) {}
+
+  let currentAdminEmail = "";
+  let currentAdminId = 0;
+  try {
+    const logged = JSON.parse(localStorage.getItem("user") || "{}");
+    currentAdminEmail = String(logged.email || "").toLowerCase().trim();
+    currentAdminId = Number(logged.user_id ?? logged.userid ?? logged.id ?? 0);
+  } catch (_) {}
+
+  if (
+    roleNum === 1 ||
+    roleStr.includes("admin") ||
+    (currentAdminId > 0 && id === currentAdminId) ||
+    (currentAdminEmail && email && email === currentAdminEmail)
+  ) {
+    role = "Admin";
+  } else if (
+    roleNum === 3 ||
+    roleStr === "owner" ||
+    roleStr === "shop owner" ||
+    email.includes(".owner@") ||
+    isOwnerFromList
+  ) {
+    role = "Owner";
+  } else if (roleNum === 2 || roleStr === "user" || roleStr === "customer") {
+    role = "User";
+  } else if (apiUser.role && typeof apiUser.role === "string" && apiUser.role.trim()) {
+    role = apiUser.role.trim();
+  }
   const isActive =
     apiUser.account_status !== undefined
       ? Boolean(apiUser.account_status)

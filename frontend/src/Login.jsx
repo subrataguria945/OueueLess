@@ -4,6 +4,7 @@ import { ForgotPasswordModal } from "./ForgotPasswordModal";
 import { EmailOtpModal } from "./EmailOtpModal";
 import { initiateSignup, verifySignupOtp } from "./authApi";
 import { triggerGoogleSignIn } from "./googleAuth";
+import { checkIsAdmin } from "./authRole";
 
 const API_BASE = (
   import.meta.env.VITE_API_URL ||
@@ -13,7 +14,11 @@ const API_BASE = (
 
 const LOGIN_API_URL =
   import.meta.env.VITE_LOGIN_API_URL ||
-  `${API_BASE}/user/login`;
+  `${API_BASE}/auth/login`;
+
+const FORGOT_PASSWORD_API_URL =
+  import.meta.env.VITE_FORGOT_PASSWORD_API_URL ||
+  `${API_BASE}/auth/password/forget`;
 
 export function Login({
   initialMode = "login",
@@ -23,9 +28,14 @@ export function Login({
   onSwitchToForgot,
 }) {
   const [mode, setMode] = useState(initialMode === "forgot" ? "login" : initialMode);
-  const [isForgotModalOpen, setIsForgotModalOpen] = useState(
-    initialForgotOpen || initialMode === "forgot"
-  );
+  // Only open reset modal if a reset token is present in the URL
+  const [isForgotModalOpen, setIsForgotModalOpen] = useState(() => {
+    if (typeof window !== "undefined") {
+      const search = new URLSearchParams(window.location.search);
+      return Boolean(search.get("token") || search.get("reset_token"));
+    }
+    return false;
+  });
 
   /* ── Login Form State ──────────────────────────────── */
   const [loginEmail, setLoginEmail] = useState("");
@@ -33,6 +43,7 @@ export function Login({
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoginLoading, setIsLoginLoading] = useState(false);
+  const [isForgotLoading, setIsForgotLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [loginSuccess, setLoginSuccess] = useState("");
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -99,15 +110,19 @@ export function Login({
   useEffect(() => {
     if (initialMode === "forgot") {
       setMode("login");
-      setIsForgotModalOpen(true);
     } else if (initialMode) {
       setMode(initialMode);
     }
   }, [initialMode]);
 
+  // Check URL token for password reset
   useEffect(() => {
-    if (initialForgotOpen) {
-      setIsForgotModalOpen(true);
+    if (typeof window !== "undefined") {
+      const search = new URLSearchParams(window.location.search);
+      const urlToken = search.get("token") || search.get("reset_token") || "";
+      if (urlToken) {
+        setIsForgotModalOpen(true);
+      }
     }
   }, [initialForgotOpen]);
 
@@ -135,9 +150,84 @@ export function Login({
     if (onSwitchToLogin) onSwitchToLogin();
   };
 
-  const handleSwitchToForgot = () => {
-    setIsForgotModalOpen(true);
-    if (onSwitchToForgot) onSwitchToForgot();
+  const handleSwitchToForgot = async () => {
+    const cleanEmail = (loginEmail || "").trim().toLowerCase();
+
+    if (!cleanEmail) {
+      showTemporaryError(
+        "Please enter your email above to receive a password reset link.",
+        4500
+      );
+      const emailInput = document.getElementById("ql-input-email");
+      if (emailInput) {
+        emailInput.focus();
+        emailInput.style.outline = "2px solid #ef4444";
+        setTimeout(() => {
+          if (emailInput) emailInput.style.outline = "none";
+        }, 1800);
+      }
+      return;
+    }
+
+    if (!cleanEmail.includes("@") || !cleanEmail.includes(".")) {
+      showTemporaryError("Please enter a valid email address.", 3500);
+      const emailInput = document.getElementById("ql-input-email");
+      if (emailInput) emailInput.focus();
+      return;
+    }
+
+    setLoginError("");
+    setLoginSuccess("");
+    setIsForgotLoading(true);
+
+    try {
+      const response = await fetch(FORGOT_PASSWORD_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cleanEmail }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      setIsForgotLoading(false);
+
+      if (!response.ok || data?.status === "failed" || data?.status === "error") {
+        const rawErr =
+          (Array.isArray(data?.detail)
+            ? data.detail.map((d) => d.msg).join(", ")
+            : data?.detail) ||
+          data?.message ||
+          data?.error ||
+          "";
+
+        let errorMsg = rawErr;
+        const lower = String(rawErr).toLowerCase();
+        if (
+          lower.includes("not found") ||
+          lower.includes("does not exist") ||
+          response.status === 404
+        ) {
+          errorMsg = `No account found with "${cleanEmail}". Please check your email spelling.`;
+        } else if (!rawErr) {
+          errorMsg = "Account not found or failed to send reset link.";
+        }
+
+        showTemporaryError(errorMsg, 5000);
+        return;
+      }
+
+      showTemporarySuccess(
+        data?.message ||
+          `Password reset link sent to ${cleanEmail}! Please check your email inbox.`,
+        8000
+      );
+      if (onSwitchToForgot) onSwitchToForgot(cleanEmail);
+    } catch {
+      setIsForgotLoading(false);
+      showTemporaryError(
+        "Unable to reach the server. Please check your internet connection.",
+        3500
+      );
+    }
   };
 
   useEffect(() => {
@@ -161,23 +251,62 @@ export function Login({
       sessionStorage.getItem("token");
 
     if (existingToken && window.location.pathname === "/login") {
-      window.location.href = "/admin";
+      let storedUser = null;
+      try {
+        storedUser = JSON.parse(localStorage.getItem("user") || sessionStorage.getItem("user") || "null");
+      } catch {}
+      const storedRole = localStorage.getItem("role") || sessionStorage.getItem("role") || storedUser?.role;
+
+      if (checkIsAdmin({ user: storedUser, role: storedRole, token: existingToken, email: storedUser?.email })) {
+        window.location.href = "/admin";
+      } else {
+        localStorage.removeItem("token");
+        localStorage.removeItem("ql_admin_token");
+        localStorage.removeItem("user");
+        localStorage.removeItem("role");
+        sessionStorage.clear();
+      }
     }
   }, []);
 
   /* ── Google Sign-In ────────────────────────────────── */
   const handleGoogleSuccess = (user, token, isNew, message) => {
     setIsGoogleLoading(false);
+
+    const isAdmin = checkIsAdmin({
+      user,
+      token,
+      user_role: user?.user_role,
+      role: user?.role,
+      email: user?.email,
+    });
+
+    if (!isAdmin) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("ql_admin_token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("role");
+      sessionStorage.clear();
+      setLoginError(
+        "Access restricted: This portal is currently available to administrators only. The User Portal is under development and will be available soon."
+      );
+      return;
+    }
+
     if (token) {
       localStorage.setItem("token", token);
       localStorage.setItem("ql_admin_token", token);
       sessionStorage.setItem("token", token);
+      if (user?.refresh_token) {
+        localStorage.setItem("refresh_token", user.refresh_token);
+        sessionStorage.setItem("refresh_token", user.refresh_token);
+      }
     }
     if (user) {
       localStorage.setItem("user", JSON.stringify(user));
-      if (user.role) localStorage.setItem("role", user.role);
+      localStorage.setItem("role", "ADMIN");
     }
-    setLoginSuccess(message || "Signed in with Google successfully! Redirecting...");
+    setLoginSuccess(message || "Signed in as Administrator! Redirecting...");
     setTimeout(() => {
       window.location.href = "/admin";
     }, 800);
@@ -219,7 +348,7 @@ export function Login({
     setIsLoginLoading(true);
 
     try {
-      const response = await fetch(LOGIN_API_URL, {
+      let response = await fetch(LOGIN_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -227,6 +356,22 @@ export function Login({
           password: loginPassword,
         }),
       });
+
+      if (!response.ok && response.status === 404) {
+        try {
+          const fallbackRes = await fetch(`${API_BASE}/user/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: cleanEmail,
+              password: loginPassword,
+            }),
+          });
+          if (fallbackRes.ok || fallbackRes.status !== 404) {
+            response = fallbackRes;
+          }
+        } catch (_) {}
+      }
 
       const data = await response.json().catch(() => ({}));
 
@@ -238,18 +383,57 @@ export function Login({
           data.jwt ||
           data.data?.token;
 
-        const user = data.user || data.data?.user || {
+        const returnedUser = data.user || data.data?.user || null;
+
+        // Check if the authenticated account is an Administrator
+        const isAdmin = checkIsAdmin({
+          data,
+          token,
+          user: returnedUser,
+          user_role: data.user_role ?? data.roleid ?? data.role_id ?? returnedUser?.user_role ?? returnedUser?.roleid,
+          role: data.role ?? returnedUser?.role,
+          email: cleanEmail,
+        });
+
+        if (!isAdmin) {
+          // Regular user / customer / non-admin: reject entry into admin panel
+          localStorage.removeItem("token");
+          localStorage.removeItem("ql_admin_token");
+          localStorage.removeItem("user");
+          localStorage.removeItem("role");
+          sessionStorage.clear();
+
+          setIsLoginLoading(false);
+          setLoginError(
+            "Access restricted: This portal is currently available to administrators only. The User Portal is under development and will be available soon."
+          );
+          return;
+        }
+
+        const user = returnedUser || {
           email: cleanEmail,
           name: data.name || cleanEmail.split("@")[0],
-          role: data.role || data.user_role || "ADMIN",
+          role: "ADMIN",
+          user_role: 1,
         };
+
+        const refreshToken =
+          data.refresh_token ||
+          data.refreshToken ||
+          data.data?.refresh_token;
 
         if (token) {
           if (rememberMe) {
             localStorage.setItem("token", token);
             localStorage.setItem("ql_admin_token", token);
+            if (refreshToken) {
+              localStorage.setItem("refresh_token", refreshToken);
+            }
           } else {
             sessionStorage.setItem("token", token);
+            if (refreshToken) {
+              sessionStorage.setItem("refresh_token", refreshToken);
+            }
           }
         }
 
@@ -257,14 +441,14 @@ export function Login({
           const userPayload = JSON.stringify(user);
           if (rememberMe) {
             localStorage.setItem("user", userPayload);
-            localStorage.setItem("role", user.role || "ADMIN");
+            localStorage.setItem("role", "ADMIN");
           } else {
             sessionStorage.setItem("user", userPayload);
-            sessionStorage.setItem("role", user.role || "ADMIN");
+            sessionStorage.setItem("role", "ADMIN");
           }
         }
 
-        setLoginSuccess("Login successful! Redirecting to dashboard...");
+        setLoginSuccess("Administrator login successful! Redirecting to dashboard...");
         setTimeout(() => {
           window.location.href = "/admin";
         }, 600);
@@ -772,8 +956,25 @@ export function Login({
                       type="button"
                       className="ql-forgot-btn"
                       onClick={handleSwitchToForgot}
+                      disabled={isForgotLoading || isLoginLoading}
+                      title="Send password reset link to the email entered above"
                     >
-                      Forgot password?
+                      {isForgotLoading ? (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                          <span
+                            className="ql-spinner-circle"
+                            style={{
+                              width: "12px",
+                              height: "12px",
+                              borderWidth: "1.5px",
+                              borderTopColor: "var(--ql-primary, #2563eb)",
+                            }}
+                          />
+                          <span>Sending reset link...</span>
+                        </span>
+                      ) : (
+                        "Forgot password?"
+                      )}
                     </button>
                   </div>
                 </form>
@@ -857,6 +1058,7 @@ export function Login({
       <ForgotPasswordModal
         isOpen={isForgotModalOpen}
         onClose={() => setIsForgotModalOpen(false)}
+        initialEmail={loginEmail}
       />
 
       {/* Email OTP Verification Modal for Registration */}

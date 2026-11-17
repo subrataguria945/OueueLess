@@ -23,25 +23,25 @@ export function PaymentsPage() {
         <div className="adm-stat-card">
           <div className="adm-stat-top">
             <span className="adm-stat-label">Total Monthly Recurring</span>
-            <span className="adm-stat-trend">+18%</span>
+            <span className="adm-stat-trend">Live</span>
           </div>
-          <div className="adm-stat-value">₹ 2,45,680</div>
-          <div className="adm-stat-context">from subscription plans</div>
+          <div className="adm-stat-value">₹ 0</div>
+          <div className="adm-stat-context">from active subscription plans</div>
         </div>
         <div className="adm-stat-card">
           <div className="adm-stat-top">
             <span className="adm-stat-label">Successful Invoices</span>
-            <span className="adm-stat-trend">98.4%</span>
+            <span className="adm-stat-trend">Live</span>
           </div>
-          <div className="adm-stat-value">124 Paid</div>
-          <div className="adm-stat-context">2 pending clearances</div>
+          <div className="adm-stat-value">{TRANSACTIONS_DATA.length} Recorded</div>
+          <div className="adm-stat-context">settled platform transactions</div>
         </div>
         <div className="adm-stat-card">
           <div className="adm-stat-top">
             <span className="adm-stat-label">Payouts Dispatched</span>
-            <span className="adm-stat-trend">+12%</span>
+            <span className="adm-stat-trend">Live</span>
           </div>
-          <div className="adm-stat-value">₹ 1,85,200</div>
+          <div className="adm-stat-value">₹ 0</div>
           <div className="adm-stat-context">net settled this cycle</div>
         </div>
       </div>
@@ -70,38 +70,48 @@ export function PaymentsPage() {
               </tr>
             </thead>
             <tbody>
-              {TRANSACTIONS_DATA.map((t) => {
-                const isSuccess = t.status === "Completed";
-                const isPending = t.status === "Pending";
-                return (
-                  <tr key={t.id}>
-                    <td className="adm-font-semibold">{t.id}</td>
-                    <td>{t.owner}</td>
-                    <td>{t.plan}</td>
-                    <td className="adm-font-semibold">{t.amount}</td>
-                    <td className="adm-text-muted">{t.method}</td>
-                    <td className="adm-text-muted">{t.date}</td>
-                    <td>
-                      <span
-                        className={`adm-badge ${
-                          isSuccess ? "adm-badge-success" : isPending ? "adm-badge-warning" : "adm-badge-danger"
-                        }`}
-                      >
-                        {t.status}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: "right" }}>
-                      <button
-                        type="button"
-                        className="adm-table-btn"
-                        onClick={() => handleDownloadInvoice(t.id)}
-                      >
-                        PDF Receipt
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+              {TRANSACTIONS_DATA.length === 0 ? (
+                <tr>
+                  <td colSpan="8" className="adm-table-empty">
+                    <span style={{ fontSize: "24px" }}>💳</span>
+                    <h4>No Transactions Yet</h4>
+                    <p>Billing and payment records will appear here as merchants subscribe.</p>
+                  </td>
+                </tr>
+              ) : (
+                TRANSACTIONS_DATA.map((t) => {
+                  const isSuccess = t.status === "Completed";
+                  const isPending = t.status === "Pending";
+                  return (
+                    <tr key={t.id}>
+                      <td className="adm-font-semibold">{t.id}</td>
+                      <td>{t.owner}</td>
+                      <td>{t.plan}</td>
+                      <td className="adm-font-semibold">{t.amount}</td>
+                      <td className="adm-text-muted">{t.method}</td>
+                      <td className="adm-text-muted">{t.date}</td>
+                      <td>
+                        <span
+                          className={`adm-badge ${
+                            isSuccess ? "adm-badge-success" : isPending ? "adm-badge-warning" : "adm-badge-danger"
+                          }`}
+                        >
+                          {t.status}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        <button
+                          type="button"
+                          className="adm-table-btn"
+                          onClick={() => handleDownloadInvoice(t.id)}
+                        >
+                          PDF Receipt
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
