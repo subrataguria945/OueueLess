@@ -1,7 +1,17 @@
 import psycopg
-from dotenv import load_dotenv
 import os
-load_dotenv()
+from psycopg.rows import dict_row
+
+# Database connection helper
+def get_connection():
+    return psycopg.connect(
+        host=os.getenv("HOST"),
+        dbname=os.getenv("DATABASE"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        port=os.getenv("DB_PORT", "5432"),
+    )
+
 # Validate user login credentials via sp_login
 def validate_login_indb(email,password):
     con = None
@@ -302,3 +312,4 @@ def check_google_account(fullname,email,google_id):
     finally:
         if con:
             con.close()
+
