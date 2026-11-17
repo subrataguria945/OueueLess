@@ -1,7 +1,8 @@
 from dotenv import load_dotenv
+from Modules.authentication.routers import router as auth_router
 from Modules.user.routers import router as user_router
 from Modules.owner.routers import router as owner_router
-from Modules.Admin.routers import router as admin_router
+from Modules.admin.routers import router as admin_router
 from Modules.DashboardStats.routers import router as dashboard_router
 from Modules.shop.routers import router as shop_router
 
@@ -25,6 +26,9 @@ def root():
 
 # User routes
 app.include_router(user_router, prefix="/user", tags=["Users"])
+
+# Authentication routes
+app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
 
 # Owner routes
 app.include_router(owner_router, prefix="/owner", tags=["Owner"])
