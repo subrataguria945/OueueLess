@@ -48,8 +48,9 @@ export function OwnerDetailPage() {
 
         // 1. Try GET /owner/shops?owner_id=${owner.id}
         try {
+          const ownerShopsBase = import.meta.env.VITE_OWNER_SHOPS_API_URL || `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/owner/shops`;
           const res1 = await authFetch(
-            `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/owner/shops?owner_id=${owner.id}`,
+            `${ownerShopsBase}?owner_id=${owner.id}`,
             { method: "GET" }
           );
           if (res1.ok) {
@@ -100,10 +101,8 @@ export function OwnerDetailPage() {
           let sourceShops = Array.isArray(shopsData) && shopsData.length > 0 ? shopsData : [];
           if (sourceShops.length === 0) {
             try {
-              const resAll = await authFetch(
-                `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/admin/shops/all`,
-                { method: "GET" }
-              );
+              const allShopsUrl = import.meta.env.VITE_SHOPS_API_URL || `${import.meta.env.VITE_API_URL || "https://queueless-backend-b2qh.onrender.com"}/admin/shops/all`;
+              const resAll = await authFetch(allShopsUrl, { method: "GET" });
               if (resAll.ok) {
                 const dataAll = await resAll.json().catch(() => null);
                 sourceShops = Array.isArray(dataAll)
@@ -347,16 +346,35 @@ export function OwnerDetailPage() {
               const defaultImage = "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80";
               const shopImg = shop.image || shop.profile_image || shop.shop_image || defaultImage;
               const isShopActive =
-                shop.status === "Active" ||
-                shop.status === "Open" ||
-                shop.is_active === true ||
-                shop.account_status === true;
+                shop.is_active !== undefined
+                  ? Boolean(shop.is_active)
+                  : shop.account_status !== undefined
+                  ? Boolean(shop.account_status)
+                  : shop.status === "Suspended" || shop.status === "Inactive"
+                  ? false
+                  : true;
+
+              const isShopOpen =
+                shop.is_open !== undefined
+                  ? Boolean(shop.is_open)
+                  : shop.open_status !== undefined
+                  ? Boolean(shop.open_status)
+                  : shop.status === "Closed"
+                  ? false
+                  : isShopActive;
+
               const currentToken = shop.current_token || shop.currentServing || shop.current_serving || "--";
               const waitingCount = shop.waiting_count ?? shop.waitingCount ?? 0;
               const avgWait = shop.average_wait_time ? `${shop.average_wait_time} mins` : (shop.avgWaitTime || "--");
 
               return (
-                <div key={shopId} className="adm-shop-card">
+                <div
+                  key={shopId}
+                  className="adm-shop-card"
+                  onClick={() => navigate(`/admin/shops/${shopId}`)}
+                  style={{ cursor: "pointer" }}
+                  title={`Click to view details & live queue for ${shopName}`}
+                >
                   <div className="adm-shop-card-image-wrap">
                     <img
                       src={shopImg}
@@ -367,8 +385,46 @@ export function OwnerDetailPage() {
                         e.currentTarget.src = defaultImage;
                       }}
                     />
-                    <span className={`adm-badge ${isShopActive ? "adm-badge-success" : "adm-badge-neutral"} adm-shop-status-badge`}>
-                      {isShopActive ? "Active" : "Closed"}
+
+                    {/* Open / Closed Live Badge (Top-Right) */}
+                    <span
+                      className={`adm-badge ${isShopOpen ? "adm-badge-success" : "adm-badge-neutral"} adm-shop-status-badge`}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "5px",
+                        fontWeight: 700,
+                        fontSize: "11px",
+                        padding: "3px 8px",
+                        backdropFilter: "blur(6px)",
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: "6px",
+                          height: "6px",
+                          borderRadius: "50%",
+                          backgroundColor: isShopOpen ? "#10b981" : "#94a3b8",
+                          boxShadow: isShopOpen ? "0 0 6px #10b981" : "none",
+                        }}
+                      />
+                      <span>{isShopOpen ? "OPEN NOW" : "CLOSED"}</span>
+                    </span>
+
+                    {/* Active / Inactive Registration Badge (Top-Left) */}
+                    <span
+                      className={`adm-badge ${isShopActive ? "adm-badge-role-admin" : "adm-badge-danger"}`}
+                      style={{
+                        position: "absolute",
+                        top: "8px",
+                        left: "8px",
+                        fontSize: "10.5px",
+                        fontWeight: 600,
+                        padding: "2px 7px",
+                        backdropFilter: "blur(6px)",
+                      }}
+                    >
+                      {isShopActive ? "✓ Active" : "✕ Inactive"}
                     </span>
                   </div>
                   <div className="adm-shop-card-body">
@@ -406,6 +462,7 @@ export function OwnerDetailPage() {
                         to={`/admin/shops/${shopId}`}
                         className="adm-btn adm-btn-secondary adm-btn-sm"
                         style={{ flex: 1, textAlign: "center", textDecoration: "none" }}
+                        onClick={(e) => e.stopPropagation()}
                       >
                         View Live Queue &rarr;
                       </Link>

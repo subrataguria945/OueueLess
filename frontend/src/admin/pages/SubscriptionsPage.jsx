@@ -85,34 +85,44 @@ export function SubscriptionsPage() {
               </tr>
             </thead>
             <tbody>
-              {subscribersList.map((sub) => (
-                <tr key={sub.id}>
-                  <td className="adm-font-semibold">{sub.id}</td>
-                  <td>
-                    <div className="adm-font-medium">{sub.ownerName}</div>
-                    <div className="adm-text-muted" style={{ fontSize: "12px" }}>{sub.email}</div>
-                  </td>
-                  <td className="adm-text-muted">{sub.shopName}</td>
-                  <td>
-                    <span className="adm-badge adm-badge-neutral">{sub.planName}</span>
-                  </td>
-                  <td>{sub.billingCycle}</td>
-                  <td className="adm-font-semibold">{sub.amount}</td>
-                  <td className="adm-text-muted">{sub.renewsOn}</td>
-                  <td>
-                    <span className="adm-badge adm-badge-success">{sub.status}</span>
-                  </td>
-                  <td style={{ textAlign: "right" }}>
-                    <button
-                      type="button"
-                      className="adm-table-btn"
-                      onClick={() => setChangeSubscriberModal(sub)}
-                    >
-                      Change Plan
-                    </button>
+              {subscribersList.length === 0 ? (
+                <tr>
+                  <td colSpan="9" className="adm-table-empty">
+                    <span style={{ fontSize: "24px" }}>📋</span>
+                    <h4>No Active Subscriptions</h4>
+                    <p>Subscribed merchant accounts will appear here.</p>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                subscribersList.map((sub) => (
+                  <tr key={sub.id}>
+                    <td className="adm-font-semibold">{sub.id}</td>
+                    <td>
+                      <div className="adm-font-medium">{sub.ownerName}</div>
+                      <div className="adm-text-muted" style={{ fontSize: "12px" }}>{sub.email}</div>
+                    </td>
+                    <td className="adm-text-muted">{sub.shopName}</td>
+                    <td>
+                      <span className="adm-badge adm-badge-neutral">{sub.planName}</span>
+                    </td>
+                    <td>{sub.billingCycle}</td>
+                    <td className="adm-font-semibold">{sub.amount}</td>
+                    <td className="adm-text-muted">{sub.renewsOn}</td>
+                    <td>
+                      <span className="adm-badge adm-badge-success">{sub.status}</span>
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      <button
+                        type="button"
+                        className="adm-table-btn"
+                        onClick={() => setChangeSubscriberModal(sub)}
+                      >
+                        Change Plan
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

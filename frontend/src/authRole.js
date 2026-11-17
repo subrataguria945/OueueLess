@@ -115,18 +115,5 @@ export function checkIsAdmin(params = {}) {
     }
   }
 
-  // 4. Fallback check for email address if explicitly an admin address
-  const candidateEmail = String(
-    email ||
-    user?.email ||
-    data?.email ||
-    data?.user?.email ||
-    ""
-  ).toLowerCase().trim();
-
-  if (candidateEmail && (candidateEmail.startsWith("admin@") || candidateEmail.includes("admin"))) {
-    return true;
-  }
-
   return false;
 }

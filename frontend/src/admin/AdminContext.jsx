@@ -7,8 +7,15 @@ import {
   OWNER_DELETE_API_URL,
   OWNER_UPDATE_API_URL,
   USER_UPDATE_API_URL,
+  USER_STATUS_API_URL,
+  ADMIN_PROFILE_UPDATE_API_URL,
   ALL_USERS_API_URL,
   ALL_SHOPS_API_URL,
+  SHOP_CREATE_API_URL,
+  SHOP_UPDATE_API_URL,
+  SHOP_DELETE_API_URL,
+  SHOP_STATUS_API_URL,
+  DASHBOARD_STATS_API_URL,
   ALL_SHOPS_DATA,
   SUBSCRIPTION_PLANS,
   DEFAULT_SUBSCRIBERS_DATA,
@@ -16,6 +23,7 @@ import {
   mapApiUserToDashboard,
   getOwnerPasswordStrength,
   isRegularUser,
+  isDemoOwner,
 } from "./adminData";
 
 const AdminContext = createContext(null);
@@ -58,7 +66,13 @@ export function AdminProvider({ children }) {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const nonDemo = parsed.filter((o) => !isDemoOwner(o));
+          if (nonDemo.length !== parsed.length) {
+            localStorage.setItem("ql_admin_owners_list", JSON.stringify(nonDemo));
+          }
+          return nonDemo;
+        }
       } catch (e) {}
     }
     return [];
@@ -96,7 +110,9 @@ export function AdminProvider({ children }) {
         : null;
 
       if (res.ok && ownerList !== null) {
-        const mapped = ownerList.map(mapApiOwnerToDashboard);
+        const mapped = ownerList
+          .map(mapApiOwnerToDashboard)
+          .filter((o) => !isDemoOwner(o));
         setOwnersData(mapped);
         localStorage.setItem("ql_admin_owners_list", JSON.stringify(mapped));
         setOwnersError(null);
@@ -147,10 +163,7 @@ export function AdminProvider({ children }) {
       ""
     ).trim() || "Administrator";
 
-    const realPhone =
-      savedProfile.phone ||
-      (loggedUser.phone && loggedUser.phone !== "+91 98765 43210" ? loggedUser.phone : "");
-
+    const realPhone = savedProfile.phone || loggedUser.phone || "";
     const realEmail = savedProfile.email || loggedUser.email || "";
     const realAddress = savedProfile.address || loggedUser.address || "";
     const realImage =
@@ -159,29 +172,26 @@ export function AdminProvider({ children }) {
       loggedUser.profileimage ||
       null;
     const realRole = savedProfile.role || loggedUser.role || "Super Admin";
-    const realJoined = savedProfile.joinedOn || "12 Jan 2026";
+    const realJoined = savedProfile.joinedOn || "";
     const realStatus = savedProfile.status || "Active";
 
     return {
       name: realName,
-      username: loggedUser.username || "admin",
+      username: loggedUser.username || "",
       email: realEmail,
       phone: realPhone,
       address: realAddress,
       role: realRole,
       joinedOn: realJoined,
       status: realStatus,
-      department: savedProfile.department || "System Architecture & Operations",
-      accessLevel: savedProfile.accessLevel || "Role Clearance (System Enforced)",
-      bio:
-        savedProfile.bio !== undefined
-          ? savedProfile.bio
-          : "Master administrator for QueueLess platform, token moderation, shop subscriptions & system configuration.",
+      department: savedProfile.department || "Operations",
+      accessLevel: savedProfile.accessLevel || "Role Clearance",
+      bio: savedProfile.bio !== undefined ? savedProfile.bio : "",
       avatarBg: "#0f172a",
       avatarColor: "#ffffff",
       avatarImg: realImage,
-      twoFactor: "Enabled (Authenticator App)",
-      lastLogin: "Today, 12:45 AM (Local IP)",
+      twoFactor: "Enabled",
+      lastLogin: "",
     };
   });
 
@@ -384,22 +394,52 @@ export function AdminProvider({ children }) {
         : null;
 
       if (res.ok && shopList !== null) {
-        const mapped = shopList.map((s) => ({
-          id: s.shop_id || s.id,
-          name: s.shop_name || s.name || "Store Counter",
-          owner: s.owner_name || s.owner || "Owner",
-          ownerId: s.owner_id,
-          category: s.category || "General",
-          phone: s.phone || "—",
-          status: s.status || "Active",
-          currentServing: s.current_token || s.currentServing || "--",
-          waitingCount: s.waiting_count ?? s.waitingCount ?? 0,
-          avgWaitTime: s.average_wait_time ? `${s.average_wait_time} mins` : (s.avgWaitTime || "--"),
-          dailyTokens: s.daily_tokens ?? 0,
-          location: s.address || s.location || "Store Location",
-          timing: s.timing || "Regular Hours",
-          image: s.image || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80",
-        }));
+        const mapped = shopList.map((s) => {
+          const isActive =
+            s.is_active !== undefined
+              ? Boolean(s.is_active)
+              : s.account_status !== undefined
+              ? Boolean(s.account_status)
+              : s.status === "Suspended" || s.status === "Inactive"
+              ? false
+              : true;
+
+          const isOpen =
+            s.is_open !== undefined
+              ? Boolean(s.is_open)
+              : s.open_status !== undefined
+              ? Boolean(s.open_status)
+              : s.is_queue_active !== undefined
+              ? Boolean(s.is_queue_active)
+              : s.status === "Closed"
+              ? false
+              : s.status === "Open"
+              ? true
+              : isActive;
+
+          return {
+            id: s.shop_id || s.id,
+            name: s.shop_name || s.name || "Store Counter",
+            owner: s.owner_name || s.owner || "Owner",
+            ownerId: s.owner_id,
+            category: s.category || "General",
+            phone: s.phone || "—",
+            isActive,
+            isOpen,
+            status: isActive ? "Active" : "Inactive",
+            accountStatus: isActive ? "Active" : "Inactive",
+            openStatus: isOpen ? "Open" : "Closed",
+            operatingStatus: isOpen ? "Open" : "Closed",
+            currentServing: s.current_token || s.currentServing || "--",
+            waitingCount: s.waiting_count ?? s.waitingCount ?? 0,
+            avgWaitTime: s.average_wait_time ? `${s.average_wait_time} mins` : (s.avgWaitTime || "--"),
+            dailyTokens: s.daily_tokens ?? 0,
+            location: s.address || s.location || "Store Location",
+            timing: s.timing || "Regular Hours",
+            image: s.image || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80",
+            rawShop: s,
+          };
+        });
         setShopsData(mapped);
         localStorage.setItem("ql_admin_shops_list", JSON.stringify(mapped));
       } else {
@@ -413,6 +453,64 @@ export function AdminProvider({ children }) {
     }
   }, []);
 
+  const handleToggleShopOpen = useCallback(async (shopId) => {
+    try {
+      await authFetch(SHOP_STATUS_API_URL, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shop_id: Number(shopId) }),
+      }).catch(() => null);
+    } catch (_) {}
+
+    setShopsData((prev) => {
+      const next = prev.map((s) => {
+        if (String(s.id) === String(shopId)) {
+          const nextOpen = !s.isOpen;
+          return {
+            ...s,
+            isOpen: nextOpen,
+            openStatus: nextOpen ? "Open" : "Closed",
+            operatingStatus: nextOpen ? "Open" : "Closed",
+          };
+        }
+        return s;
+      });
+      try {
+        localStorage.setItem("ql_admin_shops_list", JSON.stringify(next));
+      } catch (_) {}
+      return next;
+    });
+  }, []);
+
+  const handleToggleShopStatus = useCallback(async (shopId) => {
+    try {
+      await authFetch(SHOP_STATUS_API_URL, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shop_id: Number(shopId) }),
+      }).catch(() => null);
+    } catch (_) {}
+
+    setShopsData((prev) => {
+      const next = prev.map((s) => {
+        if (String(s.id) === String(shopId)) {
+          const nextActive = !s.isActive;
+          return {
+            ...s,
+            isActive: nextActive,
+            status: nextActive ? "Active" : "Inactive",
+            accountStatus: nextActive ? "Active" : "Inactive",
+          };
+        }
+        return s;
+      });
+      try {
+        localStorage.setItem("ql_admin_shops_list", JSON.stringify(next));
+      } catch (_) {}
+      return next;
+    });
+  }, []);
+
   useEffect(() => {
     fetchOwners();
     fetchUsers();
@@ -424,10 +522,13 @@ export function AdminProvider({ children }) {
     const saved = localStorage.getItem("ql_admin_subscribers_list");
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((s) => !isDemoOwner(s) && !s.email?.includes("example.com"));
+        }
       } catch (e) {}
     }
-    return DEFAULT_SUBSCRIBERS_DATA;
+    return [];
   });
 
   const [subscriptionPlans, setSubscriptionPlans] = useState(() => {
@@ -848,25 +949,32 @@ export function AdminProvider({ children }) {
     setIsSavingUser(true);
     setEditUserError("");
 
-    const updatePayload = {
-      user_id: Number(editingUser.id),
-      fullname: trimmedName,
-      email: trimmedEmail,
-      phone: cleanPhone,
-      address: (editUserForm.address || "").trim(),
-      account_status: editUserForm.status === "Active",
-    };
-
     try {
       try {
-        const targetUrl = USER_UPDATE_API_URL.includes("?")
-          ? `${USER_UPDATE_API_URL}&user_id=${editingUser.id}`
-          : `${USER_UPDATE_API_URL}?user_id=${editingUser.id}`;
-        await authFetch(targetUrl, {
+        // 1. Update user profile via official PUT /admin/user/update endpoint
+        await authFetch(USER_UPDATE_API_URL, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatePayload),
+          body: JSON.stringify({
+            user_id: Number(editingUser.id),
+            fullname: trimmedName,
+            email: trimmedEmail,
+            phone: cleanPhone || null,
+            address: (editUserForm.address || "").trim() || null,
+          }),
         }).catch(() => null);
+
+        // 2. If status was changed, update status via official PUT /admin/user/status endpoint
+        if (editUserForm.status && editUserForm.status !== editingUser.status) {
+          await authFetch(USER_STATUS_API_URL, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_id: Number(editingUser.id),
+              new_status: editUserForm.status === "Active",
+            }),
+          }).catch(() => null);
+        }
       } catch (err1) {}
 
       // Update state in usersData
@@ -923,10 +1031,7 @@ export function AdminProvider({ children }) {
       loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
     } catch (e) {}
 
-    const adminId = loggedUser.user_id || loggedUser.userid || loggedUser.id || 1;
-    const targetUrl = USER_UPDATE_API_URL.includes("?")
-      ? `${USER_UPDATE_API_URL}&user_id=${adminId}`
-      : USER_UPDATE_API_URL;
+    const targetUrl = ADMIN_PROFILE_UPDATE_API_URL;
 
     const payload = {
       fullname: adminProfile.name || loggedUser.fullname || "Administrator",
@@ -1003,9 +1108,7 @@ export function AdminProvider({ children }) {
     };
 
     try {
-      const targetUrl = USER_UPDATE_API_URL.includes("?")
-        ? `${USER_UPDATE_API_URL}&user_id=${adminId}`
-        : USER_UPDATE_API_URL;
+      const targetUrl = ADMIN_PROFILE_UPDATE_API_URL;
 
       const res = await authFetch(targetUrl, {
         method: "PUT",
@@ -1163,6 +1266,8 @@ export function AdminProvider({ children }) {
         isShopsLoading,
         shopsError,
         fetchShops,
+        handleToggleShopOpen,
+        handleToggleShopStatus,
         subscribersList,
         setSubscribersList,
         subscriptionPlans,

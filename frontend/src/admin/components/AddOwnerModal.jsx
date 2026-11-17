@@ -51,11 +51,11 @@ export function AddOwnerModal() {
 
   return (
     <div className="adm-modal-backdrop" onClick={() => setAddOwnerModalOpen(false)}>
-      <div className="adm-modal-dialog adm-modal-lg" onClick={(e) => e.stopPropagation()}>
+      <div className="adm-modal-dialog adm-modal-compact adm-modal-lg" onClick={(e) => e.stopPropagation()}>
         {/* Modal Header */}
         <div className="adm-modal-header">
           <div>
-            <h3 className="adm-modal-title">Register New Shop Owner</h3>
+            <h3 className="adm-modal-title">Register New Business Owner</h3>
             <p className="adm-modal-subtitle">Add a verified business owner to manage counter queues and outlets.</p>
           </div>
           <button
@@ -83,11 +83,12 @@ export function AddOwnerModal() {
           </div>
 
           <div className="adm-modal-body">
-            {/* Row 1: Name & Email */}
-            <div className="adm-form-grid">
+            {/* Form Grid (2 Columns, perfectly aligned) */}
+            <div className="adm-form-grid-2">
+              {/* Row 1: Full Name & Email */}
               <div className="adm-field">
                 <label className="adm-label">
-                  Owner Full Name (fullname) <span className="req">*</span>
+                  Owner Full Name <span className="req">*</span>
                 </label>
                 <input
                   type="text"
@@ -108,7 +109,7 @@ export function AddOwnerModal() {
 
               <div className="adm-field">
                 <label className="adm-label">
-                  Email Address (email) <span className="req">*</span>
+                  Email Address <span className="req">*</span>
                 </label>
                 <input
                   type="email"
@@ -125,13 +126,14 @@ export function AddOwnerModal() {
                   }}
                 />
               </div>
-            </div>
 
-            {/* Row 2: Phone & Max Shop Count */}
-            <div className="adm-form-grid">
+              {/* Row 2: Contact Phone Number & Max Shops */}
               <div className="adm-field">
                 <label className="adm-label">
-                  Contact Phone Number (phone) <span className="req">*</span>
+                  Contact Phone Number <span className="req">*</span>{" "}
+                  <span style={{ fontSize: "10.5px", color: "var(--adm-text-faint)", fontWeight: "normal" }}>
+                    (10 digits)
+                  </span>
                 </label>
                 <input
                   type="tel"
@@ -148,12 +150,11 @@ export function AddOwnerModal() {
                     if (addOwnerError) setAddOwnerError("");
                   }}
                 />
-                <span className="adm-field-hint">Numbers only, exactly 10 digits</span>
               </div>
 
               <div className="adm-field">
                 <label className="adm-label">
-                  Max Shop Count (max_shop_count) <span className="req">*</span>
+                  Max Shops Allowed <span className="req">*</span>
                 </label>
                 <input
                   type="number"
@@ -175,41 +176,46 @@ export function AddOwnerModal() {
                     if (addOwnerError) setAddOwnerError("");
                   }}
                 />
-                <span className="adm-field-hint">Maximum number of shops this owner can register</span>
+              </div>
+
+              {/* Row 3: Business Address (Spans full width across both columns) */}
+              <div className="adm-field adm-field-col-span-2">
+                <label className="adm-label">
+                  Business / Outlet Address <span className="req">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  name="new_owner_address"
+                  id="new_owner_address"
+                  autoComplete="off"
+                  className="adm-input"
+                  placeholder="e.g. 12, Main Road, Salt Lake, Kolkata, WB"
+                  value={newOwnerForm.address}
+                  onChange={(e) => {
+                    setNewOwnerForm({ ...newOwnerForm, address: e.target.value });
+                    if (addOwnerError) setAddOwnerError("");
+                  }}
+                />
               </div>
             </div>
 
-            {/* Row 3: Address */}
-            <div className="adm-field">
-              <label className="adm-label">
-                Business / Residential Address (address) <span className="req">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                name="new_owner_address"
-                id="new_owner_address"
-                autoComplete="off"
-                className="adm-input"
-                placeholder="e.g. 12, Main Road, Salt Lake, Kolkata, WB"
-                value={newOwnerForm.address}
-                onChange={(e) => {
-                  setNewOwnerForm({ ...newOwnerForm, address: e.target.value });
-                  if (addOwnerError) setAddOwnerError("");
-                }}
-              />
-            </div>
-
-            {/* Security Section: Password */}
+            {/* Section 2: Security & Credentials */}
             <div className="adm-security-card">
-              <div className="adm-security-header">
-                <div>
-                  <h4 className="adm-security-title">Account Security Credentials</h4>
-                  <p className="adm-security-sub">Set an initial strong password for the shop owner to log in.</p>
-                </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h4 className="adm-security-title" style={{ display: "flex", alignItems: "center", gap: "6px", margin: 0 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--adm-accent)" }}>
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                  <span>Account Security Credentials</span>
+                </h4>
+                <span style={{ fontSize: "11px", color: "var(--adm-text-muted)" }}>
+                  Set initial strong password for login
+                </span>
               </div>
 
-              <div className="adm-form-grid">
+              <div className="adm-form-grid-2">
+                {/* Login Password */}
                 <div className="adm-field">
                   <label className="adm-label">
                     Login Password <span className="req">*</span>
@@ -238,28 +244,74 @@ export function AddOwnerModal() {
                       {showAddOwnerPassword ? "Hide" : "Show"}
                     </button>
                   </div>
-                </div>
 
-                <div className="adm-field">
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
-                    <label className="adm-label" style={{ marginBottom: 0 }}>
-                      Confirm Password <span className="req">*</span>
-                    </label>
-                    {newOwnerForm.confirmPassword && (
+                  {/* Password Strength Inline Feedback */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "3px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <div style={{ display: "flex", gap: "3px", width: "70px" }}>
+                        {[1, 2, 3, 4].map((step) => {
+                          const active = passwordStrength >= step;
+                          return (
+                            <span
+                              key={step}
+                              style={{
+                                height: "3.5px",
+                                flex: 1,
+                                borderRadius: "2px",
+                                backgroundColor: active
+                                  ? passwordStrength === 4
+                                    ? "#16a34a"
+                                    : passwordStrength === 3
+                                    ? "#eab308"
+                                    : passwordStrength === 2
+                                    ? "#f97316"
+                                    : "#ef4444"
+                                  : "var(--adm-border)",
+                                transition: "background-color 0.2s ease",
+                              }}
+                            />
+                          );
+                        })}
+                      </div>
                       <span
                         style={{
-                          fontSize: "11px",
+                          fontSize: "10.5px",
                           fontWeight: 700,
-                          color: isPasswordMatching ? "#16a34a" : "#dc2626",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "3px",
+                          color:
+                            passwordStrength === 4
+                              ? "#16a34a"
+                              : passwordStrength === 3
+                              ? "#eab308"
+                              : passwordStrength === 2
+                              ? "#f97316"
+                              : passwordStrength === 1
+                              ? "#ef4444"
+                              : "var(--adm-text-faint)",
                         }}
                       >
-                        {isPasswordMatching ? "✓ Passwords Match" : "✕ Passwords Not Match"}
+                        {passwordStrength === 0
+                          ? "Strength"
+                          : passwordStrength === 4
+                          ? "Strong ✓"
+                          : passwordStrength === 3
+                          ? "Good"
+                          : passwordStrength === 2
+                          ? "Fair"
+                          : "Weak"}
                       </span>
-                    )}
+                    </div>
+
+                    <span style={{ fontSize: "10px", color: isPasswordStrong ? "#16a34a" : "var(--adm-text-faint)" }}>
+                      {isPasswordStrong ? "✓ Requirements met" : "A-Z, a-z, 0-9, symbol"}
+                    </span>
                   </div>
+                </div>
+
+                {/* Confirm Password */}
+                <div className="adm-field">
+                  <label className="adm-label">
+                    Confirm Password <span className="req">*</span>
+                  </label>
                   <div className="adm-password-wrapper">
                     <input
                       type={showAddOwnerConfirmPassword ? "text" : "password"}
@@ -290,82 +342,21 @@ export function AddOwnerModal() {
                       {showAddOwnerConfirmPassword ? "Hide" : "Show"}
                     </button>
                   </div>
-                </div>
-              </div>
 
-              {/* Password Strength & Match Status Box */}
-              <div className="adm-strength-box">
-                <div className="adm-strength-header">
-                  <span className="adm-strength-label">Password Strength:</span>
-                  <div className="adm-strength-bars">
-                    {[1, 2, 3, 4].map((step) => {
-                      const active = passwordStrength >= step;
-                      return (
-                        <span
-                          key={step}
-                          className={`adm-strength-segment ${active ? `active-${passwordStrength}` : ""}`}
-                        />
-                      );
-                    })}
+                  {/* Match Inline Feedback */}
+                  <div style={{ marginTop: "3px", fontSize: "10.5px", minHeight: "16px" }}>
+                    {!newOwnerForm.confirmPassword ? (
+                      <span style={{ color: "var(--adm-text-faint)" }}>Re-enter to verify match</span>
+                    ) : isPasswordMatching ? (
+                      <span style={{ color: "#16a34a", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                        ✓ Passwords match
+                      </span>
+                    ) : (
+                      <span style={{ color: "#dc2626", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                        ✕ Passwords do not match
+                      </span>
+                    )}
                   </div>
-                  {newOwnerForm.password && (
-                    <span className={`adm-strength-text strength-${passwordStrength}`}>
-                      {passwordStrength <= 1 && "Weak"}
-                      {passwordStrength === 2 && "Fair"}
-                      {passwordStrength === 3 && "Good"}
-                      {passwordStrength === 4 && "Strong ✓"}
-                    </span>
-                  )}
-                </div>
-                <p className="adm-strength-hint">
-                  {isPasswordStrong
-                    ? "✓ Strong password criteria met."
-                    : "🔒 Password must include uppercase, lowercase, number, and special symbol (min 8 chars)."}
-                </p>
-
-                {/* Password Match Status Row */}
-                <div
-                  style={{
-                    marginTop: "10px",
-                    paddingTop: "8px",
-                    borderTop: "1px dashed var(--adm-border)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <span className="adm-strength-label">Password Match:</span>
-                  {!newOwnerForm.confirmPassword ? (
-                    <span style={{ fontSize: "11.5px", color: "var(--adm-text-muted)" }}>
-                      Enter confirm password to verify
-                    </span>
-                  ) : isPasswordMatching ? (
-                    <span
-                      style={{
-                        fontSize: "11.5px",
-                        fontWeight: 700,
-                        color: "#16a34a",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "4px",
-                      }}
-                    >
-                      ✓ Passwords Match
-                    </span>
-                  ) : (
-                    <span
-                      style={{
-                        fontSize: "11.5px",
-                        fontWeight: 700,
-                        color: "#dc2626",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "4px",
-                      }}
-                    >
-                      ✕ Passwords Do Not Match
-                    </span>
-                  )}
                 </div>
               </div>
             </div>

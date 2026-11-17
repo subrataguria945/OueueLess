@@ -15,7 +15,8 @@ export const API_BASE_URL =
   import.meta.env.VITE_BACKEND_URL ||
   "https://queueless-backend-b2qh.onrender.com";
 
-export const REFRESH_TOKEN_URL = `${API_BASE_URL}/user/refresh`;
+export const REFRESH_TOKEN_URL =
+  import.meta.env.VITE_REFRESH_TOKEN_URL || `${API_BASE_URL}/auth/refresh`;
 
 /**
  * Retrieve the current access token from storage.
@@ -146,7 +147,12 @@ apiClient.interceptors.response.use(
 
     // Do not attempt refresh on auth endpoints to prevent loops
     const requestUrl = originalRequest.url || "";
-    if (requestUrl.includes("/user/refresh") || requestUrl.includes("/user/login")) {
+    if (
+      requestUrl.includes("/auth/refresh") ||
+      requestUrl.includes("/user/refresh") ||
+      requestUrl.includes("/auth/login") ||
+      requestUrl.includes("/user/login")
+    ) {
       return Promise.reject(error);
     }
 
@@ -259,7 +265,13 @@ export async function authFetch(url, options = {}) {
   let response = await fetch(url, { ...options, headers });
 
   // Handle 401 token expiration with seamless auto-refresh
-  if (response.status === 401 && !url.includes("/user/refresh") && !url.includes("/user/login")) {
+  if (
+    response.status === 401 &&
+    !url.includes("/auth/refresh") &&
+    !url.includes("/user/refresh") &&
+    !url.includes("/auth/login") &&
+    !url.includes("/user/login")
+  ) {
     const refreshToken = getRefreshToken();
     let refreshed = false;
 

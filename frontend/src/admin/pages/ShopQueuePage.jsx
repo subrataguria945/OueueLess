@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router";
 import { useAdmin } from "../AdminContext";
+import { isDemoToken } from "../adminData";
 
 export function ShopQueuePage() {
   const { id } = useParams();
@@ -8,23 +9,31 @@ export function ShopQueuePage() {
   const [queueFilter, setQueueFilter] = useState("All");
   const [tokenSearch, setTokenSearch] = useState("");
 
-  const { shopsData, selectedShopDetail } = useAdmin();
+  const { shopsData, selectedShopDetail, handleToggleShopOpen, showToast } = useAdmin();
 
   // Find shop by ID
   const shop =
     shopsData.find((s) => String(s.id) === String(id)) ||
     (selectedShopDetail && String(selectedShopDetail.id) === String(id) ? selectedShopDetail : null);
 
-  // Live tokens array
-  const liveTokens = [
-    { token: shop?.currentServing || "QL-042", name: "Aditi Sharma", counter: "Counter A", wait: "Serving Now", status: "Serving", time: "14:32" },
-    { token: "QL-043", name: "Bikram Roy", counter: "Counter A", wait: "~4 mins (Pos #1)", status: "Waiting", time: "14:35" },
-    { token: "QL-044", name: "Kavita Sen", counter: "Counter B", wait: "~8 mins (Pos #2)", status: "Waiting", time: "14:38" },
-    { token: "QL-045", name: "Rohan Verma", counter: "Counter A", wait: "~12 mins (Pos #3)", status: "Waiting", time: "14:41" },
-    { token: "QL-046", name: "Sunita Das", counter: "Counter B", wait: "~16 mins (Pos #4)", status: "Waiting", time: "14:45" },
-    { token: "QL-040", name: "Deepak Mehta", counter: "Counter A", wait: "Completed", status: "Completed", time: "14:20" },
-    { token: "QL-041", name: "Pooja Banerjee", counter: "Counter B", wait: "Completed", status: "Completed", time: "14:26" },
-  ];
+  // Live tokens array for this specific store (excluding mock demo tokens)
+  const [liveTokens, setLiveTokens] = useState(() => {
+    try {
+      const saved = localStorage.getItem("ql_admin_live_tokens");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed.filter(
+            (t) =>
+              !isDemoToken(t) &&
+              (String(t.shopId) === String(id) ||
+                (shop && t.shop && t.shop.toLowerCase() === shop.name.toLowerCase()))
+          );
+        }
+      }
+    } catch (_) {}
+    return [];
+  });
 
   if (!shop) {
     return (
@@ -35,7 +44,7 @@ export function ShopQueuePage() {
               <line x1="19" y1="12" x2="5" y2="12" />
               <polyline points="12 19 5 12 12 5" />
             </svg>
-            <span>Back to Store Queues</span>
+            <span>Back to Shops</span>
           </button>
         </div>
         <div className="adm-card" style={{ padding: "60px 20px", textAlign: "center" }}>
@@ -45,14 +54,15 @@ export function ShopQueuePage() {
             The store location with ID <code>{id}</code> could not be located.
           </p>
           <button type="button" className="adm-btn adm-btn-primary" onClick={() => navigate("/admin/shops")}>
-            Return to Store Queues
+            Return to Shops
           </button>
         </div>
       </div>
     );
   }
 
-  const isOpen = shop.status === "Active";
+  const isOpen = shop.isOpen !== undefined ? shop.isOpen : (shop.status === "Open" || shop.status === "Active");
+  const isActive = shop.isActive !== undefined ? shop.isActive : (shop.status !== "Inactive" && shop.status !== "Suspended");
 
   const filteredTokens = liveTokens.filter((item) => {
     const matchFilter = queueFilter === "All" || item.status === queueFilter;
@@ -74,7 +84,7 @@ export function ShopQueuePage() {
             <line x1="19" y1="12" x2="5" y2="12" />
             <polyline points="12 19 5 12 12 5" />
           </svg>
-          <span>Back to Store Queues</span>
+          <span>Back to Shops</span>
         </button>
 
         <div style={{ display: "flex", gap: "8px" }}>
@@ -99,8 +109,22 @@ export function ShopQueuePage() {
             <div className="adm-hero-title-row">
               <h1 className="adm-hero-title">{shop.name}</h1>
               <span className="adm-badge adm-badge-neutral">{shop.category}</span>
-              <span className={`adm-badge ${isOpen ? "adm-badge-success" : "adm-badge-neutral"}`}>
-                {shop.status}
+              <span className={`adm-badge ${isActive ? "adm-badge-role-admin" : "adm-badge-danger"}`}>
+                {isActive ? "✓ Active Outlet" : "✕ Inactive"}
+              </span>
+              <span
+                className={`adm-badge ${isOpen ? "adm-badge-success" : "adm-badge-neutral"}`}
+                style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}
+              >
+                <span
+                  style={{
+                    width: "7px",
+                    height: "7px",
+                    borderRadius: "50%",
+                    backgroundColor: isOpen ? "#10b981" : "#94a3b8",
+                  }}
+                />
+                <span>{isOpen ? "Counter Open" : "Counter Closed"}</span>
               </span>
             </div>
             <p className="adm-hero-subtitle">
@@ -108,16 +132,27 @@ export function ShopQueuePage() {
               <span>•</span>
               <span>Location: {shop.location}</span>
               <span>•</span>
-              <span>Operating Counters: Counter A, Counter B</span>
+              <span>Operating Hours: {shop.timing || "Regular Store Hours"}</span>
             </p>
           </div>
         </div>
 
-        <div className="adm-hero-actions">
+        <div className="adm-hero-actions" style={{ display: "flex", gap: "8px" }}>
+          <button
+            type="button"
+            className={`adm-btn ${isOpen ? "adm-btn-secondary" : "adm-btn-primary"}`}
+            onClick={() => {
+              handleToggleShopOpen(shop.id);
+              if (showToast) showToast(`Counter ${isOpen ? "closed" : "opened"} for ${shop.name}`, "success");
+            }}
+          >
+            {isOpen ? "🔴 Close Counter" : "🟢 Open Counter"}
+          </button>
           <button
             type="button"
             className="adm-btn adm-btn-primary"
             onClick={() => alert(`Calling next customer for ${shop.name}...`)}
+            disabled={!isOpen}
           >
             📢 Call Next Token
           </button>
@@ -132,7 +167,7 @@ export function ShopQueuePage() {
             <span className="adm-stat-trend" style={{ backgroundColor: "#eff6ff", color: "#2563eb", borderColor: "#bfdbfe" }}>Counter A</span>
           </div>
           <div className="adm-stat-value" style={{ color: "#2563eb", fontSize: "20px" }}>
-            {shop.currentServing}
+            {shop.currentServing || "--"}
           </div>
           <div className="adm-stat-context">Customer at service desk</div>
         </div>
@@ -231,9 +266,9 @@ export function ShopQueuePage() {
                 {filteredTokens.length === 0 ? (
                   <tr>
                     <td colSpan="6" className="adm-table-empty">
-                      <span>🎟️</span>
-                      <h4>No Tokens Matching Filter</h4>
-                      <p>There are currently no visitor tokens in this state.</p>
+                      <span style={{ fontSize: "28px" }}>🎟️</span>
+                      <h4>No Live Tokens in Queue</h4>
+                      <p>There are currently no visitor tokens in queue for {shop.name}.</p>
                     </td>
                   </tr>
                 ) : (

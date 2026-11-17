@@ -7,6 +7,7 @@ import { OwnersPage } from "./admin/pages/OwnersPage";
 import { OwnerDetailPage } from "./admin/pages/OwnerDetailPage";
 import { ShopsPage } from "./admin/pages/ShopsPage";
 import { ShopQueuePage } from "./admin/pages/ShopQueuePage";
+import { TokensPage } from "./admin/pages/TokensPage";
 import { UsersPage } from "./admin/pages/UsersPage";
 import { UserDetailPage } from "./admin/pages/UserDetailPage";
 import { SubscriptionsPage } from "./admin/pages/SubscriptionsPage";
@@ -57,6 +58,7 @@ export function AdminDashboard() {
           <Route path="owners/:id" element={<OwnerDetailPage />} />
           <Route path="shops" element={<ShopsPage />} />
           <Route path="shops/:id" element={<ShopQueuePage />} />
+          <Route path="tokens" element={<TokensPage />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="users/:id" element={<UserDetailPage />} />
           <Route path="subscriptions" element={<SubscriptionsPage />} />
