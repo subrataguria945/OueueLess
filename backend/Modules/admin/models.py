@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Any
+from typing import Any 
 
-from pydantic import BaseModel
+from pydantic import BaseModel , EmailStr
 
 
 class ShopDetails(BaseModel):
@@ -79,3 +79,40 @@ class UserDetailsForUser(BaseModel):
 class AllUserDetailsResponse(BaseModel):
     owners: list[OwnerDetailsForUser]
     users: list[UserDetailsForUser]
+
+# Request schema for registering a new owner
+class AddOwnerRequest(BaseModel):
+    fullname: str
+    email: EmailStr
+    password: str
+    phone: str | None = None
+    address : str | None = None
+    max_shop_count: int
+    backup_id: int
+
+# Request schema for updating owner profile
+class UpdateOwner(BaseModel):
+    owner_id: int   
+    fullname: str
+    email: EmailStr
+    phone: str | None = None
+    address : str | None = None
+    max_shop_count: int
+    backup_id: int
+
+class UpdateUser(BaseModel):
+    user_id: int   
+    fullname: str
+    email: EmailStr
+    phone: str | None = None
+    address : str | None = None
+
+# Request schema for toggling owner active/inactive status
+class UpdateOwnerStatusRequest(BaseModel):
+    owner_id: int   
+    new_status: bool
+
+class UpdateUserStatusRequest(BaseModel):
+    user_id: int   
+    new_status: bool
+    

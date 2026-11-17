@@ -18,4 +18,3 @@ def update_user(input:dict):
             "status": "failed",
             "message": response.get("error")
         }
-
