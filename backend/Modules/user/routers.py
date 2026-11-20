@@ -1,8 +1,8 @@
 from fastapi import APIRouter , Depends
-from .models import UserLogin , RefreshTokenRequest , ForgetPassword, ChangePassword , ResetPassword , VerifyRegistrationOTP  , InitiateUserRegister , UserRegisterGoogle, UpdateUserRequest
+from .models import UserLogin , RefreshTokenRequest , ForgetPassword, ChangePassword , ResetPassword , VerifyRegistrationOTP  , InitiateUserRegister , UserRegisterGoogle, UpdateUserRequest,JoinQueueRequest
 from Library.Authentication.utility import login_user as login , change_password as change_pass, initiate_register , veriy_and_register_user , manage_google_user , check_and_send_forget_password_link , reset_password as reset_pass , refresh_user_token
 from Library.Security.gatekeeper import require_active_user
-from Modules.user.utility import update_user as update_user_details
+from Modules.user.utility import join_queue, update_user as update_user_details
 router = APIRouter()
 
 @router.post("/login")
@@ -57,4 +57,15 @@ def update_user(data: UpdateUserRequest, user_id: int = Depends(require_active_u
     return response
 
 
+# Customer Join Queue
+@router.post("/queue/join")
+def customer_join_queue(
+    data: JoinQueueRequest,
+    user_id: int = Depends(require_active_user)
+):
+    payload = data.model_dump()
+    payload["user_id"] = user_id
 
+    response = join_queue(payload)
+
+    return response

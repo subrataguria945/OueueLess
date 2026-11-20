@@ -63,3 +63,71 @@ def update_user_indb(user_id, fullname, phone, profile_image , address):
     finally:
         if con:
             con.close()
+
+def join_queue_indb(user_id, shop_id, service_id):
+    con = None
+
+    try:
+        con = get_connection()
+
+        with con.cursor() as cur:
+            cur.execute(
+                
+                 "CALL public.sp_join_queue(%s,%s,%s,NULL,NULL,NULL,NULL,NULL,NULL);",
+                (user_id, shop_id, service_id),
+                )
+
+            result = cur.fetchone()
+
+            if not result:
+                con.rollback()
+                return {
+                    "status": 500,
+                    "error": "NO_RESPONSE",
+                    "message": "No response received from database"
+                }
+
+            (
+                token_id,
+                token_number,
+                queue_position,
+                estimated_wait_minutes,
+                status_code,
+                status_message
+            ) = result
+
+            if status_code == "SUCCESS":
+                con.commit()
+
+                return {
+                    "status": 200,
+                    "token_id": token_id,
+                    "token_number": token_number,
+                    "queue_position": queue_position,
+                    "estimated_wait_minutes": estimated_wait_minutes,
+                    "message": status_message
+                }
+
+            con.rollback()
+
+            return {
+                "status": 400,
+                "error": status_code,
+                "message": status_message
+            }
+
+    except Exception as e:
+        if con:
+            con.rollback()
+
+        print("Join Queue DB Error:", e)
+
+        return {
+            "status": 500,
+            "error": "DATABASE_ERROR",
+            "message": str(e)
+        }
+
+    finally:
+        if con:
+            con.close()
