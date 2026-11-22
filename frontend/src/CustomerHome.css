@@ -1,0 +1,2981 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   QUEUELESS CUSTOMER PORTAL & ALL-IN-ONE HOME PAGE STYLES
+   Pixel-perfect design matching QueueLess design guidelines:
+   - Modern clean aesthetics (#1665D8 primary brand blue)
+   - Seamless hero banner & floating search card
+   - Live Token Tracker Banner (when token is active)
+   - 📅 Slot & Queue Availability Calendar
+   - "How It Works?" 3-step cards with soft blue icon boxes
+   - Popular Shops directory with live queue metrics & category pills
+   - Digital modals (Booking, QR Pass, Cancellation) & Toast alerts
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. GLOBAL WRAPPER & BASE ─────────────────────────────────────────── */
+.ql-customer-root {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  color: #0f172a;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  caret-color: transparent !important;
+}
+
+/* Ensure no accidental text cursor or caret appears on text/divs/headings */
+.ql-customer-root *:not(input):not(textarea):not([contenteditable="true"]) {
+  caret-color: transparent !important;
+}
+
+/* Allow text cursor & caret ONLY where needed (search inputs, form inputs, textarea) */
+.ql-customer-root input:not(:disabled):not([readonly]),
+.ql-customer-root textarea:not(:disabled):not([readonly]),
+.ql-search-input-field,
+.ql-profile-input:not(:disabled):not([readonly]) {
+  cursor: text !important;
+  caret-color: #1665d8 !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+/* Explicit pointer cursor for all interactive elements */
+.ql-customer-root button,
+.ql-customer-root a,
+.ql-customer-root select,
+.ql-customer-root .ql-customer-pill,
+.ql-customer-root .ql-cat-chip,
+.ql-customer-root .ql-slot-chip,
+.ql-customer-root .ql-calendar-day,
+.ql-customer-root .ql-month-btn,
+.ql-customer-root .ql-btn-today,
+.ql-customer-root .ql-search-btn,
+.ql-customer-root .ql-search-location-box,
+.ql-customer-root button,
+.ql-customer-root button *,
+.ql-customer-root a,
+.ql-customer-root a *,
+.ql-customer-root select,
+.ql-customer-root .ql-customer-pill,
+.ql-customer-root .ql-customer-pill *,
+.ql-customer-root .ql-cat-chip,
+.ql-customer-root .ql-slot-chip,
+.ql-customer-root .ql-calendar-day,
+.ql-customer-root .ql-month-btn,
+.ql-customer-root .ql-btn-today,
+.ql-customer-root .ql-search-btn,
+.ql-customer-root .ql-search-location-box,
+.ql-customer-root .ql-search-location-option,
+.ql-customer-root .ql-shop-card,
+.ql-customer-root .ql-btn-book-token,
+.ql-customer-root .ql-btn-view-qr,
+.ql-customer-root .ql-btn-cancel-token,
+.ql-customer-root .ql-customer-dropdown-item,
+.ql-customer-root .ql-profile-tab-button,
+.ql-customer-root .ql-profile-close-btn,
+.ql-customer-root .ql-modal-close-btn,
+.ql-customer-root .ql-btn-modal-cancel,
+.ql-customer-root .ql-btn-modal-submit,
+.ql-customer-root .ql-nav-brand,
+.ql-customer-root .ql-nav-brand *,
+.ql-customer-root .ql-nav-link,
+.ql-customer-root .ql-mobile-link,
+.ql-customer-root .ql-footer-links span {
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+/* Non-interactive text / containers */
+.ql-customer-root h1,
+.ql-customer-root h2,
+.ql-customer-root h3,
+.ql-customer-root h4,
+.ql-customer-root h5,
+.ql-customer-root h6,
+.ql-customer-root p,
+.ql-customer-root span:not(.ql-customer-pill-name):not(.ql-customer-pill-caret):not(.ql-customer-pill *):not(button *):not(a *),
+.ql-customer-root label,
+.ql-customer-root div:not([contenteditable="true"]):not(button *):not(a *):not(.ql-customer-pill *) {
+  cursor: default;
+}
+
+/* ── 2. NAVBAR HEADER ─────────────────────────────────────────────────── */
+.ql-nav-header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #ffffff;
+  z-index: 1000;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.ql-nav-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Brand Logo */
+.ql-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  user-select: none;
+}
+
+.ql-logo-svg {
+  width: 36px;
+  height: 36px;
+  display: block;
+}
+
+.ql-brand-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0b192c;
+  letter-spacing: -0.4px;
+}
+
+.ql-brand-title .ql-accent {
+  color: #1665d8;
+}
+
+/* Nav Menu Links */
+.ql-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ql-nav-link {
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: #475569;
+  text-decoration: none;
+  cursor: pointer !important;
+  transition: color 0.18s ease;
+  position: relative;
+  padding: 6px 0;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  caret-color: transparent !important;
+  outline: none;
+}
+
+.ql-nav-link:hover {
+  color: #1665d8;
+}
+
+.ql-nav-link.active {
+  color: #1665d8;
+  font-weight: 700;
+}
+
+.ql-nav-link.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2.5px;
+  background-color: #1665d8;
+  border-radius: 2px;
+}
+
+/* Nav User Cluster & Active Token Badge */
+.ql-nav-user-cluster {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ql-nav-token-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: #ecfdf5;
+  border: 1.5px solid #a7f3d0;
+  color: #059669;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  caret-color: transparent !important;
+  transition: all 0.16s ease;
+  white-space: nowrap;
+}
+
+.ql-nav-token-btn:hover {
+  background: #d1fae5;
+  border-color: #6ee7b7;
+}
+
+.ql-nav-token-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  flex-shrink: 0;
+}
+
+.ql-nav-token-text-mobile {
+  display: none;
+}
+
+/* Auth Buttons & User Pill */
+.ql-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ql-btn-login {
+  padding: 8px 24px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  color: #1665d8;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  outline: none;
+}
+
+.ql-btn-login:hover {
+  border-color: #1665d8;
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+
+.ql-btn-signup {
+  padding: 9px 24px;
+  border-radius: 9999px;
+  background: #1665d8;
+  border: 1.5px solid #1665d8;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 4px 12px rgba(22, 101, 216, 0.28);
+  outline: none;
+}
+
+.ql-btn-signup:hover {
+  background: #0f52b8;
+  border-color: #0f52b8;
+  box-shadow: 0 6px 16px rgba(22, 101, 216, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Logged-In User Pill */
+.ql-nav-user-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 12px 4px 6px;
+  border-radius: 9999px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+}
+
+.ql-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #1665d8;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ql-user-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1e3a8a;
+}
+
+.ql-btn-logout {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.ql-btn-logout:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* Mobile Hamburger Toggle */
+.ql-mobile-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #0f172a;
+  padding: 6px;
+}
+
+/* Mobile Menu Drawer */
+.ql-mobile-menu {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 16px 24px;
+  gap: 12px;
+}
+
+.ql-mobile-link {
+  font-size: 15px;
+  font-weight: 600;
+  color: #334155;
+  text-decoration: none;
+  padding: 8px 0;
+  cursor: pointer;
+}
+
+.ql-mobile-link:hover {
+  color: #1665d8;
+}
+
+.ql-mobile-actions {
+  display: flex;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.ql-mobile-actions button {
+  flex: 1;
+}
+
+/* ── 3. HERO BANNER SECTION ───────────────────────────────────────────── */
+.ql-hero-section {
+  position: relative;
+  background-color: #004fd2;
+  background-image: linear-gradient(90deg, #1a6ced 0%, #1160e3 18%, #0656db 32%, #004fd2 45%, #004fd2 100%);
+  padding: 45px 24px 0;
+  overflow: hidden;
+}
+
+.ql-hero-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.15fr 0.95fr;
+  align-items: flex-end;
+  gap: 36px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Hero Left Content */
+.ql-hero-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px 0 65px;
+}
+
+.ql-hero-title {
+  font-size: 52px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.15;
+  letter-spacing: -1px;
+  margin: 0 0 18px;
+}
+
+.ql-hero-subtitle {
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.92);
+  margin: 0 0 34px;
+  max-width: 480px;
+}
+
+/* Hero CTA Buttons */
+.ql-hero-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ql-hero-btn-primary {
+  padding: 13px 28px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 1.5px solid #ffffff;
+  color: #0b192c;
+  font-size: 15px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  outline: none;
+}
+
+.ql-hero-btn-primary:hover {
+  background: #f8fafc;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+}
+
+.ql-hero-btn-primary svg {
+  transition: transform 0.18s ease;
+}
+
+.ql-hero-btn-primary:hover svg {
+  transform: translateX(4px);
+}
+
+.ql-hero-btn-outline {
+  padding: 13px 32px;
+  border-radius: 9999px;
+  background: transparent;
+  border: 1.5px solid rgba(255, 255, 255, 0.75);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.ql-hero-btn-outline:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: #ffffff;
+  transform: translateY(-2px);
+}
+
+/* Hero Right Person Image */
+.ql-hero-right {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  line-height: 0;
+}
+
+.ql-hero-person-img {
+  position: relative;
+  z-index: 2;
+  max-width: 560px;
+  width: 100%;
+  height: auto;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+  filter: none !important;
+}
+
+/* ── 4. FLOATING SEARCH CARD ──────────────────────────────────────────── */
+.ql-search-wrapper {
+  max-width: 1080px;
+  margin: -40px auto 0;
+  padding: 0 24px;
+  position: relative;
+  z-index: 20;
+}
+
+.ql-search-card {
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 18px 45px -8px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  padding: 10px 14px 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Location Segment */
+.ql-search-location-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: background 0.15s ease;
+  user-select: none;
+}
+
+.ql-search-location-box:hover {
+  background: #f8fafc;
+}
+
+.ql-search-icon-pin {
+  color: #1665d8;
+  flex-shrink: 0;
+}
+
+.ql-search-location-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.ql-search-location-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+  width: 220px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.18);
+  padding: 6px;
+  list-style: none;
+  z-index: 100;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.ql-search-location-option {
+  padding: 9px 12px;
+  font-size: 13.5px;
+  color: #334155;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ql-search-location-option:hover {
+  background: #eff6ff;
+  color: #1665d8;
+  font-weight: 600;
+}
+
+.ql-search-location-option.selected {
+  background: #eff6ff;
+  color: #1665d8;
+  font-weight: 700;
+}
+
+/* Divider Line */
+.ql-search-divider {
+  width: 1px;
+  height: 32px;
+  background-color: #e2e8f0;
+  flex-shrink: 0;
+}
+
+/* Keyword Input Segment */
+.ql-search-input-box {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ql-search-icon-shop,
+.ql-search-input-box svg {
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.ql-search-input,
+.ql-search-input-field {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-size: 14.5px;
+  color: #0f172a;
+  outline: none;
+  padding: 4px 0;
+}
+
+.ql-search-input::placeholder,
+.ql-search-input-field::placeholder {
+  color: #94a3b8;
+}
+
+.ql-search-clear-btn {
+  background: #f1f5f9;
+  border: none;
+  color: #64748b;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.ql-search-clear-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* Search Submit Button */
+.ql-search-btn {
+  padding: 12px 28px;
+  border-radius: 12px;
+  background: #1665d8;
+  border: none;
+  color: #ffffff;
+  font-size: 14.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 4px 14px rgba(22, 101, 216, 0.35);
+  flex-shrink: 0;
+  outline: none;
+}
+
+.ql-search-btn:hover {
+  background: #0f52b8;
+  box-shadow: 0 6px 18px rgba(22, 101, 216, 0.45);
+  transform: translateY(-1px);
+}
+
+/* ── 5. ACTIVE TOKEN LIVE TURN TRACKER BANNER ────────────────────────── */
+.ql-active-token-wrapper {
+  max-width: 1080px;
+  margin: 32px auto 0;
+  padding: 0 24px;
+}
+
+.ql-live-banner {
+  background: linear-gradient(135deg, #1665d8 0%, #0d58db 60%, #0843ab 100%);
+  color: #ffffff;
+  border-radius: 18px;
+  padding: 24px 28px;
+  box-shadow: 0 10px 25px -4px rgba(22, 101, 216, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.ql-live-banner::after {
+  content: "";
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+.ql-live-banner-content {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  align-items: center;
+  gap: 24px;
+}
+
+.ql-live-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.ql-live-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.35);
+  animation: pulseLiveDot 1.8s infinite;
+}
+
+@keyframes pulseLiveDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+.ql-live-shop-name {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0 0 4px;
+  letter-spacing: -0.5px;
+}
+
+.ql-live-shop-info {
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 18px;
+}
+
+.ql-live-metrics-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.ql-live-metric-box {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 10px 16px;
+  min-width: 90px;
+}
+
+.ql-live-metric-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.ql-live-metric-val {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-top: 2px;
+}
+
+.ql-live-metric-val.highlight {
+  color: #fde047;
+}
+
+.ql-live-progress-wrap {
+  margin-bottom: 8px;
+}
+
+.ql-live-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 6px;
+}
+
+.ql-live-progress-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+
+.ql-live-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #34d399 0%, #6ee7b7 100%);
+  transition: width 0.4s ease;
+}
+
+.ql-live-banner-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.ql-btn-view-qr {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: 9999px;
+  background: #ffffff;
+  color: #0b192c;
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+.ql-btn-view-qr:hover {
+  background: #f8fafc;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+}
+
+.ql-btn-cancel-token {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.85);
+  padding: 8px 18px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.ql-btn-cancel-token:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #f87171;
+  color: #ffffff;
+}
+
+/* ── 6. AVAILABILITY CALENDAR SECTION ────────────────────────────────── */
+.ql-calendar-section {
+  max-width: 1240px;
+  margin: 64px auto 0;
+  padding: 0 24px;
+}
+
+.ql-calendar-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+  padding: 32px;
+}
+
+.ql-calendar-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.ql-calendar-title-wrap h2 {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0b192c;
+  margin: 0 0 6px;
+  letter-spacing: -0.5px;
+}
+
+.ql-calendar-title-wrap p {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+.ql-calendar-month-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ql-current-month-label {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  min-width: 150px;
+  text-align: center;
+}
+
+.ql-month-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ql-month-btn:hover {
+  background: #f1f5f9;
+  border-color: #1665d8;
+  color: #1665d8;
+}
+
+.ql-btn-today {
+  padding: 7px 16px;
+  border-radius: 9999px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ql-btn-today:hover {
+  background: #eff6ff;
+  color: #1665d8;
+  border-color: #93c5fd;
+}
+
+/* Legend */
+.ql-calendar-legend {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: #f8fafc;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  border: 1px solid #f1f5f9;
+}
+
+.ql-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.ql-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.ql-legend-dot.available { background: #10b981; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2); }
+.ql-legend-dot.limited { background: #f59e0b; box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2); }
+.ql-legend-dot.full { background: #ef4444; box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2); }
+.ql-legend-dot.closed { background: #94a3b8; }
+
+/* Calendar Main Split */
+.ql-calendar-layout {
+  display: grid;
+  grid-template-columns: 1.55fr 1.05fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* Calendar Grid */
+.ql-calendar-grid-wrap {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.ql-calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: center;
+  padding: 10px 0;
+}
+
+.ql-calendar-weekday {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.ql-calendar-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: #e2e8f0;
+  gap: 1px;
+}
+
+.ql-calendar-day {
+  background: #ffffff;
+  min-height: 82px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.ql-calendar-day:hover {
+  background: #f8fafc;
+}
+
+.ql-calendar-day.other-month {
+  background: #f8fafc;
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ql-calendar-day.selected {
+  background: #eff6ff;
+  box-shadow: inset 0 0 0 2px #1665d8;
+}
+
+.ql-day-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ql-day-number {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.ql-calendar-day.today .ql-day-number {
+  background: #1665d8;
+  color: #ffffff;
+}
+
+.ql-day-status-pill {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 6px;
+  border-radius: 4px;
+  line-height: 1.1;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ql-day-status-pill.available {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.ql-day-status-pill.limited {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+.ql-day-status-pill.full {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.ql-day-status-pill.closed {
+  background: #f1f5f9;
+  color: #94a3b8;
+  border: 1px solid #e2e8f0;
+}
+
+.ql-day-token-count {
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+/* Detail Panel on Selected Day */
+.ql-day-detail-panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.ql-day-detail-header {
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 14px;
+}
+
+.ql-selected-date-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background: #eff6ff;
+  color: #1665d8;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.ql-selected-date-title {
+  font-size: 19px;
+  font-weight: 800;
+  color: #0b192c;
+  margin: 0;
+}
+
+.ql-panel-section-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.ql-shop-select-box {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.ql-shop-select-box:focus {
+  border-color: #1665d8;
+}
+
+.ql-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.ql-slot-chip {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.ql-slot-chip:hover:not(.disabled) {
+  border-color: #1665d8;
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+
+.ql-slot-chip.selected {
+  border-color: #1665d8;
+  background: #eff6ff;
+  box-shadow: 0 0 0 2px #bfdbfe;
+}
+
+.ql-slot-chip.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f8fafc;
+  border-style: dashed;
+}
+
+.ql-slot-time {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.ql-slot-availability {
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ql-slot-availability.green { color: #059669; }
+.ql-slot-availability.amber { color: #d97706; }
+.ql-slot-availability.red { color: #dc2626; }
+
+.ql-btn-book-slot {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  background: #1665d8;
+  color: #ffffff;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.18s ease;
+  box-shadow: 0 4px 12px rgba(22, 101, 216, 0.3);
+}
+
+.ql-btn-book-slot:hover {
+  background: #0f52b8;
+  transform: translateY(-1px);
+}
+
+/* ── 7. "HOW IT WORKS?" SECTION ───────────────────────────────────────── */
+.ql-works-section,
+.ql-how-section {
+  padding: 85px 24px 80px;
+  background-color: #ffffff;
+  text-align: center;
+}
+
+.ql-works-container,
+.ql-how-container {
+  max-width: 1140px;
+  margin: 0 auto;
+}
+
+.ql-section-header-center {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.ql-section-title {
+  font-size: 38px;
+  font-weight: 800;
+  color: #0b192c;
+  margin: 0 0 10px;
+  letter-spacing: -0.6px;
+}
+
+.ql-section-subtitle {
+  font-size: 16px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* 3-Steps Flexbox */
+.ql-steps-grid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.ql-step-card {
+  flex: 1;
+  max-width: 290px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.ql-step-icon-wrap,
+.ql-step-icon-wrapper {
+  width: 76px;
+  height: 76px;
+  border-radius: 20px;
+  background-color: #eff6ff;
+  color: #1665d8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  box-shadow: 0 4px 12px rgba(22, 101, 216, 0.08);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.ql-step-card:hover .ql-step-icon-wrap,
+.ql-step-card:hover .ql-step-icon-wrapper {
+  transform: translateY(-4px);
+  background-color: #dbeafe;
+}
+
+.ql-step-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 8px;
+}
+
+.ql-step-desc {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 240px;
+}
+
+/* Step Connector Arrow */
+.ql-step-arrow {
+  color: #60a5fa;
+  font-size: 26px;
+  margin-top: -30px;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── 8. POPULAR SHOPS & LIVE QUEUES SECTION ────────────────────────────── */
+.ql-shops-section {
+  padding: 70px 24px 90px;
+  background-color: #f8fafc;
+  border-top: 1px solid #f1f5f9;
+}
+
+.ql-shops-container {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.ql-shops-header-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.ql-category-pills,
+.ql-category-chips {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 36px;
+}
+
+.ql-cat-pill,
+.ql-cat-chip {
+  padding: 8px 18px;
+  border-radius: 9999px;
+  font-size: 13.5px;
+  font-weight: 600;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  outline: none;
+}
+
+.ql-cat-pill:hover,
+.ql-cat-chip:hover {
+  background: #eff6ff;
+  color: #1665d8;
+  border-color: #bfdbfe;
+  transform: translateY(-1px);
+}
+
+.ql-cat-pill.active,
+.ql-cat-chip.active {
+  background: #1665d8;
+  color: #ffffff;
+  border-color: #1665d8;
+  box-shadow: 0 3px 10px rgba(22, 101, 216, 0.3);
+}
+
+/* Shop Cards Grid */
+.ql-shops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 22px;
+}
+
+.ql-shop-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.ql-shop-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.1);
+  border-color: #cbd5e1;
+}
+
+.ql-shop-card-top,
+.ql-shop-card-head {
+  padding: 18px 20px 14px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ql-shop-badge-and-name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.ql-shop-avatar-box,
+.ql-shop-avatar-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #1665d8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  flex-shrink: 0;
+  border: 1px solid #dbeafe;
+}
+
+.ql-shop-info {
+  flex: 1;
+}
+
+.ql-shop-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 4px;
+}
+
+.ql-shop-category {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1665d8;
+  background: #eff6ff;
+  padding: 2px 8px;
+  border-radius: 6px;
+  display: inline-block;
+  margin-bottom: 6px;
+}
+
+.ql-shop-location {
+  font-size: 13px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ql-shop-status-badge {
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.ql-shop-status-badge.open {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.ql-shop-status-badge.busy {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.ql-shop-card-body {
+  padding: 0 20px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ql-shop-card-metrics,
+.ql-shop-queue-metrics {
+  background: #f8fafc;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #f1f5f9;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  text-align: center;
+}
+
+.ql-metric-item,
+.ql-metric-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.ql-metric-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.ql-metric-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.ql-shop-card-footer {
+  padding: 14px 20px;
+  margin-top: auto;
+}
+
+.ql-btn-book-token {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  background: #1665d8;
+  border: none;
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  outline: none;
+}
+
+.ql-btn-book-token:hover {
+  background: #0f52b8;
+  box-shadow: 0 4px 12px rgba(22, 101, 216, 0.3);
+}
+
+/* ── 9. DIGITAL MODALS (BOOK TOKEN, QR PASS, CANCEL) ──────────────────── */
+.ql-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.ql-modal-dialog {
+  background: #ffffff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  animation: qlModalIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes qlModalIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.ql-modal-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ql-modal-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0b192c;
+  margin: 0;
+}
+
+.ql-modal-close-btn {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.ql-modal-close-btn:hover {
+  color: #0f172a;
+  background: #f1f5f9;
+}
+
+.ql-modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+.ql-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.ql-btn-modal-cancel {
+  padding: 9px 18px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1.5px solid #cbd5e1;
+  color: #475569;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ql-btn-modal-cancel:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.ql-btn-modal-submit {
+  padding: 10px 22px;
+  border-radius: 8px;
+  background: #1665d8;
+  color: #ffffff;
+  border: none;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ql-btn-modal-submit:hover {
+  background: #0f52b8;
+}
+
+/* QR Pass Container */
+.ql-qr-pass-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 10px 0;
+}
+
+.ql-qr-token-number {
+  font-size: 34px;
+  font-weight: 900;
+  color: #1665d8;
+  margin: 0 0 4px;
+}
+
+.ql-qr-shop-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 8px;
+}
+
+.ql-qr-box {
+  width: 180px;
+  height: 180px;
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 14px;
+  border: 2px solid #bfdbfe;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 16px;
+}
+
+.ql-qr-instructions {
+  font-size: 13px;
+  color: #64748b;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+/* ── 10. FOOTER ────────────────────────────────────────────────────────── */
+.ql-customer-footer {
+  background: #0b192c;
+  color: #cbd5e1;
+  padding: 50px 24px 30px;
+  margin-top: auto;
+}
+
+.ql-footer-container {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.ql-footer-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ql-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ql-footer-brand-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.ql-footer-brand-title span {
+  color: #3b82f6;
+}
+
+.ql-footer-links {
+  display: flex;
+  gap: 24px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-wrap: wrap;
+}
+
+.ql-footer-links a {
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 13.5px;
+  transition: color 0.15s ease;
+}
+
+.ql-footer-links a:hover {
+  color: #ffffff;
+}
+
+.ql-footer-bottom {
+  padding-top: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* ── 11. TOAST NOTIFICATIONS ───────────────────────────────────────────── */
+.ql-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 3000;
+  border-left: 4px solid #10b981;
+  font-size: 14px;
+  font-weight: 600;
+  animation: qlToastSlide 0.25s ease-out;
+}
+
+@keyframes qlToastSlide {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── CUSTOMER PROFILE PILL (MATCHING media_1795365502142_ab2f7431.png) ── */
+.ql-customer-pill-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.ql-customer-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #dce4ed;
+  padding: 3px 12px 3px 3px;
+  border-radius: 9999px;
+  cursor: pointer;
+  color: #0f172a;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.16s ease-in-out;
+  user-select: none;
+  outline: none;
+  height: 36px;
+  box-sizing: border-box;
+}
+
+.ql-customer-pill:hover {
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.ql-customer-pill.active {
+  background-color: #f8fafc;
+  border-color: #1665d8;
+  box-shadow: 0 0 0 2.5px rgba(22, 101, 216, 0.12);
+}
+
+.ql-customer-pill-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: none;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.ql-customer-pill-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ql-customer-pill-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  line-height: 1;
+  text-transform: capitalize;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ql-customer-pill-caret {
+  width: 13px;
+  height: 13px;
+  color: #64748b;
+  margin-left: 1px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.ql-customer-pill.active .ql-customer-pill-caret {
+  transform: rotate(180deg);
+  color: #1665d8;
+}
+
+/* Dropdown Menu Container */
+.ql-customer-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 250px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 12px 30px -4px rgba(15, 23, 42, 0.14), 0 4px 10px -2px rgba(15, 23, 42, 0.06);
+  padding: 6px;
+  z-index: 1300;
+  animation: qlDropdownPop 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top right;
+}
+
+@keyframes qlDropdownPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.ql-customer-dropdown-header {
+  padding: 10px 12px 10px;
+  background: #f8fafc;
+  border-radius: 10px;
+  margin-bottom: 4px;
+}
+
+.ql-customer-dropdown-user-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ql-customer-dropdown-avatar-sm {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  color: #1665d8;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.ql-customer-dropdown-avatar-sm img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ql-customer-dropdown-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.ql-customer-dropdown-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: capitalize;
+  line-height: 1.25;
+}
+
+.ql-customer-dropdown-email {
+  font-size: 12px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+  line-height: 1.2;
+}
+
+.ql-customer-dropdown-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 2px 8px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #059669;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ql-customer-dropdown-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+}
+
+.ql-customer-dropdown-divider {
+  height: 1px;
+  background-color: #f1f5f9;
+  margin: 6px 0;
+}
+
+.ql-customer-dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8.5px 12px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.ql-customer-dropdown-item:hover {
+  background-color: #f1f5f9;
+  color: #1665d8;
+}
+
+.ql-customer-dropdown-item svg {
+  color: #64748b;
+  transition: color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.ql-customer-dropdown-item:hover svg {
+  color: #1665d8;
+}
+
+.ql-customer-dropdown-item.ql-customer-dropdown-danger {
+  color: #dc2626;
+}
+
+.ql-customer-dropdown-item.ql-customer-dropdown-danger svg {
+  color: #dc2626;
+}
+
+.ql-customer-dropdown-item.ql-customer-dropdown-danger:hover {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+/* ── 13. CUSTOMER PROFILE MODAL & SETTINGS ───────────────────────────── */
+.ql-profile-modal-dialog {
+  background: #ffffff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 680px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  animation: qlModalIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.ql-profile-header-banner {
+  background: linear-gradient(135deg, #1665d8 0%, #0d58db 50%, #0843ab 100%);
+  padding: 24px 28px 20px;
+  color: #ffffff;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ql-profile-header-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.ql-profile-avatar-box {
+  position: relative;
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  background: #eff6ff;
+  color: #1665d8;
+  font-size: 32px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ql-profile-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.ql-profile-avatar-edit-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #1665d8;
+  border: 1.5px solid #bfdbfe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: all 0.18s ease;
+}
+
+.ql-profile-avatar-edit-btn:hover {
+  transform: scale(1.1);
+  background: #f8fafc;
+  border-color: #1665d8;
+}
+
+.ql-profile-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ql-profile-name {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+}
+
+.ql-profile-email {
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.88);
+  margin: 0;
+}
+
+.ql-profile-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.ql-profile-verified-badge {
+  background: rgba(16, 185, 129, 0.25);
+  border: 1px solid rgba(52, 211, 153, 0.45);
+  color: #a7f3d0;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ql-profile-member-date {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.ql-profile-close-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ql-profile-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Tab Navigation */
+.ql-profile-nav-tabs {
+  display: flex;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0 20px;
+  overflow-x: auto;
+}
+
+.ql-profile-tab-button {
+  padding: 14px 18px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #64748b;
+  background: transparent;
+  border: none;
+  border-bottom: 2.5px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.ql-profile-tab-button:hover {
+  color: #1665d8;
+}
+
+.ql-profile-tab-button.active {
+  color: #1665d8;
+  font-weight: 700;
+  border-bottom-color: #1665d8;
+  background: #ffffff;
+}
+
+.ql-profile-tab-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Guest Invite Banner */
+.ql-profile-guest-card {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ql-profile-guest-text {
+  font-size: 13.5px;
+  color: #1e40af;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.ql-profile-guest-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Profile Form Grid */
+.ql-profile-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.ql-profile-field-full {
+  grid-column: 1 / -1;
+}
+
+.ql-profile-field-label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.ql-profile-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 500;
+  outline: none;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+
+.ql-profile-input:focus {
+  border-color: #1665d8;
+  box-shadow: 0 0 0 3px rgba(22, 101, 216, 0.15);
+}
+
+/* Bookings & History Tab */
+.ql-profile-bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ql-profile-active-booking-card {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1.5px solid #93c5fd;
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ql-profile-booking-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  transition: all 0.15s ease;
+}
+
+.ql-profile-booking-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.ql-profile-booking-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ql-profile-token-pill {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  color: #1665d8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.ql-profile-booking-details h4 {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 4px;
+}
+
+.ql-profile-booking-details p {
+  font-size: 12.5px;
+  color: #64748b;
+  margin: 0;
+}
+
+.ql-profile-booking-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.ql-booking-status-badge {
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ql-booking-status-badge.active {
+  background: #eff6ff;
+  color: #1665d8;
+  border: 1px solid #bfdbfe;
+}
+
+.ql-booking-status-badge.completed {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.ql-booking-status-badge.cancelled {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+/* Notification Toggles */
+.ql-profile-notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ql-profile-toggle-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ql-profile-toggle-card:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+.ql-profile-toggle-info h4 {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 3px;
+}
+
+.ql-profile-toggle-info p {
+  font-size: 12.5px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* Footer in Profile Modal */
+.ql-profile-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Customer Profile Dedicated Page & Cards */
+.ql-profile-page-main {
+  max-width: 1080px;
+  margin: 36px auto 60px;
+  padding: 0 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ql-profile-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.ql-profile-heading-title {
+  font-size: 30px;
+  font-weight: 800;
+  color: #0b192c;
+  margin: 0 0 6px;
+  letter-spacing: -0.6px;
+}
+
+.ql-profile-heading-sub {
+  margin: 0;
+  color: #64748b;
+  font-size: 14.5px;
+}
+
+.ql-profile-page-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
+}
+
+.ql-profile-tab-content-wrap {
+  padding: 32px;
+}
+
+.ql-profile-active-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMPREHENSIVE RESPONSIVE STYLES
+   - Tablet & Small Laptop (max-width: 1024px)
+   - Tablet Portrait & Large Phone (max-width: 768px)
+   - Small Tablet / Phablet (max-width: 600px)
+   - Mobile Phone Standard (max-width: 480px)
+   - Ultra-compact Phone (max-width: 360px)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+  .ql-hero-container {
+    gap: 24px;
+  }
+  .ql-hero-title {
+    font-size: 44px;
+  }
+  .ql-hero-person-img {
+    max-width: 460px;
+  }
+  .ql-calendar-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .ql-hero-container {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 20px;
+  }
+  .ql-hero-left {
+    align-items: center;
+    padding: 10px 0 20px;
+  }
+  .ql-hero-subtitle {
+    margin: 0 auto 28px;
+  }
+  .ql-hero-btn-group {
+    justify-content: center;
+  }
+  .ql-hero-right {
+    justify-content: center;
+    line-height: 0;
+  }
+  .ql-hero-person-img {
+    max-width: 380px;
+  }
+  .ql-live-banner-content {
+    grid-template-columns: 1fr;
+  }
+  .ql-live-banner-actions {
+    align-items: flex-start;
+    flex-direction: row;
+    margin-top: 10px;
+  }
+  .ql-steps-grid {
+    flex-direction: column;
+    gap: 30px;
+  }
+  .ql-step-arrow {
+    transform: rotate(90deg);
+    margin: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .ql-nav-links {
+    display: none !important;
+  }
+  .ql-mobile-toggle {
+    display: block;
+  }
+  .ql-hero-section {
+    padding: 32px 18px 0;
+  }
+  .ql-hero-title {
+    font-size: 34px;
+    letter-spacing: -0.6px;
+  }
+  .ql-hero-subtitle {
+    font-size: 15px;
+    margin-bottom: 24px;
+  }
+  .ql-hero-person-img {
+    max-width: 300px;
+  }
+  .ql-search-wrapper {
+    margin-top: -30px;
+    padding: 0 16px;
+  }
+  .ql-search-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px;
+    gap: 10px;
+    border-radius: 14px;
+  }
+  .ql-search-location-box {
+    width: 100%;
+    justify-content: space-between;
+    box-sizing: border-box;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+  .ql-search-location-dropdown {
+    width: 100%;
+    left: 0;
+    right: 0;
+    box-sizing: border-box;
+  }
+  .ql-search-divider {
+    display: none;
+  }
+  .ql-search-input-box {
+    width: 100%;
+    box-sizing: border-box;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+  .ql-search-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+    border-radius: 10px;
+  }
+  .ql-calendar-section {
+    margin-top: 48px;
+    padding: 0 16px;
+  }
+  .ql-calendar-card {
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+  .ql-calendar-title-wrap h2 {
+    font-size: 22px;
+  }
+  .ql-calendar-top-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+  .ql-calendar-month-nav {
+    justify-content: space-between;
+    width: 100%;
+  }
+  .ql-current-month-label {
+    min-width: 0;
+    flex: 1;
+    font-size: 15px;
+  }
+  .ql-shops-section {
+    padding: 48px 16px 64px;
+  }
+  .ql-section-title {
+    font-size: 28px;
+  }
+  .ql-shops-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .ql-shops-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .ql-works-section,
+  .ql-how-section {
+    padding: 50px 16px;
+  }
+  .ql-step-card {
+    max-width: 100%;
+  }
+  .ql-profile-page-main {
+    margin: 24px auto 48px;
+    padding: 0 16px;
+  }
+  .ql-profile-header-banner {
+    padding: 24px 20px !important;
+  }
+  .ql-profile-tab-content-wrap {
+    padding: 24px 18px;
+  }
+  .ql-profile-form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .ql-nav-user-cluster {
+    gap: 6px;
+  }
+  .ql-customer-pill {
+    padding: 2px 8px 2px 2px;
+    height: 34px;
+    gap: 6px;
+  }
+  .ql-customer-pill-name {
+    max-width: 105px;
+    font-size: 12.5px;
+  }
+  .ql-customer-pill-avatar {
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
+  }
+  .ql-nav-token-btn {
+    padding: 5px 9px;
+    font-size: 11.5px;
+    gap: 4px;
+  }
+  .ql-nav-token-text {
+    display: none;
+  }
+  .ql-nav-token-text-mobile {
+    display: inline;
+  }
+  .ql-profile-page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .ql-profile-heading-title {
+    font-size: 24px;
+  }
+  .ql-profile-header-banner-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+  .ql-profile-user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .ql-profile-meta-row {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .ql-profile-guest-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ql-profile-booking-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .ql-profile-booking-right {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .ql-profile-active-booking-card {
+    padding: 14px 16px;
+  }
+  .ql-profile-active-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .ql-profile-active-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+  .ql-profile-nav-tabs {
+    padding: 0 10px;
+  }
+  .ql-profile-tab-button {
+    padding: 12px 14px;
+    font-size: 12.5px;
+  }
+  .ql-modal-dialog {
+    width: calc(100% - 24px);
+    margin: 12px;
+    border-radius: 16px;
+    max-height: 90vh;
+  }
+  .ql-modal-header {
+    padding: 14px 18px;
+  }
+  .ql-modal-body {
+    padding: 18px;
+  }
+  .ql-modal-footer {
+    padding: 14px 18px;
+  }
+  .ql-calendar-legend {
+    gap: 8px 12px;
+    padding: 10px 12px;
+  }
+  .ql-legend-item {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ql-hero-title {
+    font-size: 28px;
+    line-height: 1.2;
+  }
+  .ql-hero-btn-group {
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .ql-hero-btn-primary,
+  .ql-hero-btn-outline {
+    width: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+  .ql-live-metrics-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .ql-live-banner-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+  .ql-btn-view-qr,
+  .ql-btn-cancel-token {
+    width: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+  .ql-category-pills,
+  .ql-category-chips {
+    justify-content: flex-start;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ql-cat-pill,
+  .ql-cat-chip {
+    flex-shrink: 0;
+    padding: 7px 14px;
+    font-size: 12.5px;
+  }
+  .ql-shops-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .ql-shop-card {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .ql-calendar-card {
+    padding: 14px 10px;
+    border-radius: 14px;
+  }
+  .ql-calendar-weekday {
+    font-size: 10.5px;
+  }
+  .ql-calendar-day {
+    min-height: 52px;
+    padding: 3px 2px;
+  }
+  .ql-day-number {
+    width: 20px;
+    height: 20px;
+    font-size: 11px;
+  }
+  .ql-day-status-pill {
+    font-size: 8px;
+    padding: 1.5px 2px;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ql-day-token-count {
+    display: none;
+  }
+  .ql-customer-dropdown-menu {
+    width: calc(100vw - 28px);
+    right: -8px;
+  }
+  .ql-toast {
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    box-sizing: border-box;
+    font-size: 13px;
+    padding: 12px 14px;
+  }
+  .ql-profile-page-main {
+    margin: 16px auto 36px;
+    padding: 0 12px;
+  }
+  .ql-profile-tab-content-wrap {
+    padding: 16px 12px;
+  }
+  .ql-profile-name {
+    font-size: 20px !important;
+  }
+  .ql-profile-email {
+    font-size: 12.5px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .ql-brand-title {
+    font-size: 17px;
+  }
+  .ql-customer-pill-name {
+    max-width: 75px;
+  }
+  .ql-calendar-day {
+    min-height: 46px;
+    padding: 2px 1px;
+  }
+  .ql-calendar-weekday {
+    font-size: 9.5px;
+  }
+  .ql-day-status-pill {
+    font-size: 7.5px;
+  }
+}
+

@@ -86,7 +86,7 @@ export function RegisterPanel({ onSwitchToLogin }) {
       fullname: cleanName,
       email: cleanEmail,
       phone: cleanPhone,
-      user_role: 3,
+      user_role: 2,
     })
       .then((result) => {
         setSignupToken(result.signup_token);
@@ -154,7 +154,7 @@ export function RegisterPanel({ onSwitchToLogin }) {
         fullname: cleanName,
         email: cleanEmail,
         phone: cleanPhone,
-        user_role: 3,
+        user_role: 2,
       });
 
       setSignupToken(result.signup_token);
