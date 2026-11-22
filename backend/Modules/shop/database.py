@@ -1,5 +1,6 @@
 from Modules.owner.database import get_connection
 from psycopg.types.json import Jsonb
+from psycopg import sql
 
 #create shop for owner
 def create_shop_for_owner(user_id: int, data: dict):
@@ -152,3 +153,63 @@ def delete_shop_for_owner(user_id: int, shop_id: int):
 
             status_code, status_message = result
             return {"status_code": status_code, "message": status_message}
+
+def get_active_shops_by_pincode(pincode: str):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                CALL public.sp_get_active_shops_by_pincode(
+                    %s,
+                    NULL,
+                    NULL,
+                    NULL
+                )
+                """,
+                (pincode,),
+            )
+
+            result = cur.fetchone()
+
+            if result is None:
+                raise RuntimeError(
+                    "sp_get_active_shops_by_pincode returned no result"
+                )
+
+            cursor_name, status_code, status_message = result
+
+            shops = []
+
+            if status_code == 1:
+                cur.execute(
+                    sql.SQL("FETCH ALL FROM {}").format(
+                        sql.Identifier(cursor_name)
+                    )
+                )
+
+                rows = cur.fetchall()
+                columns = (
+                    "shop_id",
+                    "shop_name",
+                    "description",
+                    "address",
+                    "city",
+                    "state",
+                    "pincode",
+                    "phone",
+                    "email",
+                    "shop_image",
+                    "is_active",
+                    "is_queue_open",
+                    "max_daily_tokens",
+                    "operating_hours",
+                )
+
+                shops = [dict(zip(columns, row)) for row in rows]
+
+            return {
+                "status_code": status_code,
+                "message": status_message,
+                "shops": shops,
+            }
+        

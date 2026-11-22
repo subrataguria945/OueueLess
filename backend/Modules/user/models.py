@@ -5,3 +5,7 @@ class UpdateUserRequest(BaseModel):
     phone : str | None = None
     profile_image : str | None = None    
     address : str | None = None
+
+class JoinQueueRequest(BaseModel):
+    shop_id : int
+    service_id : int
