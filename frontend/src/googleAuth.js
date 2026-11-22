@@ -1,17 +1,14 @@
 // ==========================================================================
 // QUEUELESS — OFFICIAL GOOGLE AUTHENTICATION & BACKEND DATABASE SYNC
 // Opens Google's official OAuth Account Picker popup, fetches real Gmail & Name.
-// 1. Checks if the user already exists via /user/login.
-// 2. If exists -> logs in directly with email & password.
-// 3. If user does NOT exist -> registers automatically via /user/register/google.
-// (No mobile number required).
+// Sends payload { fullname, email, google_id } to:
+// POST https://queueless-backend-b2qh.onrender.com/user/google
+// Handles BOTH: registering brand new Google users, and logging in existing users!
 // ==========================================================================
 
-const BACKEND_BASE_URL =
-  import.meta.env.VITE_BACKEND_URL ||
-  "https://queueless-backend-b2qh.onrender.com";
-
-const GOOGLE_AUTH_PASSWORD = "GoogleOAuth@Pass123";
+export const GOOGLE_AUTH_API_URL =
+  import.meta.env.VITE_GOOGLE_AUTH_API_URL ||
+  "https://queueless-backend-b2qh.onrender.com/user/google";
 
 /**
  * Retrieves the configured Google OAuth Client ID
@@ -52,50 +49,37 @@ export async function syncGoogleUserWithDatabase(googleUser) {
     ""
   ).trim();
 
-  // Primary password for Google user: their unique Google ID (sub). Fallback to standard Google OAuth pass
-  const primaryPassword = googleId || GOOGLE_AUTH_PASSWORD;
-
   try {
-    // 1. First attempt: Call /user/register/google with google_id
-    // If user is brand new -> registers them with google_id and returns access_token!
-    // If user already exists -> logs them in and returns access_token!
-    const regPayload = {
-      fullname,
-      email,
-      password: primaryPassword,
-      confirm_password: primaryPassword,
-      user_role: 3,
-      google_id: googleId,
-    };
-
-    const regRes = await fetch(`${BACKEND_BASE_URL}/user/register/google`, {
+    // 1. Call official backend Google Auth endpoint: POST /user/google
+    // Handles BOTH: registering brand new Google users, and logging in existing Google users!
+    const res = await fetch(GOOGLE_AUTH_API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(regPayload),
+      body: JSON.stringify({
+        fullname,
+        email,
+        google_id: googleId,
+      }),
     });
 
-    const regData = await regRes.json().catch(() => ({}));
+    const data = await res.json().catch(() => ({}));
 
-    const isRegSuccess =
-      regRes.ok &&
-      regData.status !== "failed" &&
-      regData.status !== "error" &&
-      regData.status !== "Login Failed" &&
-      (regData.status === "success" || Boolean(regData.access_token || regData.token));
-
-    if (isRegSuccess) {
-      const token = regData.access_token || regData.token;
+    if (res.ok && data.status === "success" && (data.access_token || data.token)) {
+      const token = data.access_token || data.token;
       const user = {
         ...googleUser,
-        user_id: regData.user_id,
-        user_role: regData.user_role,
+        user_id: data.user_id,
+        user_role: data.user_role,
         google_id: googleId,
         email,
         fullname,
+        role: data.user_role === 1 ? "admin" : (data.user_role === 3 ? "owner" : "user"),
+        refresh_token: data.refresh_token,
       };
       const isNew = Boolean(
-        regData.message?.toLowerCase().includes("registered") ||
-        regData.message?.toLowerCase().includes("created")
+        data.message?.toLowerCase().includes("registered") ||
+        data.message?.toLowerCase().includes("new") ||
+        data.message?.toLowerCase().includes("created")
       );
 
       return {
@@ -103,105 +87,16 @@ export async function syncGoogleUserWithDatabase(googleUser) {
         user,
         token,
         isNew,
-        message: regData.message || (isNew ? "User registered successfully." : "Login successful."),
+        message: data.message || "Login successful.",
       };
     }
 
-    // 2. If register with googleId failed, try with GOOGLE_AUTH_PASSWORD (for accounts created earlier)
-    if (primaryPassword !== GOOGLE_AUTH_PASSWORD) {
-      const fallbackRes = await fetch(`${BACKEND_BASE_URL}/user/register/google`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullname,
-          email,
-          password: GOOGLE_AUTH_PASSWORD,
-          confirm_password: GOOGLE_AUTH_PASSWORD,
-          user_role: 3,
-          google_id: googleId,
-        }),
-      });
-      const fallbackData = await fallbackRes.json().catch(() => ({}));
-
-      if (
-        fallbackRes.ok &&
-        fallbackData.status !== "failed" &&
-        fallbackData.status !== "error" &&
-        fallbackData.status !== "Login Failed" &&
-        (fallbackData.status === "success" || Boolean(fallbackData.access_token || fallbackData.token))
-      ) {
-        const token = fallbackData.access_token || fallbackData.token;
-        const user = {
-          ...googleUser,
-          user_id: fallbackData.user_id,
-          user_role: fallbackData.user_role,
-          google_id: googleId,
-          email,
-          fullname,
-        };
-        return {
-          ok: true,
-          user,
-          token,
-          isNew: false,
-          message: fallbackData.message || "Login successful.",
-        };
-      }
-    }
-
-    // 3. Fallback check: try standard /user/login with primaryPassword or GOOGLE_AUTH_PASSWORD
-    for (const pass of [primaryPassword, GOOGLE_AUTH_PASSWORD]) {
-      try {
-        const loginRes = await fetch(`${BACKEND_BASE_URL}/user/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password: pass }),
-        });
-        const loginData = await loginRes.json().catch(() => ({}));
-
-        if (
-          loginRes.ok &&
-          loginData.status !== "Login Failed" &&
-          loginData.status !== "failed" &&
-          (loginData.status === "success" || Boolean(loginData.access_token || loginData.token))
-        ) {
-          const token = loginData.access_token || loginData.token;
-          const user = {
-            ...googleUser,
-            user_id: loginData.user_id,
-            user_role: loginData.user_role,
-            google_id: googleId,
-            email,
-            fullname,
-          };
-          return {
-            ok: true,
-            user,
-            token,
-            isNew: false,
-            message: loginData.message || "Login successful.",
-          };
-        }
-      } catch {
-        // Continue to error formatting
-      }
-    }
-
-    // If account already exists with a manual password
-    if (regData.message === "ERR_INVALID_CREDENTIALS" || regData.status === "Login Failed") {
-      throw new Error(
-        "An account with this email already exists with a password. Please log in using your email and password, or use 'Forgot password'."
-      );
-    }
-
-    // Registration failed or returned validation error
+    // 2. If the backend returned an explicit error message
     const errorMsg =
-      (Array.isArray(regData.detail)
-        ? regData.detail.map((d) => d.msg).join(", ")
-        : regData.detail) ||
-      regData.message ||
-      regData.error ||
-      "Google registration failed. Please try again.";
+      data.message ||
+      (Array.isArray(data.detail) ? data.detail.map((d) => d.msg || d).join(", ") : data.detail) ||
+      data.error ||
+      "Google authentication failed. Please try again or use your password.";
 
     throw new Error(errorMsg);
   } catch (err) {
@@ -293,7 +188,7 @@ export async function triggerGoogleSignIn({ onSuccess, onError, onCancel }) {
               provider: "google",
             };
 
-            // Check database & sync: logs in if exists, registers via /user/register/google with google_id
+            // Check database & sync: logs in or registers via POST /user/google with google_id
             const syncResult = await syncGoogleUserWithDatabase(realGoogleUser);
 
             if (syncResult.ok) {

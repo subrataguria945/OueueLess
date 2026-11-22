@@ -116,7 +116,7 @@ export function AdminImageCropModal({
     } else {
       ctx.rect(CENTER - CROP_RADIUS, CENTER - CROP_RADIUS, CROP_DIAMETER, CROP_DIAMETER);
     }
-    ctx.strokeStyle = "#1960f7";
+    ctx.strokeStyle = "#2563eb";
     ctx.lineWidth = 2.5;
     ctx.stroke();
 
@@ -320,49 +320,52 @@ export function AdminImageCropModal({
   if (!isOpen) return null;
 
   return (
-    <div className="ql-modal-backdrop" onClick={onClose} style={{ zIndex: 10000 }}>
+    <div className="adm-modal-backdrop" onClick={onClose} style={{ zIndex: 10000 }}>
       <div
-        className="ql-detail-modal ql-crop-modal"
+        className="adm-modal-dialog adm-crop-dialog"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
       >
         {/* Modal Header */}
-        <div className="ql-modal-header">
+        <div className="adm-modal-header">
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div className="ql-crop-header-icon">
-              ✂️
+            <div className="adm-crop-icon-badge">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 2v14a2 2 0 0 0 2 2h14" />
+                <path d="M18 22V8a2 2 0 0 0-2-2H2" />
+              </svg>
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: "17px", fontWeight: "800", color: "var(--admin-text-main)" }}>
-                Crop & Adjust Profile Picture
-              </h3>
-              <p style={{ margin: 0, fontSize: "11.5px", color: "var(--admin-text-muted)" }}>
-                Drag to reposition • Use slider or mouse wheel to zoom
-              </p>
+              <h3 className="adm-modal-title">Crop & Adjust Profile Picture</h3>
+              <p className="adm-modal-subtitle">Drag image to reposition • Slider or mouse wheel to zoom</p>
             </div>
           </div>
           <button
             type="button"
-            className="ql-modal-close-btn"
+            className="adm-modal-close"
             onClick={onClose}
             title="Cancel & Close"
+            aria-label="Close"
           >
-            ✕
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="ql-modal-body ql-crop-modal-body">
-          <div className="ql-crop-layout">
+        <div className="adm-modal-body adm-crop-body">
+          <div className="adm-crop-studio">
             {/* Left Column: Interactive Canvas Viewport & Zoom Slider */}
-            <div className="ql-crop-main-col">
-              <div className="ql-crop-canvas-wrapper">
+            <div className="adm-crop-canvas-col">
+              <div className="adm-crop-canvas-frame">
                 <canvas
                   ref={canvasRef}
                   width={CANVAS_SIZE}
                   height={CANVAS_SIZE}
-                  className={`ql-crop-canvas ${isDragging ? "dragging" : ""}`}
+                  className={`adm-crop-canvas ${isDragging ? "dragging" : ""}`}
                   onMouseDown={handleMouseDown}
                   onMouseMove={handleMouseMove}
                   onMouseUp={handleMouseUp}
@@ -373,21 +376,22 @@ export function AdminImageCropModal({
                   onWheel={handleWheel}
                   title="Drag to reposition, scroll to zoom"
                 />
-                <div className="ql-crop-overlay-hint">
-                  <span>✋ Drag to Move</span>
+                <div className="adm-crop-canvas-hint">
+                  <span>✋ Drag to Pan</span>
                   <span>•</span>
-                  <span>🔍 Scroll to Zoom</span>
+                  <span>🔍 Wheel to Zoom</span>
                 </div>
               </div>
 
               {/* Zoom Slider Bar right below canvas */}
-              <div className="ql-crop-zoom-container">
-                <span className="ql-crop-zoom-label">🔍 Zoom</span>
+              <div className="adm-crop-zoom-bar">
+                <span className="adm-crop-zoom-label">Zoom</span>
                 <button
                   type="button"
-                  className="ql-crop-zoom-step-btn"
+                  className="adm-crop-zoom-btn"
                   onClick={() => setZoom((prev) => Math.max(1, +(prev - 0.1).toFixed(2)))}
                   disabled={zoom <= 1}
+                  title="Zoom Out"
                 >
                   −
                 </button>
@@ -398,69 +402,71 @@ export function AdminImageCropModal({
                   step="0.05"
                   value={zoom}
                   onChange={(e) => setZoom(parseFloat(e.target.value))}
-                  className="ql-crop-zoom-slider"
+                  className="adm-crop-range"
                 />
                 <button
                   type="button"
-                  className="ql-crop-zoom-step-btn"
+                  className="adm-crop-zoom-btn"
                   onClick={() => setZoom((prev) => Math.min(3.5, +(prev + 0.1).toFixed(2)))}
                   disabled={zoom >= 3.5}
+                  title="Zoom In"
                 >
                   +
                 </button>
-                <span className="ql-crop-zoom-val">{Math.round(zoom * 100)}%</span>
+                <span className="adm-crop-zoom-pct">{Math.round(zoom * 100)}%</span>
               </div>
             </div>
 
             {/* Right Column: Live Avatar Preview & Controls */}
-            <div className="ql-crop-sidebar">
-              <div className="ql-crop-preview-box">
-                <div className="ql-crop-section-label">Live Avatar Preview</div>
-                <div className="ql-crop-preview-row">
-                  <div className="ql-crop-preview-circle-wrap">
+            <div className="adm-crop-controls-col">
+              {/* Live Avatar Preview Card */}
+              <div className="adm-crop-card">
+                <div className="adm-crop-card-label">Live Avatar Preview</div>
+                <div className="adm-crop-preview-row">
+                  <div className="adm-crop-preview-avatar">
                     <canvas
                       ref={previewCanvasRef}
                       width={64}
                       height={64}
-                      className="ql-crop-preview-canvas"
+                      className="adm-crop-preview-canvas"
                     />
                   </div>
-                  <div className="ql-crop-preview-info">
-                    <div className="ql-crop-preview-name">{userName}</div>
-                    <div className="ql-crop-preview-tag">Admin Badge Preview</div>
-                    <div style={{ fontSize: "11px", color: "var(--admin-text-muted)", marginTop: "2px" }}>
-                      64x64 Retina display
-                    </div>
+                  <div className="adm-crop-preview-details">
+                    <div className="adm-crop-preview-name">{userName}</div>
+                    <div className="adm-crop-preview-role">Admin Profile Display</div>
+                    <div className="adm-crop-preview-meta">64×64 Retina Preview</div>
                   </div>
                 </div>
               </div>
 
               {/* Crop Shape Selector */}
-              <div className="ql-crop-shape-group">
-                <div className="ql-crop-section-label">Crop Mask Guide</div>
-                <div className="ql-crop-shape-toggle">
+              <div className="adm-crop-card">
+                <div className="adm-crop-card-label">Crop Viewport Guide</div>
+                <div className="adm-crop-shape-pills">
                   <button
                     type="button"
-                    className={`ql-crop-shape-btn ${cropShape === "circle" ? "active" : ""}`}
+                    className={`adm-crop-shape-pill ${cropShape === "circle" ? "active" : ""}`}
                     onClick={() => setCropShape("circle")}
                   >
-                    ⚪ Circle (Avatar)
+                    <span className="shape-icon circle-icon" />
+                    <span>Circle (Avatar)</span>
                   </button>
                   <button
                     type="button"
-                    className={`ql-crop-shape-btn ${cropShape === "square" ? "active" : ""}`}
+                    className={`adm-crop-shape-pill ${cropShape === "square" ? "active" : ""}`}
                     onClick={() => setCropShape("square")}
                   >
-                    ⬜ Square
+                    <span className="shape-icon square-icon" />
+                    <span>Square</span>
                   </button>
                 </div>
               </div>
 
               {/* Quick Actions */}
-              <div className="ql-crop-quick-tools">
+              <div className="adm-crop-tools-row">
                 <button
                   type="button"
-                  className="ql-crop-tool-btn"
+                  className="adm-btn adm-btn-secondary adm-btn-sm adm-crop-tool-btn"
                   onClick={handleRotate}
                   title="Rotate 90 degrees clockwise"
                 >
@@ -468,11 +474,11 @@ export function AdminImageCropModal({
                     <path d="M21.5 2v6h-6" />
                     <path d="M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
                   </svg>
-                  Rotate 90°
+                  <span>Rotate 90°</span>
                 </button>
                 <button
                   type="button"
-                  className="ql-crop-tool-btn"
+                  className="adm-btn adm-btn-secondary adm-btn-sm adm-crop-tool-btn"
                   onClick={handleReset}
                   title="Reset zoom, rotation and position"
                 >
@@ -480,7 +486,7 @@ export function AdminImageCropModal({
                     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                     <path d="M3 3v5h5" />
                   </svg>
-                  Reset Fit
+                  <span>Reset Fit</span>
                 </button>
               </div>
             </div>
@@ -488,10 +494,10 @@ export function AdminImageCropModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="ql-modal-footer ql-crop-modal-footer">
+        <div className="adm-modal-footer">
           <button
             type="button"
-            className="ql-btn-close"
+            className="adm-btn adm-btn-secondary"
             onClick={onClose}
             disabled={isSaving}
           >
@@ -499,7 +505,7 @@ export function AdminImageCropModal({
           </button>
           <button
             type="button"
-            className="ql-btn-primary ql-crop-save-btn"
+            className="adm-btn adm-btn-primary"
             onClick={handleApplyCrop}
             disabled={isSaving}
           >
@@ -510,7 +516,7 @@ export function AdminImageCropModal({
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
-                Apply & Save Photo
+                <span>Apply & Save Photo</span>
               </>
             )}
           </button>

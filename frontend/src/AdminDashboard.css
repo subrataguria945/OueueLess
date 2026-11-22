@@ -2687,6 +2687,15 @@ html::-webkit-scrollbar {
   box-shadow: 0 0 0 2px rgba(25, 96, 247, 0.2);
 }
 
+.ql-form-input:disabled,
+.ql-form-input[readonly] {
+  background: var(--admin-hover-bg, #f8fafc) !important;
+  color: var(--admin-text-muted, #64748b) !important;
+  cursor: not-allowed !important;
+  border-color: var(--admin-border-subtle, #e2e8f0) !important;
+  opacity: 0.85;
+}
+
 /* Edit Photo Box in Edit Modal */
 .ql-edit-photo-box {
   display: flex;
@@ -3280,8 +3289,28 @@ html::-webkit-scrollbar {
 /* ── 5. EXTRA SMALL MOBILE PHONES (<= 480px) ─────────────────────────────── */
 @media (max-width: 480px) {
   .ql-stats-grid {
-    grid-template-columns: 1fr !important;
-    gap: 8px !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  .ql-stat-card:last-child {
+    grid-column: 1 / -1 !important;
+  }
+
+  .ql-stat-card {
+    padding: 6px 8px !important;
+  }
+
+  .ql-stat-number {
+    font-size: 16px !important;
+  }
+
+  .ql-stat-label {
+    font-size: 9.5px !important;
+  }
+
+  .ql-stat-context {
+    display: none !important;
   }
 
   .ql-topbar-search {
@@ -3669,15 +3698,11 @@ html::-webkit-scrollbar {
 }
 
 .ql-queue-details-modal .ql-modal-body {
-  overflow: hidden !important;
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  max-height: calc(90vh - 120px) !important;
   padding: 14px 18px !important;
   gap: 12px !important;
-}
-
-.ql-queue-details-modal .ql-modal-body::-webkit-scrollbar {
-  display: none !important;
 }
 
 .ql-queue-stat-grid {
@@ -3929,21 +3954,17 @@ html::-webkit-scrollbar {
    QUEUELESS — OWNER DETAILS FULL PAGE VIEW (SINGLE SCREEN NO-SCROLL & FULL HEIGHT)
    ========================================================================== */
 
-/* When Owner Details page is active, eliminate outer scrollbar and fit completely in single screen */
+/* When Owner Details page is active, allow smooth vertical scroll when needed */
 .ql-admin-content.ql-owner-page-active {
-  padding: 14px 24px 18px !important;
-  overflow: hidden !important;
-  height: calc(100vh - 52px) !important;
+  padding: 14px 24px 24px !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  min-height: calc(100vh - 52px) !important;
+  height: auto !important;
   display: flex !important;
   flex-direction: column !important;
   box-sizing: border-box !important;
   gap: 12px !important;
-}
-
-@media (max-height: 640px) {
-  .ql-admin-content.ql-owner-page-active {
-    overflow-y: auto !important;
-  }
 }
 
 .ql-owner-page-top-header {
@@ -4045,8 +4066,8 @@ html::-webkit-scrollbar {
   flex: 1 !important;
   width: 100% !important;
   min-height: 0 !important;
-  height: 100% !important;
-  overflow: hidden !important;
+  height: auto !important;
+  overflow: visible !important;
   gap: 12px !important;
   padding-bottom: 0 !important;
   box-sizing: border-box !important;
@@ -4630,6 +4651,41 @@ html::-webkit-scrollbar {
   color: #f87171 !important;
 }
 
+.ql-owner-page-btn-activate {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  background: var(--admin-card-bg, #ffffff) !important;
+  border: 1.5px solid #86efac !important;
+  color: #16a34a !important;
+  padding: 8px 16px !important;
+  border-radius: 8px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+  font-family: inherit !important;
+}
+
+.ql-owner-page-btn-activate:hover {
+  background: #dcfce7 !important;
+  border-color: #22c55e !important;
+  transform: translateY(-1px) !important;
+}
+
+.ql-admin-dashboard.dark .ql-owner-page-btn-activate {
+  background: rgba(34, 197, 94, 0.12) !important;
+  border-color: rgba(34, 197, 94, 0.35) !important;
+  color: #4ade80 !important;
+}
+
+.ql-owner-page-btn-suspend:disabled,
+.ql-owner-page-btn-activate:disabled {
+  opacity: 0.65 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
 .ql-owner-page-btn-edit {
   display: inline-flex !important;
   align-items: center !important;
@@ -4688,18 +4744,20 @@ html::-webkit-scrollbar {
 }
 
 @media (max-width: 992px) {
+  .ql-admin-content.ql-owner-page-active {
+    padding: 12px 18px 24px !important;
+  }
   .ql-owner-kpis-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 10px !important;
   }
   .ql-owner-info-cards-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(2, 1fr) !important;
     grid-template-rows: auto !important;
-  }
-  .ql-owner-bottom-row {
-    grid-template-columns: 1fr !important;
+    gap: 8px !important;
   }
   .ql-owner-page-actions-bar {
-    justify-content: flex-start !important;
+    justify-content: flex-end !important;
     margin-top: 4px !important;
   }
 }
@@ -4785,13 +4843,323 @@ html::-webkit-scrollbar {
   color: var(--admin-text-main);
 }
 
-/* Responsive adjustments */
-@media (max-width: 900px) {
-  .ql-owner-kpis-grid {
-    grid-template-columns: 1fr;
+/* ── Mobile Responsive for Owner Details (Screens <= 640px) ── */
+@media (max-width: 640px) {
+  .ql-admin-content.ql-owner-page-active {
+    padding: 10px 10px 24px !important;
+    gap: 10px !important;
   }
+
+  .ql-owner-page-top-header {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .ql-owner-page-title-wrap {
+    min-width: 0 !important;
+  }
+
+  .ql-owner-page-title {
+    gap: 6px !important;
+  }
+
+  .ql-owner-page-title svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .ql-owner-page-title h2 {
+    font-size: 16px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .ql-owner-breadcrumbs {
+    display: none !important;
+  }
+
+  .ql-back-to-owners-btn {
+    padding: 6px 10px !important;
+    font-size: 11.5px !important;
+    border-radius: 7px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    gap: 5px !important;
+  }
+
+  .ql-owner-hero-banner {
+    padding: 12px 14px !important;
+    border-radius: 12px !important;
+    min-height: auto !important;
+  }
+
+  .ql-owner-banner-left {
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  .ql-owner-avatar-container {
+    width: 52px !important;
+    height: 52px !important;
+  }
+
+  .ql-owner-avatar-circle {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    min-height: 52px !important;
+    font-size: 20px !important;
+    border-width: 2.5px !important;
+  }
+
+  .ql-owner-banner-meta {
+    flex: 1 !important;
+    min-width: 0 !important;
+    gap: 2px !important;
+  }
+
+  .ql-owner-banner-name-row {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+
+  .ql-owner-banner-name {
+    font-size: 16px !important;
+    word-break: break-word !important;
+  }
+
+  .ql-owner-status-pill {
+    padding: 2px 7px !important;
+    font-size: 10.5px !important;
+  }
+
+  .ql-owner-banner-sub-row {
+    font-size: 11px !important;
+    margin-top: 1px !important;
+  }
+
+  .ql-owner-banner-btn-row {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    margin-top: 5px !important;
+  }
+
+  .ql-owner-upload-btn {
+    padding: 4px 10px !important;
+    font-size: 11px !important;
+    border-radius: 6px !important;
+  }
+
+  .ql-owner-crop-btn,
+  .ql-owner-remove-btn {
+    padding: 4px 8px !important;
+    font-size: 10.5px !important;
+    border-radius: 6px !important;
+  }
+
+  .ql-owner-banner-wave-decor {
+    display: none !important;
+  }
+
+  .ql-owner-tabs-row {
+    gap: 14px !important;
+    margin-bottom: 0 !important;
+    padding: 0 2px !important;
+  }
+
+  .ql-owner-tab-btn {
+    font-size: 12.5px !important;
+    padding: 6px 2px 8px !important;
+    gap: 6px !important;
+  }
+
+  .ql-owner-tab-btn svg {
+    width: 15px !important;
+    height: 15px !important;
+  }
+
+  .ql-owner-kpis-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    min-height: auto !important;
+  }
+
+  .ql-owner-kpi-card {
+    padding: 8px 10px !important;
+    gap: 8px !important;
+    border-radius: 10px !important;
+  }
+
+  .ql-owner-kpi-card:last-child {
+    grid-column: 1 / -1 !important;
+  }
+
+  .ql-owner-kpi-icon {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 8px !important;
+  }
+
+  .ql-owner-kpi-icon svg {
+    width: 17px !important;
+    height: 17px !important;
+  }
+
+  .ql-owner-kpi-val {
+    font-size: 17px !important;
+  }
+
+  .ql-owner-kpi-lbl {
+    font-size: 10.5px !important;
+  }
+
   .ql-owner-info-cards-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
+    gap: 8px !important;
+    flex: none !important;
+  }
+
+  .ql-owner-info-card {
+    padding: 8px 12px !important;
+    gap: 10px !important;
+    border-radius: 9px !important;
+    height: auto !important;
+    min-height: 48px !important;
+  }
+
+  .ql-owner-info-icon-box {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 7px !important;
+  }
+
+  .ql-owner-info-icon-box svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .ql-owner-info-lbl {
+    font-size: 10px !important;
+  }
+
+  .ql-owner-info-val {
+    font-size: 12.5px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    line-height: 1.3 !important;
+  }
+
+  .ql-owner-page-actions-bar {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    width: 100% !important;
+    padding: 8px 0 16px !important;
+    margin-top: 4px !important;
+    justify-content: stretch !important;
+  }
+
+  .ql-owner-page-btn-edit {
+    width: 100% !important;
+    order: 1 !important;
+    justify-content: center !important;
+    padding: 11px 16px !important;
+    font-size: 13.5px !important;
+    border-radius: 9px !important;
+  }
+
+  .ql-owner-page-btn-suspend {
+    flex: 1 1 45% !important;
+    order: 2 !important;
+    justify-content: center !important;
+    padding: 10px 8px !important;
+    font-size: 12px !important;
+    white-space: nowrap !important;
+    border-radius: 8px !important;
+  }
+
+  .ql-owner-page-btn-activate {
+    flex: 1 1 45% !important;
+    order: 2 !important;
+    justify-content: center !important;
+    padding: 10px 8px !important;
+    font-size: 12px !important;
+    white-space: nowrap !important;
+    border-radius: 8px !important;
+  }
+
+  .ql-owner-page-btn-delete {
+    flex: 1 1 45% !important;
+    order: 3 !important;
+    justify-content: center !important;
+    padding: 10px 8px !important;
+    font-size: 12px !important;
+    white-space: nowrap !important;
+    border-radius: 8px !important;
+  }
+
+  .ql-owner-shops-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .ql-owner-shop-card {
+    padding: 12px !important;
+    gap: 10px !important;
+  }
+
+  .ql-owner-shop-stats-row {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 4px !important;
+    padding: 8px !important;
+  }
+
+  .ql-owner-shop-stat-col .lbl {
+    font-size: 9px !important;
+  }
+
+  .ql-owner-shop-stat-col .val {
+    font-size: 11.5px !important;
+  }
+
+  /* Edit Owner Modal mobile rules */
+  .ql-detail-modal {
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: 94vh !important;
+    border-radius: 16px !important;
+    margin: 0 !important;
+  }
+
+  .ql-edit-owner-form {
+    padding: 14px !important;
+    gap: 10px !important;
+  }
+
+  .ql-edit-owner-footer-btns {
+    width: 100% !important;
+    display: flex !important;
+    gap: 8px !important;
+  }
+
+  .ql-edit-owner-footer-btns .ql-btn-secondary {
+    flex: 1 !important;
+    justify-content: center !important;
+    padding: 10px 12px !important;
+  }
+
+  .ql-edit-owner-footer-btns .ql-btn-primary {
+    flex: 1.5 !important;
+    justify-content: center !important;
+    padding: 10px 14px !important;
   }
 }
 
@@ -5641,17 +6009,40 @@ html::-webkit-scrollbar {
   .ql-shop-hero-card {
     flex-direction: column !important;
     align-items: flex-start !important;
+    gap: 12px !important;
   }
   .ql-shop-hero-left {
     flex-direction: column !important;
     align-items: flex-start !important;
+    gap: 12px !important;
+    width: 100% !important;
   }
   .ql-shop-hero-img-wrap {
     width: 100% !important;
-    height: 160px !important;
+    height: 150px !important;
+  }
+  .ql-shop-hero-right {
+    width: 100% !important;
+  }
+  .ql-shop-view-public-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 10px 14px !important;
   }
   .ql-shop-kpis-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .ql-shop-kpi-card {
+    padding: 10px 12px !important;
+    gap: 10px !important;
+  }
+  .ql-shop-kpi-icon {
+    width: 36px !important;
+    height: 36px !important;
+  }
+  .ql-shop-kpi-text .val {
+    font-size: 18px !important;
   }
 }
 
@@ -5679,7 +6070,8 @@ html::-webkit-scrollbar {
 
 .ql-premium-modal-dialog {
   width: 100%;
-  max-width: 600px;
+  max-width: 680px;
+  max-height: 92vh;
   background: var(--admin-modal-bg, #ffffff);
   border-radius: 18px;
   box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.2);
@@ -5689,6 +6081,30 @@ html::-webkit-scrollbar {
   overflow: hidden !important;
   animation: qlModalScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
+}
+
+/* Disable native browser password reveal button in Edge / IE to prevent overlapping eye icons */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Prevent browser autofill background clash */
+input.ql-input-modern:-webkit-autofill,
+input.ql-input-modern:-webkit-autofill:hover, 
+input.ql-input-modern:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: var(--admin-text-main, #0f172a) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.ql-admin-dashboard.dark input.ql-input-modern:-webkit-autofill,
+.ql-admin-dashboard.dark input.ql-input-modern:-webkit-autofill:hover, 
+.ql-admin-dashboard.dark input.ql-input-modern:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #1e293b inset !important;
+  -webkit-text-fill-color: #f8fafc !important;
 }
 
 @keyframes qlModalScaleUp {
@@ -5777,11 +6193,11 @@ html::-webkit-scrollbar {
 
 /* Interactive Preview Strip */
 .ql-modal-preview-strip {
-  margin: 10px 20px 0;
-  padding: 8px 12px;
-  border-radius: 10px;
-  background: rgba(37, 99, 235, 0.04);
-  border: 1px dashed rgba(37, 99, 235, 0.25);
+  margin: 12px 20px 2px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--admin-preview-bg, #f8fafc);
+  border: 1px solid var(--admin-border, #e2e8f0);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -5792,17 +6208,17 @@ html::-webkit-scrollbar {
 .ql-preview-left {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
 }
 
 .ql-preview-avatar {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: #2563eb;
   color: #ffffff;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5811,35 +6227,208 @@ html::-webkit-scrollbar {
 }
 
 .ql-preview-info-name {
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 700;
   color: var(--admin-text-main, #0f172a);
 }
 
 .ql-preview-info-sub {
-  font-size: 11px;
+  font-size: 11.5px;
   color: var(--admin-text-muted, #64748b);
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .ql-preview-badge {
-  font-size: 10.5px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 20px;
-  background: rgba(16, 185, 129, 0.12);
-  color: #059669;
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3.5px 12px;
+  border-radius: 9999px;
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .ql-premium-modal-body {
   padding: 12px 20px 14px;
-  overflow: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  max-height: none !important;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
   box-sizing: border-box;
+}
+
+.ql-premium-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ql-premium-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ql-premium-modal-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.ql-premium-modal-body::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.ql-admin-dashboard.dark .ql-premium-modal-body::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+/* Create Login Credentials Section */
+.ql-cred-box {
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.ql-cred-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ql-cred-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #dbeafe;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ql-cred-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e3a8a;
+  line-height: 1.2;
+}
+
+.ql-cred-subtitle {
+  font-size: 11.5px;
+  color: #475569;
+  margin-top: 2px;
+}
+
+.ql-input-eye-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  transition: color 0.15s ease;
+  z-index: 5;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.ql-input-eye-btn:hover {
+  color: #2563eb;
+}
+
+.ql-input-eye-btn:focus,
+.ql-input-eye-btn:active {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.ql-input-eye-btn svg {
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+  color: inherit !important;
+  pointer-events: none;
+  display: block;
+}
+
+.ql-cred-footer-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 11.5px;
+  padding-top: 3px;
+}
+
+.ql-cred-strength-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ql-cred-strength-lbl {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.ql-cred-strength-bars {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ql-cred-strength-bar {
+  width: 18px;
+  height: 4px;
+  border-radius: 2px;
+  background-color: #cbd5e1;
+  transition: background-color 0.2s ease;
+}
+
+.ql-cred-divider {
+  width: 1px;
+  height: 14px;
+  background: #cbd5e1;
+  flex-shrink: 0;
+}
+
+.ql-cred-hint {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #475569;
+  line-height: 1.25;
+}
+
+.ql-cred-hint svg {
+  flex-shrink: 0;
+  color: #3b82f6;
 }
 
 .ql-form-section-title {
@@ -5893,7 +6482,7 @@ html::-webkit-scrollbar {
   width: 100%;
 }
 
-.ql-input-icon-box svg {
+.ql-input-icon-box > svg {
   position: absolute;
   left: 10px;
   color: #94a3b8;
@@ -5901,7 +6490,7 @@ html::-webkit-scrollbar {
   transition: color 0.15s ease;
 }
 
-.ql-input-icon-box:focus-within svg {
+.ql-input-icon-box:focus-within > svg {
   color: #2563eb;
 }
 
@@ -6023,8 +6612,44 @@ html::-webkit-scrollbar {
 }
 
 .ql-admin-dashboard.dark .ql-modal-preview-strip {
-  background: rgba(37, 99, 235, 0.08);
-  border-color: rgba(37, 99, 235, 0.3);
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.ql-admin-dashboard.dark .ql-preview-badge {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #34d399;
+}
+
+.ql-admin-dashboard.dark .ql-cred-box {
+  background: rgba(30, 58, 138, 0.2);
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+.ql-admin-dashboard.dark .ql-cred-icon {
+  background: rgba(59, 130, 246, 0.25);
+  color: #60a5fa;
+}
+
+.ql-admin-dashboard.dark .ql-cred-title {
+  color: #bfdbfe;
+}
+
+.ql-admin-dashboard.dark .ql-cred-subtitle {
+  color: #94a3b8;
+}
+
+.ql-admin-dashboard.dark .ql-cred-strength-lbl {
+  color: #cbd5e1;
+}
+
+.ql-admin-dashboard.dark .ql-cred-hint {
+  color: #94a3b8;
+}
+
+.ql-admin-dashboard.dark .ql-cred-divider {
+  background: #334155;
 }
 
 .ql-admin-dashboard.dark .ql-premium-close-btn {
@@ -6054,6 +6679,216 @@ html::-webkit-scrollbar {
   background: #0f172a !important;
   border-color: #3b82f6 !important;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+}
+
+/* ── Mobile Responsive for Add Owner Modal (Screens <= 640px) ── */
+@media (max-width: 640px) {
+  .ql-premium-modal-backdrop {
+    padding: 8px;
+    align-items: center;
+  }
+
+  .ql-premium-modal-dialog {
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: 94vh !important;
+    border-radius: 16px !important;
+    margin: 0 !important;
+  }
+
+  .ql-premium-modal-header {
+    padding: 12px 14px !important;
+  }
+
+  .ql-modal-header-left {
+    gap: 10px !important;
+    min-width: 0 !important;
+  }
+
+  .ql-modal-icon-badge {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 8px !important;
+  }
+
+  .ql-modal-icon-badge svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .ql-modal-title-wrap {
+    min-width: 0 !important;
+  }
+
+  .ql-modal-title-wrap h3 {
+    font-size: 15px !important;
+    line-height: 1.2 !important;
+  }
+
+  .ql-modal-title-wrap p {
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 200px !important;
+  }
+
+  .ql-premium-close-btn {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 14px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .ql-modal-preview-strip {
+    margin: 8px 14px 2px !important;
+    padding: 8px 12px !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .ql-preview-left {
+    gap: 8px !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+  }
+
+  .ql-preview-avatar {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 13px !important;
+  }
+
+  .ql-preview-info-name {
+    font-size: 12.5px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 160px !important;
+  }
+
+  .ql-preview-info-sub {
+    font-size: 10.5px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 170px !important;
+  }
+
+  .ql-preview-badge {
+    padding: 2.5px 8px !important;
+    font-size: 10.5px !important;
+    align-self: center !important;
+  }
+
+  .ql-premium-modal-body {
+    padding: 10px 14px 14px !important;
+    gap: 10px !important;
+  }
+
+  .ql-modern-grid-2 {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .ql-modern-grid-3 {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .ql-input-modern {
+    height: 42px !important;
+    font-size: 13.5px !important;
+    border-radius: 9px !important;
+  }
+
+  .ql-input-label-modern {
+    font-size: 12px !important;
+  }
+
+  .ql-input-eye-btn {
+    width: 32px !important;
+    height: 32px !important;
+    right: 8px !important;
+  }
+
+  .ql-cred-box {
+    padding: 12px !important;
+    gap: 10px !important;
+    border-radius: 12px !important;
+  }
+
+  .ql-cred-box .ql-input-modern {
+    padding-right: 42px !important;
+  }
+
+  .ql-cred-header {
+    gap: 8px !important;
+  }
+
+  .ql-cred-icon {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .ql-cred-title {
+    font-size: 13px !important;
+  }
+
+  .ql-cred-subtitle {
+    font-size: 11px !important;
+  }
+
+  .ql-cred-footer-bar {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+    padding-top: 2px !important;
+  }
+
+  .ql-cred-divider {
+    display: none !important;
+  }
+
+  .ql-cred-hint {
+    font-size: 10.5px !important;
+    line-height: 1.35 !important;
+  }
+
+  .ql-premium-modal-footer {
+    padding: 12px 14px !important;
+    flex-direction: column-reverse !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .ql-modal-footer-note {
+    justify-content: center !important;
+    font-size: 11px !important;
+  }
+
+  .ql-modal-footer-btns {
+    width: 100% !important;
+    display: flex !important;
+    gap: 8px !important;
+  }
+
+  .ql-btn-secondary-modern {
+    flex: 1 !important;
+    padding: 11px 12px !important;
+    font-size: 13.5px !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
+
+  .ql-btn-primary-modern {
+    flex: 1.6 !important;
+    padding: 11px 14px !important;
+    font-size: 13.5px !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -7035,6 +7870,68 @@ html::-webkit-scrollbar {
     grid-template-columns: 1fr !important;
     gap: 10px !important;
   }
+
+  /* Live Queue Details Modal on Mobile */
+  .ql-queue-details-modal {
+    width: 96vw !important;
+    max-height: 94vh !important;
+    border-radius: 14px !important;
+  }
+
+  .ql-queue-details-modal .ql-modal-body {
+    padding: 12px 12px !important;
+    gap: 10px !important;
+  }
+
+  .ql-queue-stat-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
+  }
+
+  .ql-queue-stat-pill {
+    padding: 6px 8px !important;
+  }
+
+  .ql-queue-stat-pill .val {
+    font-size: 15px !important;
+  }
+
+  .ql-queue-ctrl-row {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    padding: 6px 10px !important;
+  }
+
+  .ql-queue-table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .ql-queue-table {
+    min-width: 440px !important;
+  }
+
+  /* Global Tab Stats Bar on Mobile */
+  .ql-tab-stats-bar {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .ql-tab-stat-pill {
+    padding: 8px 10px !important;
+  }
+
+  .ql-tab-stat-pill .val {
+    font-size: 15px !important;
+  }
+
+  .ql-tab-stat-pill .lbl {
+    font-size: 9.5px !important;
+  }
+
+  .ql-tab-stat-pill:last-child:nth-child(odd) {
+    grid-column: 1 / -1 !important;
+  }
 }
 
 /* Mobile Screens (<= 540px) */
@@ -7083,5 +7980,89 @@ html::-webkit-scrollbar {
   }
   .ql-subs-kpi-val {
     font-size: 16px !important;
+  }
+}
+
+/* Spinner for actions & buttons */
+@keyframes qlSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ql-btn-spinner {
+  width: 13px;
+  height: 13px;
+  border: 2px solid currentColor;
+  border-right-color: transparent !important;
+  border-radius: 50%;
+  display: inline-block;
+  animation: qlSpin 0.7s linear infinite;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* Global Floating Toast Notification */
+.ql-floating-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  animation: qlToastSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: auto;
+  max-width: 440px;
+  backdrop-filter: blur(8px);
+}
+
+@keyframes qlToastSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ql-floating-toast.success {
+  background: #065f46;
+  color: #ecfdf5;
+  border: 1px solid #10b981;
+}
+
+.ql-floating-toast.error {
+  background: #991b1b;
+  color: #fef2f2;
+  border: 1px solid #ef4444;
+}
+
+.ql-toast-icon {
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ql-toast-text {
+  line-height: 1.4;
+}
+
+@media (max-width: 640px) {
+  .ql-floating-toast {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    font-size: 12.5px;
+    padding: 10px 14px;
+    justify-content: center;
   }
 }

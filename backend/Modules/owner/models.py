@@ -2,7 +2,6 @@ from datetime import datetime
 from pydantic import BaseModel
 from typing import Any
 
-# Request schema for owner deletion
 class DeleteOwnerRequest(BaseModel):
     user_id : int
     owner_id: int
