@@ -48,6 +48,52 @@
         background: transparent !important;
         border: none !important;
       }
+
+      /* ── PREVENT ACCIDENTAL TEXT CURSOR / BLINKING CARET ACROSS APP ── */
+      *:not(input):not(textarea):not([contenteditable="true"]) {
+        caret-color: transparent !important;
+      }
+
+      /* Allow text cursor & caret strictly where needed */
+      input:not(:disabled):not([readonly]),
+      textarea:not(:disabled):not([readonly]),
+      [contenteditable="true"] {
+        caret-color: auto !important;
+        cursor: text !important;
+        user-select: text !important;
+        -webkit-user-select: text !important;
+      }
+
+      /* Disable cursor on read-only or disabled inputs */
+      input:disabled,
+      textarea:disabled,
+      input[readonly],
+      textarea[readonly] {
+        cursor: not-allowed !important;
+        caret-color: transparent !important;
+        user-select: none !important;
+      }
+
+      /* Prevent text selection and unwanted I-beam cursors on UI elements */
+      button,
+      a,
+      select,
+      option,
+      [role="button"],
+      .ql-customer-root,
+      .ql-customer-root *:not(input):not(textarea):not([contenteditable="true"]) {
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
+      /* Ensure clickable items always show pointer */
+      button,
+      a,
+      select,
+      [role="button"],
+      [onclick] {
+        cursor: pointer !important;
+      }
     </style>
   </head>
   <body>

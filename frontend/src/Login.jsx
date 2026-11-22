@@ -4,7 +4,7 @@ import { ForgotPasswordModal } from "./ForgotPasswordModal";
 import { EmailOtpModal } from "./EmailOtpModal";
 import { initiateSignup, verifySignupOtp } from "./authApi";
 import { triggerGoogleSignIn } from "./googleAuth";
-import { checkIsAdmin } from "./authRole";
+import { checkIsAdmin, checkIsOwner, decodeJwt, formatName } from "./authRole";
 
 const API_BASE = (
   import.meta.env.VITE_API_URL ||
@@ -259,12 +259,16 @@ export function Login({
 
       if (checkIsAdmin({ user: storedUser, role: storedRole, token: existingToken, email: storedUser?.email })) {
         window.location.href = "/admin";
-      } else {
+      } else if (checkIsOwner({ user: storedUser, role: storedRole, token: existingToken, email: storedUser?.email })) {
         localStorage.removeItem("token");
         localStorage.removeItem("ql_admin_token");
         localStorage.removeItem("user");
         localStorage.removeItem("role");
+        localStorage.removeItem("refresh_token");
         sessionStorage.clear();
+        setLoginError("Access restricted: Shop Owner accounts are not permitted to log in to this portal.");
+      } else {
+        window.location.href = "/";
       }
     }
   }, []);
@@ -272,6 +276,29 @@ export function Login({
   /* ── Google Sign-In ────────────────────────────────── */
   const handleGoogleSuccess = (user, token, isNew, message) => {
     setIsGoogleLoading(false);
+
+    // Block Shop Owner accounts
+    const isOwner = checkIsOwner({
+      user,
+      token,
+      user_role: user?.user_role,
+      role: user?.role,
+      email: user?.email,
+    });
+
+    if (isOwner) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("ql_admin_token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("role");
+      localStorage.removeItem("refresh_token");
+      sessionStorage.clear();
+      showTemporaryError(
+        "Access restricted: Shop Owner accounts are not permitted to log in to this portal. Please contact the administrator.",
+        6000
+      );
+      return;
+    }
 
     const isAdmin = checkIsAdmin({
       user,
@@ -282,14 +309,26 @@ export function Login({
     });
 
     if (!isAdmin) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("ql_admin_token");
-      localStorage.removeItem("user");
-      localStorage.removeItem("role");
-      sessionStorage.clear();
-      setLoginError(
-        "Access restricted: This portal is currently available to administrators only. The User Portal is under development and will be available soon."
-      );
+      if (token) {
+        localStorage.setItem("token", token);
+        sessionStorage.setItem("token", token);
+        if (user?.refresh_token) {
+          localStorage.setItem("refresh_token", user.refresh_token);
+          sessionStorage.setItem("refresh_token", user.refresh_token);
+        }
+      }
+      const customerUser = user || {
+        email: user?.email || "customer@queueless.com",
+        name: user?.name || "Customer",
+        role: "CUSTOMER",
+        user_role: 2,
+      };
+      localStorage.setItem("user", JSON.stringify(customerUser));
+      localStorage.setItem("role", "CUSTOMER");
+      setLoginSuccess(message || "Customer login successful! Redirecting...");
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 700);
       return;
     }
 
@@ -348,7 +387,8 @@ export function Login({
     setIsLoginLoading(true);
 
     try {
-      let response = await fetch(LOGIN_API_URL, {
+      console.log(`🔐 [QueueLess Auth] Submitting Customer/User login to official endpoint: ${LOGIN_API_URL}`);
+      const response = await fetch(LOGIN_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -357,56 +397,163 @@ export function Login({
         }),
       });
 
-      if (!response.ok && response.status === 404) {
-        try {
-          const fallbackRes = await fetch(`${API_BASE}/user/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: cleanEmail,
-              password: loginPassword,
-            }),
-          });
-          if (fallbackRes.ok || fallbackRes.status !== 404) {
-            response = fallbackRes;
-          }
-        } catch (_) {}
-      }
-
       const data = await response.json().catch(() => ({}));
 
       if (response.ok) {
         const token =
+          data.access_token ||
           data.token ||
           data.accessToken ||
-          data.access_token ||
           data.jwt ||
+          data.data?.access_token ||
           data.data?.token;
 
-        const returnedUser = data.user || data.data?.user || null;
+        const returnedUser = data.user || data.data?.user || data.userData || null;
 
-        // Check if the authenticated account is an Administrator
-        const isAdmin = checkIsAdmin({
+        const refreshToken =
+          data.refresh_token ||
+          data.refreshToken ||
+          data.data?.refresh_token;
+
+        const jwtPayload = token ? decodeJwt(token) : null;
+
+        const roleCandidate =
+          data.user_role ??
+          data.roleid ??
+          data.role_id ??
+          returnedUser?.user_role ??
+          returnedUser?.roleid ??
+          jwtPayload?.user_role;
+        const roleStrCandidate =
+          data.role ??
+          returnedUser?.role ??
+          jwtPayload?.role;
+
+        // 1. Check if the authenticated account is a Shop Owner (RESTRICTED)
+        const isOwner = checkIsOwner({
           data,
           token,
           user: returnedUser,
-          user_role: data.user_role ?? data.roleid ?? data.role_id ?? returnedUser?.user_role ?? returnedUser?.roleid,
-          role: data.role ?? returnedUser?.role,
+          user_role: roleCandidate,
+          role: roleStrCandidate,
           email: cleanEmail,
         });
 
-        if (!isAdmin) {
-          // Regular user / customer / non-admin: reject entry into admin panel
+        if (isOwner) {
           localStorage.removeItem("token");
           localStorage.removeItem("ql_admin_token");
           localStorage.removeItem("user");
           localStorage.removeItem("role");
+          localStorage.removeItem("refresh_token");
           sessionStorage.clear();
+          setIsLoginLoading(false);
+          showTemporaryError(
+            "Access restricted: Shop Owner accounts are not permitted to log in to this portal. Please contact the administrator.",
+            6000
+          );
+          return;
+        }
+
+        // 2. Check if the authenticated account is an Administrator
+        const isAdmin = checkIsAdmin({
+          data,
+          token,
+          user: returnedUser,
+          user_role: roleCandidate,
+          role: roleStrCandidate,
+          email: cleanEmail,
+        });
+
+        if (!isAdmin) {
+          // Regular Customer / User: populate with EXACT real data from API response!
+          const userFullname =
+            data.fullname ||
+            data.name ||
+            returnedUser?.fullname ||
+            returnedUser?.name ||
+            jwtPayload?.name ||
+            cleanEmail.split("@")[0];
+
+          const userEmail =
+            data.email ||
+            returnedUser?.email ||
+            jwtPayload?.email ||
+            cleanEmail;
+
+          const userPhone =
+            data.phone ||
+            returnedUser?.phone ||
+            "";
+
+          const userAddress =
+            data.address ||
+            returnedUser?.address ||
+            "";
+
+          const userJoinedDate =
+            data.joined_date ||
+            returnedUser?.joined_date ||
+            null;
+
+          const userProfileImage =
+            data.profile_image ||
+            returnedUser?.profile_image ||
+            null;
+
+          const userId =
+            data.user_id ??
+            data.id ??
+            returnedUser?.user_id ??
+            returnedUser?.id ??
+            jwtPayload?.user_id ??
+            null;
+
+          const customerUser = {
+            id: userId,
+            user_id: userId,
+            fullname: userFullname,
+            name: formatName(userFullname),
+            email: userEmail,
+            phone: userPhone,
+            address: userAddress,
+            location: userAddress,
+            profile_image: userProfileImage,
+            avatar: userProfileImage,
+            joined_date: userJoinedDate,
+            role: data.user_role || returnedUser?.role || "Customer",
+            user_role: data.user_role || returnedUser?.user_role || "Customer",
+          };
+
+          if (token) {
+            if (rememberMe) {
+              localStorage.setItem("token", token);
+              if (refreshToken) localStorage.setItem("refresh_token", refreshToken);
+            } else {
+              sessionStorage.setItem("token", token);
+              if (refreshToken) sessionStorage.setItem("refresh_token", refreshToken);
+            }
+          }
+
+          if (userProfileImage) {
+            localStorage.setItem("customerAvatar", userProfileImage);
+          } else {
+            localStorage.removeItem("customerAvatar");
+          }
+
+          const userPayload = JSON.stringify(customerUser);
+          if (rememberMe) {
+            localStorage.setItem("user", userPayload);
+            localStorage.setItem("role", "CUSTOMER");
+          } else {
+            sessionStorage.setItem("user", userPayload);
+            sessionStorage.setItem("role", "CUSTOMER");
+          }
 
           setIsLoginLoading(false);
-          setLoginError(
-            "Access restricted: This portal is currently available to administrators only. The User Portal is under development and will be available soon."
-          );
+          setLoginSuccess(`Customer login successful! Welcome, ${userFullname}`);
+          setTimeout(() => {
+            window.location.href = "/";
+          }, 600);
           return;
         }
 
@@ -416,11 +563,6 @@ export function Login({
           role: "ADMIN",
           user_role: 1,
         };
-
-        const refreshToken =
-          data.refresh_token ||
-          data.refreshToken ||
-          data.data?.refresh_token;
 
         if (token) {
           if (rememberMe) {
@@ -525,7 +667,7 @@ export function Login({
       fullname: cleanName,
       email: cleanEmail,
       phone: cleanPhone,
-      user_role: 3,
+      user_role: 2,
     })
       .then((result) => {
         setSignupToken(result.signup_token);
@@ -589,7 +731,7 @@ export function Login({
         fullname: cleanName,
         email: cleanEmail,
         phone: cleanPhone,
-        user_role: 3,
+        user_role: 2,
       });
 
       setSignupToken(result.signup_token);
@@ -609,7 +751,12 @@ export function Login({
         <div className="ql-login-left">
           <div className="ql-login-form-wrap">
             {/* Brand Logo */}
-            <div className="ql-logo-box">
+            <div
+              className="ql-logo-box"
+              onClick={() => (window.location.href = "/")}
+              style={{ cursor: "pointer" }}
+              title="Return to Home"
+            >
               <img
                 src="/queueless-logo-card.png"
                 alt="QueueLess"
