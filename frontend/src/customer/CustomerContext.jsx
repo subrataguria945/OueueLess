@@ -36,7 +36,7 @@ export function CustomerProvider({ children }) {
         const parsed = JSON.parse(stored);
         return {
           id: parsed.id || parsed.user_id || 101,
-          name: parsed.name || parsed.username || "Customer User",
+          name: parsed.fullname || parsed.full_name || parsed.name || parsed.username || "Customer User",
           email: parsed.email || "customer@queueless.com",
           phone: parsed.phone || "+91 98301 23456",
           avatarImg: parsed.avatar || parsed.avatarImg || null,

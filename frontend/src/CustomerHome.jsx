@@ -91,7 +91,7 @@ export function CustomerHome() {
       const userStr = localStorage.getItem("user") || sessionStorage.getItem("user");
       if (userStr) {
         const u = JSON.parse(userStr);
-        name = u.fullname || u.name || "";
+        name = u.fullname || u.full_name || u.name || "";
         email = u.email || "";
         phone = u.phone || "";
         location = u.address || u.location || "";
@@ -657,10 +657,13 @@ export function CustomerHome() {
 
   const rawName =
     currentUser?.fullname ||
+    currentUser?.full_name ||
     currentUser?.name ||
     profileData.fullname ||
+    profileData.full_name ||
     profileData.name ||
-    (currentUser?.email ? currentUser.email.split("@")[0] : "Customer");
+    (currentUser?.email ? currentUser.email.split("@")[0] : "") ||
+    "Customer";
 
   const customerFullName = formatName(rawName);
   const customerEmail =
@@ -821,8 +824,8 @@ export function CustomerHome() {
                     </span>
                     <svg
                       className="ql-customer-pill-caret"
-                      width="12"
-                      height="12"
+                      width="13"
+                      height="13"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -831,7 +834,7 @@ export function CustomerHome() {
                       strokeLinejoin="round"
                       aria-hidden="true"
                     >
-                      <path d="m6 9 6 6 6-6" />
+                      <polyline points="6 9 12 15 18 9" />
                     </svg>
                   </button>
 

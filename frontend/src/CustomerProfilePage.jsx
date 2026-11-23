@@ -35,7 +35,15 @@ export function CustomerProfilePage() {
     };
   }, []);
 
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const userStr = localStorage.getItem("user") || sessionStorage.getItem("user");
+      if (userStr) {
+        return JSON.parse(userStr);
+      }
+    } catch {}
+    return null;
+  });
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState(null);
 
@@ -54,7 +62,7 @@ export function CustomerProfilePage() {
       const userStr = localStorage.getItem("user") || sessionStorage.getItem("user");
       if (userStr) {
         const u = JSON.parse(userStr);
-        name = u.fullname || u.name || "";
+        name = u.fullname || u.full_name || u.name || "";
         email = u.email || "";
         phone = u.phone || "";
         loc = u.address || u.location || "";
@@ -63,14 +71,6 @@ export function CustomerProfilePage() {
           u.avatar ||
           u.avatarImg ||
           localStorage.getItem("customerAvatar") ||
-          (() => {
-            try {
-              const adm = JSON.parse(localStorage.getItem("ql_admin_profile") || "{}");
-              return adm.avatarImg || null;
-            } catch {
-              return null;
-            }
-          })() ||
           null;
         joined = u.joined_date || null;
         role = u.user_role || u.role || "Customer";
@@ -156,8 +156,8 @@ export function CustomerProfilePage() {
         setProfileData((prev) => ({
           ...prev,
           userId: u.user_id || u.id || prev.userId,
-          name: u.fullname || u.name || prev.name,
-          fullname: u.fullname || u.name || prev.fullname,
+          name: u.fullname || u.full_name || u.name || prev.name,
+          fullname: u.fullname || u.full_name || u.name || prev.fullname,
           email: u.email || prev.email,
           phone: u.phone || prev.phone,
           location: u.address || u.location || prev.location,
@@ -271,10 +271,13 @@ export function CustomerProfilePage() {
 
   const customerFullName = formatName(
     currentUser?.fullname ||
+    currentUser?.full_name ||
     currentUser?.name ||
     profileData.fullname ||
+    profileData.full_name ||
     profileData.name ||
-    (currentUser?.email ? currentUser.email.split("@")[0] : "Customer")
+    (currentUser?.email ? currentUser.email.split("@")[0] : "") ||
+    "Customer"
   );
   const customerEmail =
     currentUser?.email || profileData.email || "";
@@ -286,7 +289,7 @@ export function CustomerProfilePage() {
       <header className="ql-nav-header">
         <div className="ql-nav-container">
           {/* Brand Logo */}
-          <div className="ql-nav-brand" onClick={() => navigate("/")} title="QueueLess Home">
+          <div className="ql-nav-brand" onClick={() => navigate("/home")} title="QueueLess Home">
             <svg
               className="ql-logo-svg"
               viewBox="0 0 40 40"
@@ -308,7 +311,7 @@ export function CustomerProfilePage() {
           <nav>
             <ul className="ql-nav-links">
               <li>
-                <button type="button" className="ql-nav-link" onClick={() => navigate("/")}>
+                <button type="button" className="ql-nav-link" onClick={() => navigate("/home")}>
                   ← Back to Home
                 </button>
               </li>
@@ -362,8 +365,8 @@ export function CustomerProfilePage() {
                 <span className="ql-customer-pill-name">{customerFullName}</span>
                 <svg
                   className="ql-customer-pill-caret"
-                  width="12"
-                  height="12"
+                  width="13"
+                  height="13"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -372,7 +375,7 @@ export function CustomerProfilePage() {
                   strokeLinejoin="round"
                   aria-hidden="true"
                 >
-                  <path d="m6 9 6 6 6-6" />
+                  <polyline points="6 9 12 15 18 9" />
                 </svg>
               </button>
 
@@ -494,7 +497,7 @@ export function CustomerProfilePage() {
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
               <button
                 type="button"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/home")}
                 style={{
                   background: "transparent",
                   border: "none",

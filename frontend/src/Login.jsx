@@ -468,10 +468,14 @@ export function Login({
           // Regular Customer / User: populate with EXACT real data from API response!
           const userFullname =
             data.fullname ||
+            data.full_name ||
             data.name ||
             returnedUser?.fullname ||
+            returnedUser?.full_name ||
             returnedUser?.name ||
             jwtPayload?.name ||
+            jwtPayload?.full_name ||
+            jwtPayload?.fullname ||
             cleanEmail.split("@")[0];
 
           const userEmail =
@@ -512,6 +516,7 @@ export function Login({
             id: userId,
             user_id: userId,
             fullname: userFullname,
+            full_name: userFullname,
             name: formatName(userFullname),
             email: userEmail,
             phone: userPhone,
