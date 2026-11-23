@@ -138,10 +138,7 @@ export function CustomerProfilePage() {
   useEffect(() => {
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
     const userStr = localStorage.getItem("user") || sessionStorage.getItem("user");
-    if (!token) {
-      navigate("/login", { replace: true });
-      return;
-    }
+
     if (token && userStr) {
       try {
         const u = JSON.parse(userStr);
@@ -170,6 +167,8 @@ export function CustomerProfilePage() {
           memberSince: u.joined_date ? formatMemberSince(u.joined_date) : prev.memberSince,
         }));
       } catch {}
+    } else {
+      setCurrentUser(null);
     }
   }, [navigate]);
 

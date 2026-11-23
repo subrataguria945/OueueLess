@@ -23,10 +23,10 @@ createRoot(document.getElementById('root')).render(
         <Routes>
             <Route path="/" element={<App />}></Route>
             <Route path="/home" element={<CustomerHome />}></Route>
-            <Route path="/customer" element={<CustomerHome />}></Route>
+            <Route path="/customer" element={<CustomerProfilePage />}></Route>
             <Route path="/customer/profile" element={<CustomerProfilePage />}></Route>
             <Route path="/profile" element={<CustomerProfilePage />}></Route>
-            <Route path="/customer/*" element={<CustomerHome />}></Route>
+            <Route path="/customer/*" element={<CustomerPortal />}></Route>
             <Route path="/login" element={<Login />}></Route>
             <Route path="/register" element={<Login initialMode="register" />}></Route>
             <Route path="/forgot-password" element={<ForgotPassword />}></Route>

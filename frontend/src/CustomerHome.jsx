@@ -795,14 +795,30 @@ export function CustomerHome() {
                     aria-expanded={profileDropdownOpen}
                     title="Customer Account Menu"
                   >
-                    <div className="ql-customer-pill-avatar">
+                    <div
+                      className="ql-customer-pill-avatar"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate("/profile");
+                      }}
+                      title="View Customer Profile Details"
+                    >
                       {profileData.avatar ? (
                         <img src={profileData.avatar} alt={customerFullName} />
                       ) : (
                         customerInitial
                       )}
                     </div>
-                    <span className="ql-customer-pill-name">{customerFullName}</span>
+                    <span
+                      className="ql-customer-pill-name"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate("/profile");
+                      }}
+                      title="View Customer Profile Details"
+                    >
+                      {customerFullName}
+                    </span>
                     <svg
                       className="ql-customer-pill-caret"
                       width="12"

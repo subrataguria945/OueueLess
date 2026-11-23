@@ -325,9 +325,9 @@ export function Login({
       };
       localStorage.setItem("user", JSON.stringify(customerUser));
       localStorage.setItem("role", "CUSTOMER");
-      setLoginSuccess(message || "Customer login successful! Redirecting...");
+      setLoginSuccess(message || "Customer login successful! Redirecting to profile...");
       setTimeout(() => {
-        window.location.href = "/";
+        window.location.href = "/profile";
       }, 700);
       return;
     }
@@ -552,7 +552,7 @@ export function Login({
           setIsLoginLoading(false);
           setLoginSuccess(`Customer login successful! Welcome, ${userFullname}`);
           setTimeout(() => {
-            window.location.href = "/";
+            window.location.href = "/profile";
           }, 600);
           return;
         }
