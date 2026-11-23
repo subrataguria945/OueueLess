@@ -289,7 +289,7 @@ export function CustomerProfilePage() {
       <header className="ql-nav-header">
         <div className="ql-nav-container">
           {/* Brand Logo */}
-          <div className="ql-nav-brand" onClick={() => navigate("/home")} title="QueueLess Home">
+          <div className="ql-nav-brand" onClick={() => navigate("/")} title="QueueLess Home">
             <svg
               className="ql-logo-svg"
               viewBox="0 0 40 40"
@@ -311,7 +311,7 @@ export function CustomerProfilePage() {
           <nav>
             <ul className="ql-nav-links">
               <li>
-                <button type="button" className="ql-nav-link" onClick={() => navigate("/home")}>
+                <button type="button" className="ql-nav-link" onClick={() => navigate("/")}>
                   ← Back to Home
                 </button>
               </li>
@@ -497,7 +497,7 @@ export function CustomerProfilePage() {
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
               <button
                 type="button"
-                onClick={() => navigate("/home")}
+                onClick={() => navigate("/")}
                 style={{
                   background: "transparent",
                   border: "none",

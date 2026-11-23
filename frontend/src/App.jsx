@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
-import { CustomerProfilePage } from "./CustomerProfilePage";
+import { CustomerHome } from "./CustomerHome";
 import { checkIsAdmin, checkIsOwner } from "./authRole";
 
 export default function App() {
@@ -38,6 +38,6 @@ export default function App() {
     }
   }, [navigate]);
 
-  return <CustomerProfilePage />;
+  return <CustomerHome />;
 }
 
