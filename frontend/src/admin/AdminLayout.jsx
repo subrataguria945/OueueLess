@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router";
 import { useAdmin } from "./AdminContext";
 import { AddOwnerModal } from "./components/AddOwnerModal";
@@ -26,8 +26,30 @@ export function AdminLayout({ children }) {
   } = useAdmin();
 
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const profileMenuRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Close profile dropdown when clicking outside or pressing Escape
+  useEffect(() => {
+    if (!profileDropdownOpen) return;
+    const handleOutsideClick = (e) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) {
+        setProfileDropdownOpen(false);
+      }
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setProfileDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [profileDropdownOpen]);
 
   // Navigation Links with SVG icons
   const navItems = [
@@ -53,7 +75,7 @@ export function AdminLayout({ children }) {
       items: [
         {
           to: "/admin/owners",
-          label: "Shop Owners",
+          label: "Business",
           icon: (
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -65,13 +87,25 @@ export function AdminLayout({ children }) {
         },
         {
           to: "/admin/shops",
-          label: "Store Queues",
+          label: "Shop",
           icon: (
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7" />
               <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
               <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4" />
               <path d="M2 7h20" />
+            </svg>
+          ),
+        },
+        {
+          to: "/admin/tokens",
+          label: "Token",
+          icon: (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+              <path d="M13 5v2" />
+              <path d="M13 17v2" />
+              <path d="M13 11v2" />
             </svg>
           ),
         },
@@ -88,7 +122,7 @@ export function AdminLayout({ children }) {
       ],
     },
     {
-      group: "BUSINESS & REPORTS",
+      group: "BILLING & PLANS",
       items: [
         {
           to: "/admin/subscriptions",
@@ -104,22 +138,11 @@ export function AdminLayout({ children }) {
         },
         {
           to: "/admin/payments",
-          label: "Revenue & Ledger",
+          label: "Payment",
           icon: (
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect width="20" height="14" x="2" y="5" rx="2" />
               <line x1="2" y1="10" x2="22" y2="10" />
-            </svg>
-          ),
-        },
-        {
-          to: "/admin/reports",
-          label: "Analytics",
-          icon: (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="20" x2="18" y2="10" />
-              <line x1="12" y1="20" x2="12" y2="4" />
-              <line x1="6" y1="20" x2="6" y2="14" />
             </svg>
           ),
         },
@@ -255,6 +278,12 @@ export function AdminLayout({ children }) {
                 {(() => {
                   const clean = location.pathname.replace(/^\/admin\/?/, "");
                   if (!clean || clean === "dashboard") return "Dashboard";
+                  if (clean === "owners") return "Business";
+                  if (clean.startsWith("owners/")) return "Business / Details";
+                  if (clean === "shops") return "Shop";
+                  if (clean.startsWith("shops/")) return "Shop / Queue";
+                  if (clean === "payments") return "Payment";
+                  if (clean === "tokens") return "Tokens";
                   const parts = clean.split("/").filter(Boolean);
                   if (parts.length === 1) return parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
                   return `${parts[0].charAt(0).toUpperCase() + parts[0].slice(1)} / Details`;
@@ -294,11 +323,12 @@ export function AdminLayout({ children }) {
             </button>
 
             {/* Profile Dropdown */}
-            <div className="adm-profile-menu-wrap">
+            <div className="adm-profile-menu-wrap" ref={profileMenuRef}>
               <button
                 type="button"
-                className="adm-profile-trigger"
-                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                className={`adm-profile-trigger ${profileDropdownOpen ? "active" : ""}`}
+                onClick={() => setProfileDropdownOpen((prev) => !prev)}
+                aria-expanded={profileDropdownOpen}
               >
                 <div className="adm-avatar-small">
                   {adminProfile.avatarImg ? (
@@ -308,7 +338,26 @@ export function AdminLayout({ children }) {
                   )}
                 </div>
                 <span className="adm-profile-trigger-name">{adminProfile.name}</span>
-                <span style={{ fontSize: "10px", color: "var(--adm-text-muted)" }}>▼</span>
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{
+                    transition: "transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease",
+                    transform: profileDropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
+                    color: "var(--adm-text-muted)",
+                    flexShrink: 0,
+                    marginLeft: "2px"
+                  }}
+                  aria-hidden="true"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
               </button>
 
               {profileDropdownOpen && (

@@ -15,7 +15,8 @@ export const API_BASE_URL =
   import.meta.env.VITE_BACKEND_URL ||
   "https://queueless-backend-b2qh.onrender.com";
 
-export const REFRESH_TOKEN_URL = `${API_BASE_URL}/user/refresh`;
+export const REFRESH_TOKEN_URL =
+  import.meta.env.VITE_REFRESH_TOKEN_URL || `${API_BASE_URL}/auth/refresh`;
 
 /**
  * Retrieve the current access token from storage.
@@ -146,7 +147,12 @@ apiClient.interceptors.response.use(
 
     // Do not attempt refresh on auth endpoints to prevent loops
     const requestUrl = originalRequest.url || "";
-    if (requestUrl.includes("/user/refresh") || requestUrl.includes("/user/login")) {
+    if (
+      requestUrl.includes("/auth/refresh") ||
+      requestUrl.includes("/user/refresh") ||
+      requestUrl.includes("/auth/login") ||
+      requestUrl.includes("/user/login")
+    ) {
       return Promise.reject(error);
     }
 
@@ -203,8 +209,8 @@ apiClient.interceptors.response.use(
         data.refreshToken ||
         data.data?.refresh_token;
 
-      if (!newAccessToken) {
-        throw new Error("No access_token returned by /user/refresh endpoint.");
+      if (!newAccessToken || data.status === "failed" || data.status === "error") {
+        throw new Error(data.message || "No access_token returned by /user/refresh endpoint.");
       }
 
       // Save refreshed tokens
@@ -258,9 +264,17 @@ export async function authFetch(url, options = {}) {
 
   let response = await fetch(url, { ...options, headers });
 
-  // Handle 401 token expiration
-  if (response.status === 401 && !url.includes("/user/refresh") && !url.includes("/user/login")) {
+  // Handle 401 token expiration with seamless auto-refresh
+  if (
+    response.status === 401 &&
+    !url.includes("/auth/refresh") &&
+    !url.includes("/user/refresh") &&
+    !url.includes("/auth/login") &&
+    !url.includes("/user/login")
+  ) {
     const refreshToken = getRefreshToken();
+    let refreshed = false;
+
     if (refreshToken) {
       try {
         const refreshRes = await fetch(REFRESH_TOKEN_URL, {
@@ -269,31 +283,37 @@ export async function authFetch(url, options = {}) {
           body: JSON.stringify({ refresh_token: refreshToken }),
         });
 
-        if (refreshRes.ok) {
-          const refreshData = await refreshRes.json();
-          const newAccessToken =
-            refreshData.access_token ||
-            refreshData.token ||
-            refreshData.accessToken;
+        const refreshData = await refreshRes.json().catch(() => ({}));
+        const newAccessToken =
+          refreshData.access_token ||
+          refreshData.token ||
+          refreshData.accessToken;
 
-          if (newAccessToken) {
-            setTokens({
-              accessToken: newAccessToken,
-              refreshToken: refreshData.refresh_token || refreshToken,
-            });
+        if (
+          refreshRes.ok &&
+          newAccessToken &&
+          refreshData.status !== "failed" &&
+          refreshData.status !== "error"
+        ) {
+          setTokens({
+            accessToken: newAccessToken,
+            refreshToken: refreshData.refresh_token || refreshToken,
+          });
 
-            headers["Authorization"] = `Bearer ${newAccessToken}`;
-            // Retry the request with the refreshed token!
-            response = await fetch(url, { ...options, headers });
-          }
-        } else {
-          clearTokens();
-          if (!window.location.pathname.includes("/login")) {
-            window.location.href = "/login?session_expired=true";
-          }
+          headers["Authorization"] = `Bearer ${newAccessToken}`;
+          // Retry the request with the refreshed token!
+          response = await fetch(url, { ...options, headers });
+          refreshed = true;
         }
       } catch (err) {
         console.error("Auto-refresh fetch failed:", err);
+      }
+    }
+
+    if (!refreshed) {
+      clearTokens();
+      if (!window.location.pathname.includes("/login")) {
+        window.location.href = "/login?session_expired=true";
       }
     }
   }

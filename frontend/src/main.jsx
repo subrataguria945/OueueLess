@@ -2,6 +2,9 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
 import { BrowserRouter, Route, Routes } from "react-router";
+import { CustomerHome } from './CustomerHome.jsx';
+import { CustomerPortal } from './CustomerPortal.jsx';
+import { CustomerProfilePage } from './CustomerProfilePage.jsx';
 import { Login } from './Login.jsx';
 import { ForgotPassword } from './ForgotPassword.jsx';
 import { AdminDashboard } from './AdminDashboard.jsx';
@@ -19,6 +22,12 @@ createRoot(document.getElementById('root')).render(
     <BrowserRouter>
         <Routes>
             <Route path="/" element={<App />}></Route>
+            <Route path="/home" element={<CustomerHome />}></Route>
+            <Route path="/landing" element={<CustomerHome />}></Route>
+            <Route path="/customer" element={<CustomerHome />}></Route>
+            <Route path="/customer/profile" element={<CustomerProfilePage />}></Route>
+            <Route path="/profile" element={<CustomerProfilePage />}></Route>
+            <Route path="/customer/*" element={<CustomerPortal />}></Route>
             <Route path="/login" element={<Login />}></Route>
             <Route path="/register" element={<Login initialMode="register" />}></Route>
             <Route path="/forgot-password" element={<ForgotPassword />}></Route>

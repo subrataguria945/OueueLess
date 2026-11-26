@@ -7,7 +7,15 @@ import {
   OWNER_DELETE_API_URL,
   OWNER_UPDATE_API_URL,
   USER_UPDATE_API_URL,
+  USER_STATUS_API_URL,
+  ADMIN_PROFILE_UPDATE_API_URL,
   ALL_USERS_API_URL,
+  ALL_SHOPS_API_URL,
+  SHOP_CREATE_API_URL,
+  SHOP_UPDATE_API_URL,
+  SHOP_DELETE_API_URL,
+  SHOP_STATUS_API_URL,
+  DASHBOARD_STATS_API_URL,
   ALL_SHOPS_DATA,
   SUBSCRIPTION_PLANS,
   DEFAULT_SUBSCRIBERS_DATA,
@@ -15,6 +23,7 @@ import {
   mapApiUserToDashboard,
   getOwnerPasswordStrength,
   isRegularUser,
+  isDemoOwner,
 } from "./adminData";
 
 const AdminContext = createContext(null);
@@ -57,7 +66,13 @@ export function AdminProvider({ children }) {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const nonDemo = parsed.filter((o) => !isDemoOwner(o));
+          if (nonDemo.length !== parsed.length) {
+            localStorage.setItem("ql_admin_owners_list", JSON.stringify(nonDemo));
+          }
+          return nonDemo;
+        }
       } catch (e) {}
     }
     return [];
@@ -69,12 +84,38 @@ export function AdminProvider({ children }) {
     setIsOwnersLoading(true);
     setOwnersError(null);
     try {
-      const res = await authFetch(OWNERS_API_URL, { method: "GET" });
-      const data = await res.json().catch(() => null);
-      if (res.ok && Array.isArray(data)) {
-        const mapped = data.map(mapApiOwnerToDashboard);
+      let res = await authFetch(OWNERS_API_URL, { method: "GET" });
+      let data = await res.json().catch(() => null);
+
+      // Fallback if 404 (endpoint routing mismatch)
+      if ((!res.ok || !data) && res.status === 404) {
+        const fallbackUrl = OWNERS_API_URL.includes("/admin/owners/all")
+          ? OWNERS_API_URL.replace("/admin/owners/all", "/owner/all")
+          : OWNERS_API_URL.replace("/owner/all", "/admin/owners/all");
+        try {
+          const fallbackRes = await authFetch(fallbackUrl, { method: "GET" });
+          if (fallbackRes.ok) {
+            res = fallbackRes;
+            data = await fallbackRes.json().catch(() => null);
+          }
+        } catch (_) {}
+      }
+
+      const ownerList = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.owners)
+        ? data.owners
+        : Array.isArray(data?.data)
+        ? data.data
+        : null;
+
+      if (res.ok && ownerList !== null) {
+        const mapped = ownerList
+          .map(mapApiOwnerToDashboard)
+          .filter((o) => !isDemoOwner(o));
         setOwnersData(mapped);
         localStorage.setItem("ql_admin_owners_list", JSON.stringify(mapped));
+        setOwnersError(null);
       } else {
         setOwnersError(data?.detail || data?.message || "Failed to load owners.");
       }
@@ -92,7 +133,7 @@ export function AdminProvider({ children }) {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.filter(isRegularUser);
+          return parsed;
         }
       } catch (e) {}
     }
@@ -122,10 +163,7 @@ export function AdminProvider({ children }) {
       ""
     ).trim() || "Administrator";
 
-    const realPhone =
-      savedProfile.phone ||
-      (loggedUser.phone && loggedUser.phone !== "+91 98765 43210" ? loggedUser.phone : "");
-
+    const realPhone = savedProfile.phone || loggedUser.phone || "";
     const realEmail = savedProfile.email || loggedUser.email || "";
     const realAddress = savedProfile.address || loggedUser.address || "";
     const realImage =
@@ -134,29 +172,26 @@ export function AdminProvider({ children }) {
       loggedUser.profileimage ||
       null;
     const realRole = savedProfile.role || loggedUser.role || "Super Admin";
-    const realJoined = savedProfile.joinedOn || "12 Jan 2026";
+    const realJoined = savedProfile.joinedOn || "";
     const realStatus = savedProfile.status || "Active";
 
     return {
       name: realName,
-      username: loggedUser.username || "admin",
+      username: loggedUser.username || "",
       email: realEmail,
       phone: realPhone,
       address: realAddress,
       role: realRole,
       joinedOn: realJoined,
       status: realStatus,
-      department: savedProfile.department || "System Architecture & Operations",
-      accessLevel: savedProfile.accessLevel || "Role Clearance (System Enforced)",
-      bio:
-        savedProfile.bio !== undefined
-          ? savedProfile.bio
-          : "Master administrator for QueueLess platform, token moderation, shop subscriptions & system configuration.",
+      department: savedProfile.department || "Operations",
+      accessLevel: savedProfile.accessLevel || "Role Clearance",
+      bio: savedProfile.bio !== undefined ? savedProfile.bio : "",
       avatarBg: "#0f172a",
       avatarColor: "#ffffff",
       avatarImg: realImage,
-      twoFactor: "Enabled (Authenticator App)",
-      lastLogin: "Today, 12:45 AM (Local IP)",
+      twoFactor: "Enabled",
+      lastLogin: "",
     };
   });
 
@@ -164,8 +199,22 @@ export function AdminProvider({ children }) {
     setIsUsersLoading(true);
     setUsersError(null);
     try {
-      const res = await authFetch(ALL_USERS_API_URL, { method: "GET" });
-      const data = await res.json().catch(() => null);
+      let res = await authFetch(ALL_USERS_API_URL, { method: "GET" });
+      let data = await res.json().catch(() => null);
+
+      // Fallback if 404 (endpoint routing mismatch)
+      if ((!res.ok || !data) && res.status === 404) {
+        const fallbackUrl = ALL_USERS_API_URL.includes("/admin/users/all")
+          ? ALL_USERS_API_URL.replace("/admin/users/all", "/user/all")
+          : ALL_USERS_API_URL.replace("/user/all", "/admin/users/all");
+        try {
+          const fallbackRes = await authFetch(fallbackUrl, { method: "GET" });
+          if (fallbackRes.ok) {
+            res = fallbackRes;
+            data = await fallbackRes.json().catch(() => null);
+          }
+        } catch (_) {}
+      }
 
       const userList = Array.isArray(data)
         ? data
@@ -175,11 +224,10 @@ export function AdminProvider({ children }) {
         ? data.users
         : [];
 
-      if (res.ok && (Array.isArray(data) || userList.length >= 0)) {
-        // Strictly only regular users (exclude Owner and Admin)
-        const onlyRegularUsers = userList.filter(isRegularUser);
-
-        const mapped = onlyRegularUsers.map(mapApiUserToDashboard);
+      if (res.ok && (Array.isArray(data) || Array.isArray(data?.users) || userList.length >= 0)) {
+        setUsersError(null);
+        // Load all platform users directly from /admin/users/all API
+        const mapped = userList.map(mapApiUserToDashboard);
         setUsersData(mapped);
         localStorage.setItem("ql_admin_users_list", JSON.stringify(mapped));
 
@@ -296,30 +344,191 @@ export function AdminProvider({ children }) {
 
   const fetchAdminProfile = fetchUsers;
 
-  useEffect(() => {
-    fetchOwners();
-    fetchUsers();
-  }, [fetchOwners, fetchUsers]);
-
-  // ── SHOPS & SUBSCRIPTIONS STATE ───────────────────────────────────────
+  // ── SHOPS STATE ───────────────────────────────────────────────────────
   const [shopsData, setShopsData] = useState(() => {
     const saved = localStorage.getItem("ql_admin_shops_list");
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // If cached shops contain dummy names like Coffee Hub, discard them
+          if (parsed.some((s) => String(s.id).startsWith("shop-") || s.name === "Coffee Hub")) {
+            localStorage.removeItem("ql_admin_shops_list");
+            return [];
+          }
+          return parsed;
+        }
       } catch (e) {}
     }
-    return ALL_SHOPS_DATA;
+    return [];
   });
+  const [isShopsLoading, setIsShopsLoading] = useState(false);
+  const [shopsError, setShopsError] = useState(null);
 
+  const fetchShops = useCallback(async () => {
+    setIsShopsLoading(true);
+    setShopsError(null);
+    try {
+      let res = await authFetch(ALL_SHOPS_API_URL, { method: "GET" });
+      let data = await res.json().catch(() => null);
+
+      if ((!res.ok || !data) && res.status === 404) {
+        const fallbackUrl = ALL_SHOPS_API_URL.includes("/admin/shops/all")
+          ? ALL_SHOPS_API_URL.replace("/admin/shops/all", "/shop/all")
+          : ALL_SHOPS_API_URL.replace("/shop/all", "/admin/shops/all");
+        try {
+          const fallbackRes = await authFetch(fallbackUrl, { method: "GET" });
+          if (fallbackRes.ok) {
+            res = fallbackRes;
+            data = await fallbackRes.json().catch(() => null);
+          }
+        } catch (_) {}
+      }
+
+      const shopList = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.shops)
+        ? data.shops
+        : Array.isArray(data?.data)
+        ? data.data
+        : null;
+
+      if (res.ok && shopList !== null) {
+        const mapped = shopList.map((s) => {
+          const isActive =
+            s.is_active !== undefined
+              ? Boolean(s.is_active)
+              : s.account_status !== undefined
+              ? Boolean(s.account_status)
+              : s.status === "Suspended" || s.status === "Inactive"
+              ? false
+              : true;
+
+          const isOpen =
+            s.is_open !== undefined
+              ? Boolean(s.is_open)
+              : s.open_status !== undefined
+              ? Boolean(s.open_status)
+              : s.is_queue_active !== undefined
+              ? Boolean(s.is_queue_active)
+              : s.status === "Closed"
+              ? false
+              : s.status === "Open"
+              ? true
+              : isActive;
+
+          return {
+            id: s.shop_id || s.id,
+            name: s.shop_name || s.name || "Store Counter",
+            owner: s.owner_name || s.owner || "Owner",
+            ownerId: s.owner_id,
+            category: s.category || "General",
+            phone: s.phone || "—",
+            isActive,
+            isOpen,
+            status: isActive ? "Active" : "Inactive",
+            accountStatus: isActive ? "Active" : "Inactive",
+            openStatus: isOpen ? "Open" : "Closed",
+            operatingStatus: isOpen ? "Open" : "Closed",
+            currentServing: s.current_token || s.currentServing || "--",
+            waitingCount: s.waiting_count ?? s.waitingCount ?? 0,
+            avgWaitTime: s.average_wait_time ? `${s.average_wait_time} mins` : (s.avgWaitTime || "--"),
+            dailyTokens: s.daily_tokens ?? 0,
+            location: s.address || s.location || "Store Location",
+            timing: s.timing || "Regular Hours",
+            image: s.image || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80",
+            rawShop: s,
+          };
+        });
+        setShopsData(mapped);
+        localStorage.setItem("ql_admin_shops_list", JSON.stringify(mapped));
+      } else {
+        setShopsData([]);
+        localStorage.removeItem("ql_admin_shops_list");
+      }
+    } catch (err) {
+      setShopsData([]);
+    } finally {
+      setIsShopsLoading(false);
+    }
+  }, []);
+
+  const handleToggleShopOpen = useCallback(async (shopId) => {
+    try {
+      await authFetch(SHOP_STATUS_API_URL, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shop_id: Number(shopId) }),
+      }).catch(() => null);
+    } catch (_) {}
+
+    setShopsData((prev) => {
+      const next = prev.map((s) => {
+        if (String(s.id) === String(shopId)) {
+          const nextOpen = !s.isOpen;
+          return {
+            ...s,
+            isOpen: nextOpen,
+            openStatus: nextOpen ? "Open" : "Closed",
+            operatingStatus: nextOpen ? "Open" : "Closed",
+          };
+        }
+        return s;
+      });
+      try {
+        localStorage.setItem("ql_admin_shops_list", JSON.stringify(next));
+      } catch (_) {}
+      return next;
+    });
+  }, []);
+
+  const handleToggleShopStatus = useCallback(async (shopId) => {
+    try {
+      await authFetch(SHOP_STATUS_API_URL, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shop_id: Number(shopId) }),
+      }).catch(() => null);
+    } catch (_) {}
+
+    setShopsData((prev) => {
+      const next = prev.map((s) => {
+        if (String(s.id) === String(shopId)) {
+          const nextActive = !s.isActive;
+          return {
+            ...s,
+            isActive: nextActive,
+            status: nextActive ? "Active" : "Inactive",
+            accountStatus: nextActive ? "Active" : "Inactive",
+          };
+        }
+        return s;
+      });
+      try {
+        localStorage.setItem("ql_admin_shops_list", JSON.stringify(next));
+      } catch (_) {}
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    fetchOwners();
+    fetchUsers();
+    fetchShops();
+  }, [fetchOwners, fetchUsers, fetchShops]);
+
+  // ── SUBSCRIPTIONS STATE ───────────────────────────────────────────────
   const [subscribersList, setSubscribersList] = useState(() => {
     const saved = localStorage.getItem("ql_admin_subscribers_list");
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((s) => !isDemoOwner(s) && !s.email?.includes("example.com"));
+        }
       } catch (e) {}
     }
-    return DEFAULT_SUBSCRIBERS_DATA;
+    return [];
   });
 
   const [subscriptionPlans, setSubscriptionPlans] = useState(() => {
@@ -340,13 +549,14 @@ export function AdminProvider({ children }) {
   const [showAddOwnerConfirmPassword, setShowAddOwnerConfirmPassword] = useState(false);
 
   const [newOwnerForm, setNewOwnerForm] = useState({
+    fullname: "",
     name: "",
     email: "",
     phone: "",
     password: "",
     confirmPassword: "",
+    max_shop_count: 5,
     maxShops: 5,
-    joinedDate: new Date().toISOString().split("T")[0],
     address: "",
   });
 
@@ -354,16 +564,16 @@ export function AdminProvider({ children }) {
     e.preventDefault();
     setAddOwnerError("");
 
-    const fullname = (newOwnerForm.name || "").trim();
+    const fullname = (newOwnerForm.fullname || newOwnerForm.name || "").trim();
     const email = (newOwnerForm.email || "").trim().toLowerCase();
     const cleanPhone = (newOwnerForm.phone || "").replace(/\D/g, "");
     const password = (newOwnerForm.password || "").trim();
     const confirmPassword = (newOwnerForm.confirmPassword || "").trim();
     const address = (newOwnerForm.address || "").trim();
-    const maxShops = Number(newOwnerForm.maxShops || 5);
+    const max_shop_count = Number(newOwnerForm.max_shop_count ?? newOwnerForm.maxShops ?? 5);
 
     if (!fullname) {
-      setAddOwnerError("Please enter Owner Name.");
+      setAddOwnerError("Please enter Owner Full Name.");
       return;
     }
     if (!email || !email.includes("@")) {
@@ -374,9 +584,8 @@ export function AdminProvider({ children }) {
       setAddOwnerError("Phone number must be exactly 10 digits.");
       return;
     }
-    const today = new Date().toISOString().split("T")[0];
-    if (newOwnerForm.joinedDate && newOwnerForm.joinedDate > today) {
-      setAddOwnerError("Joined Date cannot be in the future (cannot exceed today).");
+    if (isNaN(max_shop_count) || max_shop_count < 1) {
+      setAddOwnerError("Max Shop Count must be at least 1.");
       return;
     }
     if (!address) {
@@ -419,7 +628,7 @@ export function AdminProvider({ children }) {
           password,
           phone: cleanPhone.length === 10 ? cleanPhone : cleanPhone.slice(-10),
           address,
-          max_shop_count: maxShops,
+          max_shop_count,
           backup_id: 1,
         }),
       });
@@ -442,13 +651,14 @@ export function AdminProvider({ children }) {
       setIsAddingOwner(false);
       setAddOwnerModalOpen(false);
       setNewOwnerForm({
+        fullname: "",
         name: "",
         email: "",
         phone: "",
         password: "",
         confirmPassword: "",
+        max_shop_count: 5,
         maxShops: 5,
-        joinedDate: new Date().toISOString().split("T")[0],
         address: "",
       });
       setShowAddOwnerPassword(false);
@@ -581,14 +791,17 @@ export function AdminProvider({ children }) {
     if (!editingOwner) return;
 
     const trimmedName = (editOwnerForm.name || "").trim();
-    const trimmedEmail = (editOwnerForm.email || "").trim();
+    const trimmedEmail = (editOwnerForm.email || "").trim().toLowerCase();
     const cleanPhone = (editOwnerForm.phone || "").replace(/\D/g, "");
+    const address = (editOwnerForm.address || "").trim();
+    const max_shop_count = Number(editOwnerForm.maxShops) || 5;
+    const ownerId = Number(editingOwner.id || editingOwner.owner_id);
 
     if (!trimmedName) {
       setEditOwnerError("Owner full name is required.");
       return;
     }
-    if (!trimmedEmail) {
+    if (!trimmedEmail || !trimmedEmail.includes("@")) {
       setEditOwnerError("Valid email address is required.");
       return;
     }
@@ -596,84 +809,66 @@ export function AdminProvider({ children }) {
       setEditOwnerError("Phone number must be exactly 10 digits.");
       return;
     }
+    if (isNaN(max_shop_count) || max_shop_count < 1) {
+      setEditOwnerError("Allowed Store Outlets Quota must be at least 1.");
+      return;
+    }
 
     setIsSavingOwner(true);
     setEditOwnerError("");
 
-    const updatePayload = {
-      owner_id: Number(editingOwner.id),
-      full_name: trimmedName,
-      email: trimmedEmail,
-      phone: cleanPhone,
-      address: (editOwnerForm.address || "").trim(),
-      max_shop_count: Number(editOwnerForm.maxShops) || 5,
-      account_status: editOwnerForm.status === "Active",
-      plan: editOwnerForm.plan,
-    };
-
     try {
-      try {
-        await authFetch(OWNER_UPDATE_API_URL, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatePayload),
-        }).catch(() => null);
-      } catch (e1) {
+      // 1. Call official backend API: PUT /owner/update
+      const res = await authFetch(OWNER_UPDATE_API_URL, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          owner_id: ownerId,
+          fullname: trimmedName,
+          email: trimmedEmail,
+          phone: cleanPhone,
+          address: address,
+          max_shop_count: max_shop_count,
+          backup_id: 1,
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || data?.status === "failed" || data?.status === "error") {
+        const errorMsg =
+          (Array.isArray(data?.detail)
+            ? data.detail.map((d) => d.msg).join(", ")
+            : data?.detail) ||
+          data?.message ||
+          data?.error ||
+          "Failed to update owner details in database.";
+        setEditOwnerError(errorMsg);
+        setIsSavingOwner(false);
+        return;
+      }
+
+      // 2. If status was changed in the edit modal, also update status via PUT /owner/status
+      if (editOwnerForm.status && editOwnerForm.status !== editingOwner.status) {
         try {
-          await authFetch(`${USER_UPDATE_API_URL}?user_id=${editingOwner.id}`, {
+          await authFetch(OWNER_STATUS_API_URL, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              fullname: trimmedName,
-              phone: cleanPhone,
-              address: (editOwnerForm.address || "").trim(),
+              owner_id: ownerId,
+              new_status: editOwnerForm.status === "Active",
             }),
-          }).catch(() => null);
-        } catch (e2) {}
+          });
+        } catch (_) {}
       }
 
-      setOwnersData((prev) => {
-        const updated = prev.map((o) => {
-          if (o.id === editingOwner.id) {
-            return {
-              ...o,
-              name: trimmedName,
-              initial: trimmedName ? trimmedName.charAt(0).toUpperCase() : "O",
-              email: trimmedEmail,
-              phone: cleanPhone,
-              address: (editOwnerForm.address || "").trim() || "N/A",
-              maxShops: Number(editOwnerForm.maxShops) || 5,
-              plan: editOwnerForm.plan,
-              status: editOwnerForm.status,
-              isActive: editOwnerForm.status === "Active",
-            };
-          }
-          return o;
-        });
-        localStorage.setItem("ql_admin_owners_list", JSON.stringify(updated));
-        return updated;
-      });
-
-      setDetailModalOwner((prev) => {
-        if (!prev || prev.id !== editingOwner.id) return prev;
-        return {
-          ...prev,
-          name: trimmedName,
-          initial: trimmedName ? trimmedName.charAt(0).toUpperCase() : "O",
-          email: trimmedEmail,
-          phone: cleanPhone,
-          address: (editOwnerForm.address || "").trim() || "N/A",
-          maxShops: Number(editOwnerForm.maxShops) || 5,
-          plan: editOwnerForm.plan,
-          status: editOwnerForm.status,
-          isActive: editOwnerForm.status === "Active",
-        };
-      });
+      // 3. Re-fetch live owner records from database to keep everything in sync
+      await fetchOwners();
 
       setEditOwnerModalOpen(false);
-      showToast(`Shop Owner "${trimmedName}" updated successfully!`, "success");
+      showToast(`Shop Owner "${trimmedName}" updated successfully in database!`, "success");
     } catch (err) {
-      setEditOwnerError(err.message || "Could not update owner details.");
+      setEditOwnerError(err?.message || "Could not update owner details. Please try again.");
     } finally {
       setIsSavingOwner(false);
     }
@@ -754,25 +949,32 @@ export function AdminProvider({ children }) {
     setIsSavingUser(true);
     setEditUserError("");
 
-    const updatePayload = {
-      user_id: Number(editingUser.id),
-      fullname: trimmedName,
-      email: trimmedEmail,
-      phone: cleanPhone,
-      address: (editUserForm.address || "").trim(),
-      account_status: editUserForm.status === "Active",
-    };
-
     try {
       try {
-        const targetUrl = USER_UPDATE_API_URL.includes("?")
-          ? `${USER_UPDATE_API_URL}&user_id=${editingUser.id}`
-          : `${USER_UPDATE_API_URL}?user_id=${editingUser.id}`;
-        await authFetch(targetUrl, {
+        // 1. Update user profile via official PUT /admin/user/update endpoint
+        await authFetch(USER_UPDATE_API_URL, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatePayload),
+          body: JSON.stringify({
+            user_id: Number(editingUser.id),
+            fullname: trimmedName,
+            email: trimmedEmail,
+            phone: cleanPhone || null,
+            address: (editUserForm.address || "").trim() || null,
+          }),
         }).catch(() => null);
+
+        // 2. If status was changed, update status via official PUT /admin/user/status endpoint
+        if (editUserForm.status && editUserForm.status !== editingUser.status) {
+          await authFetch(USER_STATUS_API_URL, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_id: Number(editingUser.id),
+              new_status: editUserForm.status === "Active",
+            }),
+          }).catch(() => null);
+        }
       } catch (err1) {}
 
       // Update state in usersData
@@ -829,10 +1031,7 @@ export function AdminProvider({ children }) {
       loggedUser = JSON.parse(localStorage.getItem("user") || "{}");
     } catch (e) {}
 
-    const adminId = loggedUser.user_id || loggedUser.userid || loggedUser.id || 1;
-    const targetUrl = USER_UPDATE_API_URL.includes("?")
-      ? `${USER_UPDATE_API_URL}&user_id=${adminId}`
-      : USER_UPDATE_API_URL;
+    const targetUrl = ADMIN_PROFILE_UPDATE_API_URL;
 
     const payload = {
       fullname: adminProfile.name || loggedUser.fullname || "Administrator",
@@ -909,9 +1108,7 @@ export function AdminProvider({ children }) {
     };
 
     try {
-      const targetUrl = USER_UPDATE_API_URL.includes("?")
-        ? `${USER_UPDATE_API_URL}&user_id=${adminId}`
-        : USER_UPDATE_API_URL;
+      const targetUrl = ADMIN_PROFILE_UPDATE_API_URL;
 
       const res = await authFetch(targetUrl, {
         method: "PUT",
@@ -1066,6 +1263,11 @@ export function AdminProvider({ children }) {
         fetchAdminProfile,
         shopsData,
         setShopsData,
+        isShopsLoading,
+        shopsError,
+        fetchShops,
+        handleToggleShopOpen,
+        handleToggleShopStatus,
         subscribersList,
         setSubscribersList,
         subscriptionPlans,

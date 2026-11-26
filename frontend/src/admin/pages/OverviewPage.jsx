@@ -1,17 +1,85 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { useAdmin } from "../AdminContext";
-import { STAT_METRICS, TOP_SHOPS, REVENUE_BARS, TIMELINE_ACTIVITIES } from "../adminData";
+import { authFetch } from "../../apiClient";
+import {
+  STAT_METRICS,
+  TOP_SHOPS,
+  REVENUE_BARS,
+  TIMELINE_ACTIVITIES,
+  isRegularUser,
+  isDemoOwner,
+  DASHBOARD_STATS_API_URL,
+} from "../adminData";
 
 export function OverviewPage() {
   const { ownersData, usersData, shopsData } = useAdmin();
+  const [dbStats, setDbStats] = useState(null);
 
-  // Dynamic values based on live state if available
+  // Entrance growth animation for dashboard charts
+  const [isChartAnimated, setIsChartAnimated] = useState(false);
+
+  useEffect(() => {
+    // Small timeout ensures the initial render mounts with height 0%, then triggers smooth growth animation
+    const timer = setTimeout(() => {
+      setIsChartAnimated(true);
+    }, 70);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Fetch official telemetry from GET /dashboard/stats
+  useEffect(() => {
+    let mounted = true;
+    authFetch(DASHBOARD_STATS_API_URL, { method: "GET" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (mounted && data && typeof data === "object" && !data.detail) {
+          setDbStats(data);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // Dynamic values based strictly on real state (excluding demo data)
+  const realOwners = (ownersData || []).filter((o) => !isDemoOwner(o));
+  const regularUsersCount = (usersData || []).filter((u) => isRegularUser(u, realOwners)).length;
+
   const metrics = [
-    { id: "owners", label: "Registered Owners", value: ownersData.length || "6", trend: "+12%", context: "active merchants", link: "/admin/owners" },
-    { id: "shops", label: "Active Store Queues", value: shopsData.length || "6", trend: "+8%", context: "live counter stores", link: "/admin/shops" },
-    { id: "users", label: "Queue Customers", value: usersData.length || "1", trend: "+25%", context: "verified app users", link: "/admin/users" },
-    { id: "revenue", label: "Platform Revenue", value: "₹ 2,45,680", trend: "+32%", context: "from last month", link: "/admin/payments" },
+    {
+      id: "owners",
+      label: "Registered Owners",
+      value: dbStats?.total_owners ?? realOwners.length,
+      trend: "Live",
+      context: dbStats?.active_owners ? `${dbStats.active_owners} active merchants` : "active merchants",
+      link: "/admin/owners",
+    },
+    {
+      id: "shops",
+      label: "Active Store Queues",
+      value: dbStats?.total_shops ?? (shopsData?.length ?? 0),
+      trend: "Live",
+      context: dbStats?.active_shops ? `${dbStats.active_shops} operating outlets` : "live counter stores",
+      link: "/admin/shops",
+    },
+    {
+      id: "users",
+      label: "Queue Customers",
+      value: dbStats?.total_customers ?? regularUsersCount,
+      trend: "Live",
+      context: dbStats?.active_customers ? `${dbStats.active_customers} active users` : "verified app users",
+      link: "/admin/users",
+    },
+    {
+      id: "revenue",
+      label: "Platform Revenue",
+      value: "₹ 0",
+      trend: "--",
+      context: "current period",
+      link: "/admin/payments",
+    },
   ];
 
   return (
@@ -23,13 +91,13 @@ export function OverviewPage() {
           <p className="adm-page-desc">High-level platform telemetry, active store traffic, and merchant operations.</p>
         </div>
         <div className="adm-header-actions">
-          <Link to="/admin/reports" className="adm-btn adm-btn-secondary">
+          <Link to="/admin/tokens" className="adm-btn adm-btn-secondary">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <line x1="18" y1="20" x2="18" y2="10" />
-              <line x1="12" y1="20" x2="12" y2="4" />
-              <line x1="6" y1="20" x2="6" y2="14" />
+              <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+              <path d="M13 5v2" />
+              <path d="M13 17v2" />
             </svg>
-            <span>Platform Reports</span>
+            <span>Live Tokens</span>
           </Link>
         </div>
       </div>
@@ -57,20 +125,35 @@ export function OverviewPage() {
               <h3 className="adm-card-title">Monthly Token Traffic & Growth</h3>
               <p className="adm-card-desc">Total processed visitor queue tokens across registered shops in 2026</p>
             </div>
-            <Link to="/admin/reports" className="adm-card-action-link">
-              Detailed Analytics &rarr;
+            <Link to="/admin/tokens" className="adm-card-action-link">
+              Live Tokens &rarr;
             </Link>
           </div>
           <div className="adm-card-body">
             <div className="adm-bar-chart">
-              {REVENUE_BARS.map((b) => (
-                <div key={b.month} className="adm-bar-col">
-                  <div className="adm-bar-track">
-                    <div className="adm-bar-fill" style={{ height: `${b.heightPct}%` }} title={`${b.val * 1000} tokens`} />
+              {REVENUE_BARS.map((b, index) => {
+                const isPeak = b.val >= 40;
+                return (
+                  <div key={b.month} className="adm-bar-col">
+                    {/* Floating SaaS tooltip showing exact tokens */}
+                    <div className="adm-bar-tooltip">
+                      <strong>{b.val}k</strong> tokens
+                    </div>
+
+                    <div className="adm-bar-track">
+                      <div
+                        className={`adm-bar-fill ${isPeak ? "is-peak" : ""}`}
+                        style={{
+                          height: isChartAnimated ? `${b.heightPct}%` : "0%",
+                          transitionDelay: `${index * 45}ms`,
+                        }}
+                        title={`${b.val * 1000} tokens (${b.month} 2026)`}
+                      />
+                    </div>
+                    <span className="adm-bar-label">{b.month}</span>
                   </div>
-                  <span className="adm-bar-label">{b.month}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -87,27 +170,34 @@ export function OverviewPage() {
             </Link>
           </div>
           <div className="adm-card-body">
-            <div className="adm-list-group">
-              {TOP_SHOPS.map((s) => (
-                <Link
-                  key={s.rank}
-                  to={`/admin/shops/${s.rank}`}
-                  className="adm-list-item"
-                  style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}
-                  title="View live counter queue"
-                >
-                  <div className="adm-rank-badge">#{s.rank}</div>
-                  <div className="adm-list-item-info">
-                    <div className="adm-list-item-title">{s.name}</div>
-                    <div className="adm-list-item-sub">{s.owner}</div>
-                  </div>
-                  <div className="adm-list-item-metric">
-                    <span className="adm-font-semibold">{s.users}</span>
-                    <span className="adm-text-muted"> tokens</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
+            {shopsData && shopsData.length > 0 ? (
+              <div className="adm-list-group">
+                {shopsData.slice(0, 5).map((s, index) => (
+                  <Link
+                    key={s.id || index}
+                    to={`/admin/shops/${s.id}`}
+                    className="adm-list-item"
+                    style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}
+                    title="View live counter queue"
+                  >
+                    <div className="adm-rank-badge">#{index + 1}</div>
+                    <div className="adm-list-item-info">
+                      <div className="adm-list-item-title">{s.name}</div>
+                      <div className="adm-list-item-sub">{s.owner}</div>
+                    </div>
+                    <div className="adm-list-item-metric">
+                      <span className="adm-font-semibold">{s.dailyTokens ?? 0}</span>
+                      <span className="adm-text-muted"> tokens</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div style={{ padding: "36px 12px", textAlign: "center", color: "var(--adm-text-muted)", fontSize: "13px" }}>
+                <span style={{ fontSize: "28px", display: "block", marginBottom: "8px" }}>🏪</span>
+                No active counter shops registered yet.
+              </div>
+            )}
           </div>
         </div>
       </div>

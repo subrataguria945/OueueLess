@@ -7,6 +7,7 @@ export function UsersPage() {
   const navigate = useNavigate();
   const {
     usersData,
+    ownersData,
     isUsersLoading,
     usersError,
     fetchUsers,
@@ -43,10 +44,13 @@ export function UsersPage() {
     };
   }, [openMenuUserId]);
 
-  // Strictly filter regular users (Only "User" / "Customer", never "Owner" or "Admin")
-  const filteredUsers = usersData.filter((u) => {
-    if (!isRegularUser(u)) return false;
+  // Strictly filter: ONLY regular Users/Customers (exclude Admin and Shop Owners)
+  const regularUsers = (usersData || []).filter((u) => isRegularUser(u, ownersData));
+  const totalUsersCount = regularUsers.length;
+  const activeUsersCount = regularUsers.filter((u) => u.status === "Active").length;
+  const suspendedUsersCount = regularUsers.filter((u) => u.status === "Suspended" || u.status === "Inactive").length;
 
+  const filteredUsers = regularUsers.filter((u) => {
     const q = searchQuery.toLowerCase().trim();
     const matchSearch =
       !q ||
@@ -61,13 +65,55 @@ export function UsersPage() {
   });
 
   return (
-    <div className="adm-page-body">
+    <div className="adm-page-body adm-table-page-body">
       {/* Page Header */}
       <div className="adm-page-header">
         <div>
-          <h1 className="adm-page-title">Users Directory</h1>
+          <h1
+            className="adm-page-title"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "10px",
+              flexWrap: "wrap",
+              userSelect: "none",
+              WebkitUserSelect: "none",
+              cursor: "default",
+              caretColor: "transparent",
+            }}
+          >
+            <span style={{ userSelect: "none", WebkitUserSelect: "none", cursor: "default", caretColor: "transparent" }}>
+              Users Directory
+            </span>
+            <span
+              className="adm-badge adm-badge-role-user"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                fontSize: "13px",
+                fontWeight: 700,
+                padding: "3px 12px",
+                borderRadius: "9999px",
+                boxShadow: "0 1px 2px rgba(2, 132, 199, 0.1)",
+              }}
+              title={`Total ${totalUsersCount} registered platform customer users`}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              <span>
+                {isUsersLoading && totalUsersCount === 0
+                  ? "..."
+                  : filteredUsers.length !== totalUsersCount
+                  ? `(${filteredUsers.length} of ${totalUsersCount})`
+                  : `(${totalUsersCount})`}
+              </span>
+            </span>
+          </h1>
           <p className="adm-page-desc">
-            Direct database list of regular platform users and queue token holders (strictly excluding Owners & Admin).
+            Monitor and manage registered platform customer users and queue accounts.
           </p>
         </div>
       </div>
@@ -94,14 +140,18 @@ export function UsersPage() {
         </div>
 
         <div className="adm-pill-filters">
-          {["All", "Active", "Suspended"].map((st) => (
+          {[
+            { id: "All", label: `All (${totalUsersCount})` },
+            { id: "Active", label: `Active (${activeUsersCount})` },
+            { id: "Suspended", label: `Suspended (${suspendedUsersCount})` },
+          ].map((st) => (
             <button
-              key={st}
+              key={st.id}
               type="button"
-              className={`adm-pill-btn ${userStatusFilter === st ? "active" : ""}`}
-              onClick={() => setUserStatusFilter(st)}
+              className={`adm-pill-btn ${userStatusFilter === st.id ? "active" : ""}`}
+              onClick={() => setUserStatusFilter(st.id)}
             >
-              {st}
+              {st.label}
             </button>
           ))}
         </div>
@@ -118,7 +168,7 @@ export function UsersPage() {
       )}
 
       {/* Table Card */}
-      <div className="adm-card">
+      <div className="adm-card adm-table-card">
         <div className="adm-table-wrap">
           <table className="adm-table">
             <thead>
@@ -134,7 +184,7 @@ export function UsersPage() {
               </tr>
             </thead>
             <tbody>
-              {isUsersLoading && usersData.length === 0 ? (
+              {isUsersLoading && totalUsersCount === 0 ? (
                 <tr>
                   <td colSpan="8" className="adm-table-empty">
                     <div className="adm-loading-spinner" />
@@ -153,17 +203,21 @@ export function UsersPage() {
                 filteredUsers.map((user, index) => {
                   const isActive = user.status === "Active";
                   return (
-                    <tr key={user.id}>
+                    <tr
+                      key={user.id}
+                      style={{ cursor: "pointer" }}
+                      onClick={() => {
+                        setSelectedUserDetail(user);
+                        navigate(`/admin/users/${user.id}`);
+                      }}
+                      title={`Click to view details for ${user.name}`}
+                    >
                       <td style={{ textAlign: "center", padding: "8px 6px", color: "var(--adm-text-faint)", width: "36px" }}>
                         {index + 1}
                       </td>
                       <td>
                         <div
                           className="adm-user-cell"
-                          onClick={() => {
-                            setSelectedUserDetail(user);
-                            navigate(`/admin/users/${user.id}`);
-                          }}
                           title="Click to view details"
                         >
                           <div className="adm-avatar-small">
@@ -222,7 +276,10 @@ export function UsersPage() {
                       <td style={{ color: "var(--adm-text-muted)", whiteSpace: "nowrap", fontSize: "12px" }}>
                         {user.joinedOn}
                       </td>
-                      <td style={{ textAlign: "right", whiteSpace: "nowrap", position: "relative" }}>
+                      <td
+                        style={{ textAlign: "right", whiteSpace: "nowrap", position: "relative" }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <div className={`adm-action-menu-wrap ${openMenuUserId === user.id ? "active" : ""}`}>
                           <button
                             type="button"
@@ -322,8 +379,8 @@ export function UsersPage() {
 
         {/* Table Footer */}
         <div className="adm-table-footer">
-          <span>Showing {filteredUsers.length} regular user{filteredUsers.length === 1 ? "" : "s"} (Excludes Admin & Shop Owners)</span>
-          <span className="adm-text-muted">Live database sync</span>
+          <span>Showing {filteredUsers.length} of {totalUsersCount} total registered user{totalUsersCount === 1 ? "" : "s"}</span>
+          <span className="adm-text-muted">Live synchronization with database</span>
         </div>
       </div>
     </div>

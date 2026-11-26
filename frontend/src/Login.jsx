@@ -4,6 +4,7 @@ import { ForgotPasswordModal } from "./ForgotPasswordModal";
 import { EmailOtpModal } from "./EmailOtpModal";
 import { initiateSignup, verifySignupOtp } from "./authApi";
 import { triggerGoogleSignIn } from "./googleAuth";
+import { checkIsAdmin, checkIsOwner, decodeJwt, formatName } from "./authRole";
 
 const API_BASE = (
   import.meta.env.VITE_API_URL ||
@@ -13,7 +14,11 @@ const API_BASE = (
 
 const LOGIN_API_URL =
   import.meta.env.VITE_LOGIN_API_URL ||
-  `${API_BASE}/user/login`;
+  `${API_BASE}/auth/login`;
+
+const FORGOT_PASSWORD_API_URL =
+  import.meta.env.VITE_FORGOT_PASSWORD_API_URL ||
+  `${API_BASE}/auth/password/forget`;
 
 export function Login({
   initialMode = "login",
@@ -23,9 +28,14 @@ export function Login({
   onSwitchToForgot,
 }) {
   const [mode, setMode] = useState(initialMode === "forgot" ? "login" : initialMode);
-  const [isForgotModalOpen, setIsForgotModalOpen] = useState(
-    initialForgotOpen || initialMode === "forgot"
-  );
+  // Only open reset modal if a reset token is present in the URL
+  const [isForgotModalOpen, setIsForgotModalOpen] = useState(() => {
+    if (typeof window !== "undefined") {
+      const search = new URLSearchParams(window.location.search);
+      return Boolean(search.get("token") || search.get("reset_token"));
+    }
+    return false;
+  });
 
   /* ── Login Form State ──────────────────────────────── */
   const [loginEmail, setLoginEmail] = useState("");
@@ -33,6 +43,7 @@ export function Login({
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoginLoading, setIsLoginLoading] = useState(false);
+  const [isForgotLoading, setIsForgotLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [loginSuccess, setLoginSuccess] = useState("");
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -99,15 +110,19 @@ export function Login({
   useEffect(() => {
     if (initialMode === "forgot") {
       setMode("login");
-      setIsForgotModalOpen(true);
     } else if (initialMode) {
       setMode(initialMode);
     }
   }, [initialMode]);
 
+  // Check URL token for password reset
   useEffect(() => {
-    if (initialForgotOpen) {
-      setIsForgotModalOpen(true);
+    if (typeof window !== "undefined") {
+      const search = new URLSearchParams(window.location.search);
+      const urlToken = search.get("token") || search.get("reset_token") || "";
+      if (urlToken) {
+        setIsForgotModalOpen(true);
+      }
     }
   }, [initialForgotOpen]);
 
@@ -135,9 +150,84 @@ export function Login({
     if (onSwitchToLogin) onSwitchToLogin();
   };
 
-  const handleSwitchToForgot = () => {
-    setIsForgotModalOpen(true);
-    if (onSwitchToForgot) onSwitchToForgot();
+  const handleSwitchToForgot = async () => {
+    const cleanEmail = (loginEmail || "").trim().toLowerCase();
+
+    if (!cleanEmail) {
+      showTemporaryError(
+        "Please enter your email above to receive a password reset link.",
+        4500
+      );
+      const emailInput = document.getElementById("ql-input-email");
+      if (emailInput) {
+        emailInput.focus();
+        emailInput.style.outline = "2px solid #ef4444";
+        setTimeout(() => {
+          if (emailInput) emailInput.style.outline = "none";
+        }, 1800);
+      }
+      return;
+    }
+
+    if (!cleanEmail.includes("@") || !cleanEmail.includes(".")) {
+      showTemporaryError("Please enter a valid email address.", 3500);
+      const emailInput = document.getElementById("ql-input-email");
+      if (emailInput) emailInput.focus();
+      return;
+    }
+
+    setLoginError("");
+    setLoginSuccess("");
+    setIsForgotLoading(true);
+
+    try {
+      const response = await fetch(FORGOT_PASSWORD_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cleanEmail }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      setIsForgotLoading(false);
+
+      if (!response.ok || data?.status === "failed" || data?.status === "error") {
+        const rawErr =
+          (Array.isArray(data?.detail)
+            ? data.detail.map((d) => d.msg).join(", ")
+            : data?.detail) ||
+          data?.message ||
+          data?.error ||
+          "";
+
+        let errorMsg = rawErr;
+        const lower = String(rawErr).toLowerCase();
+        if (
+          lower.includes("not found") ||
+          lower.includes("does not exist") ||
+          response.status === 404
+        ) {
+          errorMsg = `No account found with "${cleanEmail}". Please check your email spelling.`;
+        } else if (!rawErr) {
+          errorMsg = "Account not found or failed to send reset link.";
+        }
+
+        showTemporaryError(errorMsg, 5000);
+        return;
+      }
+
+      showTemporarySuccess(
+        data?.message ||
+          `Password reset link sent to ${cleanEmail}! Please check your email inbox.`,
+        8000
+      );
+      if (onSwitchToForgot) onSwitchToForgot(cleanEmail);
+    } catch {
+      setIsForgotLoading(false);
+      showTemporaryError(
+        "Unable to reach the server. Please check your internet connection.",
+        3500
+      );
+    }
   };
 
   useEffect(() => {
@@ -161,23 +251,101 @@ export function Login({
       sessionStorage.getItem("token");
 
     if (existingToken && window.location.pathname === "/login") {
-      window.location.href = "/admin";
+      let storedUser = null;
+      try {
+        storedUser = JSON.parse(localStorage.getItem("user") || sessionStorage.getItem("user") || "null");
+      } catch {}
+      const storedRole = localStorage.getItem("role") || sessionStorage.getItem("role") || storedUser?.role;
+
+      if (checkIsAdmin({ user: storedUser, role: storedRole, token: existingToken, email: storedUser?.email })) {
+        window.location.href = "/admin";
+      } else if (checkIsOwner({ user: storedUser, role: storedRole, token: existingToken, email: storedUser?.email })) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("ql_admin_token");
+        localStorage.removeItem("user");
+        localStorage.removeItem("role");
+        localStorage.removeItem("refresh_token");
+        sessionStorage.clear();
+        setLoginError("Access restricted: Shop Owner accounts are not permitted to log in to this portal.");
+      } else {
+        window.location.href = "/";
+      }
     }
   }, []);
 
   /* ── Google Sign-In ────────────────────────────────── */
   const handleGoogleSuccess = (user, token, isNew, message) => {
     setIsGoogleLoading(false);
+
+    // Block Shop Owner accounts
+    const isOwner = checkIsOwner({
+      user,
+      token,
+      user_role: user?.user_role,
+      role: user?.role,
+      email: user?.email,
+    });
+
+    if (isOwner) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("ql_admin_token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("role");
+      localStorage.removeItem("refresh_token");
+      sessionStorage.clear();
+      showTemporaryError(
+        "Access restricted: Shop Owner accounts are not permitted to log in to this portal. Please contact the administrator.",
+        6000
+      );
+      return;
+    }
+
+    const isAdmin = checkIsAdmin({
+      user,
+      token,
+      user_role: user?.user_role,
+      role: user?.role,
+      email: user?.email,
+    });
+
+    if (!isAdmin) {
+      if (token) {
+        localStorage.setItem("token", token);
+        sessionStorage.setItem("token", token);
+        if (user?.refresh_token) {
+          localStorage.setItem("refresh_token", user.refresh_token);
+          sessionStorage.setItem("refresh_token", user.refresh_token);
+        }
+      }
+      const customerUser = user || {
+        email: user?.email || "customer@queueless.com",
+        name: user?.name || "Customer",
+        role: "CUSTOMER",
+        user_role: 2,
+      };
+      localStorage.setItem("user", JSON.stringify(customerUser));
+      localStorage.setItem("role", "CUSTOMER");
+      setLoginSuccess(message || "Customer login successful! Redirecting to profile...");
+      setTimeout(() => {
+        window.location.href = "/profile";
+      }, 700);
+      return;
+    }
+
     if (token) {
       localStorage.setItem("token", token);
       localStorage.setItem("ql_admin_token", token);
       sessionStorage.setItem("token", token);
+      if (user?.refresh_token) {
+        localStorage.setItem("refresh_token", user.refresh_token);
+        sessionStorage.setItem("refresh_token", user.refresh_token);
+      }
     }
     if (user) {
       localStorage.setItem("user", JSON.stringify(user));
-      if (user.role) localStorage.setItem("role", user.role);
+      localStorage.setItem("role", "ADMIN");
     }
-    setLoginSuccess(message || "Signed in with Google successfully! Redirecting...");
+    setLoginSuccess(message || "Signed in as Administrator! Redirecting...");
     setTimeout(() => {
       window.location.href = "/admin";
     }, 800);
@@ -219,6 +387,7 @@ export function Login({
     setIsLoginLoading(true);
 
     try {
+      console.log(`🔐 [QueueLess Auth] Submitting Customer/User login to official endpoint: ${LOGIN_API_URL}`);
       const response = await fetch(LOGIN_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -232,24 +401,186 @@ export function Login({
 
       if (response.ok) {
         const token =
+          data.access_token ||
           data.token ||
           data.accessToken ||
-          data.access_token ||
           data.jwt ||
+          data.data?.access_token ||
           data.data?.token;
 
-        const user = data.user || data.data?.user || {
+        const returnedUser = data.user || data.data?.user || data.userData || null;
+
+        const refreshToken =
+          data.refresh_token ||
+          data.refreshToken ||
+          data.data?.refresh_token;
+
+        const jwtPayload = token ? decodeJwt(token) : null;
+
+        const roleCandidate =
+          data.user_role ??
+          data.roleid ??
+          data.role_id ??
+          returnedUser?.user_role ??
+          returnedUser?.roleid ??
+          jwtPayload?.user_role;
+        const roleStrCandidate =
+          data.role ??
+          returnedUser?.role ??
+          jwtPayload?.role;
+
+        // 1. Check if the authenticated account is a Shop Owner (RESTRICTED)
+        const isOwner = checkIsOwner({
+          data,
+          token,
+          user: returnedUser,
+          user_role: roleCandidate,
+          role: roleStrCandidate,
+          email: cleanEmail,
+        });
+
+        if (isOwner) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("ql_admin_token");
+          localStorage.removeItem("user");
+          localStorage.removeItem("role");
+          localStorage.removeItem("refresh_token");
+          sessionStorage.clear();
+          setIsLoginLoading(false);
+          showTemporaryError(
+            "Access restricted: Shop Owner accounts are not permitted to log in to this portal. Please contact the administrator.",
+            6000
+          );
+          return;
+        }
+
+        // 2. Check if the authenticated account is an Administrator
+        const isAdmin = checkIsAdmin({
+          data,
+          token,
+          user: returnedUser,
+          user_role: roleCandidate,
+          role: roleStrCandidate,
+          email: cleanEmail,
+        });
+
+        if (!isAdmin) {
+          // Regular Customer / User: populate with EXACT real data from API response!
+          const userFullname =
+            data.fullname ||
+            data.full_name ||
+            data.name ||
+            returnedUser?.fullname ||
+            returnedUser?.full_name ||
+            returnedUser?.name ||
+            jwtPayload?.name ||
+            jwtPayload?.full_name ||
+            jwtPayload?.fullname ||
+            cleanEmail.split("@")[0];
+
+          const userEmail =
+            data.email ||
+            returnedUser?.email ||
+            jwtPayload?.email ||
+            cleanEmail;
+
+          const userPhone =
+            data.phone ||
+            returnedUser?.phone ||
+            "";
+
+          const userAddress =
+            data.address ||
+            returnedUser?.address ||
+            "";
+
+          const userJoinedDate =
+            data.joined_date ||
+            returnedUser?.joined_date ||
+            null;
+
+          const userProfileImage =
+            data.profile_image ||
+            returnedUser?.profile_image ||
+            null;
+
+          const userId =
+            data.user_id ??
+            data.id ??
+            returnedUser?.user_id ??
+            returnedUser?.id ??
+            jwtPayload?.user_id ??
+            null;
+
+          const customerUser = {
+            id: userId,
+            user_id: userId,
+            fullname: userFullname,
+            full_name: userFullname,
+            name: formatName(userFullname),
+            email: userEmail,
+            phone: userPhone,
+            address: userAddress,
+            location: userAddress,
+            profile_image: userProfileImage,
+            avatar: userProfileImage,
+            joined_date: userJoinedDate,
+            role: data.user_role || returnedUser?.role || "Customer",
+            user_role: data.user_role || returnedUser?.user_role || "Customer",
+          };
+
+          if (token) {
+            if (rememberMe) {
+              localStorage.setItem("token", token);
+              if (refreshToken) localStorage.setItem("refresh_token", refreshToken);
+            } else {
+              sessionStorage.setItem("token", token);
+              if (refreshToken) sessionStorage.setItem("refresh_token", refreshToken);
+            }
+          }
+
+          if (userProfileImage) {
+            localStorage.setItem("customerAvatar", userProfileImage);
+          } else {
+            localStorage.removeItem("customerAvatar");
+          }
+
+          const userPayload = JSON.stringify(customerUser);
+          if (rememberMe) {
+            localStorage.setItem("user", userPayload);
+            localStorage.setItem("role", "CUSTOMER");
+          } else {
+            sessionStorage.setItem("user", userPayload);
+            sessionStorage.setItem("role", "CUSTOMER");
+          }
+
+          setIsLoginLoading(false);
+          setLoginSuccess(`Customer login successful! Welcome, ${userFullname}`);
+          setTimeout(() => {
+            window.location.href = "/profile";
+          }, 600);
+          return;
+        }
+
+        const user = returnedUser || {
           email: cleanEmail,
           name: data.name || cleanEmail.split("@")[0],
-          role: data.role || data.user_role || "ADMIN",
+          role: "ADMIN",
+          user_role: 1,
         };
 
         if (token) {
           if (rememberMe) {
             localStorage.setItem("token", token);
             localStorage.setItem("ql_admin_token", token);
+            if (refreshToken) {
+              localStorage.setItem("refresh_token", refreshToken);
+            }
           } else {
             sessionStorage.setItem("token", token);
+            if (refreshToken) {
+              sessionStorage.setItem("refresh_token", refreshToken);
+            }
           }
         }
 
@@ -257,14 +588,14 @@ export function Login({
           const userPayload = JSON.stringify(user);
           if (rememberMe) {
             localStorage.setItem("user", userPayload);
-            localStorage.setItem("role", user.role || "ADMIN");
+            localStorage.setItem("role", "ADMIN");
           } else {
             sessionStorage.setItem("user", userPayload);
-            sessionStorage.setItem("role", user.role || "ADMIN");
+            sessionStorage.setItem("role", "ADMIN");
           }
         }
 
-        setLoginSuccess("Login successful! Redirecting to dashboard...");
+        setLoginSuccess("Administrator login successful! Redirecting to dashboard...");
         setTimeout(() => {
           window.location.href = "/admin";
         }, 600);
@@ -341,7 +672,7 @@ export function Login({
       fullname: cleanName,
       email: cleanEmail,
       phone: cleanPhone,
-      user_role: 3,
+      user_role: 2,
     })
       .then((result) => {
         setSignupToken(result.signup_token);
@@ -405,7 +736,7 @@ export function Login({
         fullname: cleanName,
         email: cleanEmail,
         phone: cleanPhone,
-        user_role: 3,
+        user_role: 2,
       });
 
       setSignupToken(result.signup_token);
@@ -425,7 +756,12 @@ export function Login({
         <div className="ql-login-left">
           <div className="ql-login-form-wrap">
             {/* Brand Logo */}
-            <div className="ql-logo-box">
+            <div
+              className="ql-logo-box"
+              onClick={() => (window.location.href = "/")}
+              style={{ cursor: "pointer" }}
+              title="Return to Home"
+            >
               <img
                 src="/queueless-logo-card.png"
                 alt="QueueLess"
@@ -772,8 +1108,25 @@ export function Login({
                       type="button"
                       className="ql-forgot-btn"
                       onClick={handleSwitchToForgot}
+                      disabled={isForgotLoading || isLoginLoading}
+                      title="Send password reset link to the email entered above"
                     >
-                      Forgot password?
+                      {isForgotLoading ? (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                          <span
+                            className="ql-spinner-circle"
+                            style={{
+                              width: "12px",
+                              height: "12px",
+                              borderWidth: "1.5px",
+                              borderTopColor: "var(--ql-primary, #2563eb)",
+                            }}
+                          />
+                          <span>Sending reset link...</span>
+                        </span>
+                      ) : (
+                        "Forgot password?"
+                      )}
                     </button>
                   </div>
                 </form>
@@ -857,6 +1210,7 @@ export function Login({
       <ForgotPasswordModal
         isOpen={isForgotModalOpen}
         onClose={() => setIsForgotModalOpen(false)}
+        initialEmail={loginEmail}
       />
 
       {/* Email OTP Verification Modal for Registration */}
