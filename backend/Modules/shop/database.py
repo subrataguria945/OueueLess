@@ -212,4 +212,46 @@ def get_active_shops_by_pincode(pincode: str):
                 "message": status_message,
                 "shops": shops,
             }
-        
+
+
+def get_open_shops(location: str | None, search: str | None) -> list[dict]:
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                CALL public.sp_search_open_shops(%s, %s, NULL)
+                """,
+                (location, search),
+            )
+
+            result = cur.fetchone()
+            if result is None:
+                raise RuntimeError("sp_search_open_shops returned no result")
+
+            cursor_name = result[0]
+
+            cur.execute(
+                sql.SQL("FETCH ALL FROM {}").format(
+                    sql.Identifier(cursor_name)
+                )
+            )
+            rows = cur.fetchall()
+
+            columns = (
+                "shop_id",
+                "owner_id",
+                "shop_name",
+                "description",
+                "address",
+                "city",
+                "state",
+                "pincode",
+                "phone",
+                "email",
+                "shop_image",
+                "current_serving",
+                "waiting_count",
+                "est_wait_mins",
+            )
+
+            return [dict(zip(columns, row)) for row in rows]

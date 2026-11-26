@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status,Query
 
 from Library.Security.gatekeeper import require_active_user
 from .models import CreateShopRequest, DeleteShopRequest, UpdateShopRequest
-from .utility import create_shop, delete_shop, update_shop, get_active_shops
+from .utility import create_shop, delete_shop, update_shop, get_active_shops,search_open_shops
 
 router = APIRouter()
 
@@ -196,3 +196,11 @@ def get_active_shops_route(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail=message or "Unable to retrieve active shops.",
     )
+
+@router.get("/search")
+def search_open_shops_route(
+    location: str | None = Query(default=None, max_length=120),
+    search: str | None = Query(default=None, max_length=120),
+):
+    shops = search_open_shops(location, search)
+    return {"status": "success", "shops": shops}

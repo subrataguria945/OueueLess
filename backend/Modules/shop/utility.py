@@ -1,4 +1,4 @@
-from .database import create_shop_for_owner, update_shop_for_owner, delete_shop_for_owner,get_active_shops_by_pincode
+from .database import create_shop_for_owner, update_shop_for_owner, delete_shop_for_owner,get_active_shops_by_pincode,get_open_shops
 
 # Utility functions for create shop operations for a specific owner
 def create_shop(user_id: int, data: dict):
@@ -15,3 +15,6 @@ def delete_shop(user_id: int, shop_id: int):
 
 def get_active_shops(pincode: str):
     return get_active_shops_by_pincode(pincode)
+
+def search_open_shops(location: str | None, search: str | None):
+    return get_open_shops(location, search)
