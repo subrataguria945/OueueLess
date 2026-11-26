@@ -28,7 +28,6 @@ def root():
 app.include_router(user_router, prefix="/user", tags=["Users"])
 
 # Authentication routes (mounted under /user for frontend compatibility and /auth)
-app.include_router(auth_router, prefix="/user", tags=["Authentication"])
 app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
 
 # Owner routes

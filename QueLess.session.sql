@@ -1,435 +1,150 @@
--- -- Drop previous procedure signatures if they exist
--- DROP PROCEDURE IF EXISTS public.sp_manage_password(integer, text, text, text, text);
--- DROP PROCEDURE IF EXISTS public.sp_manage_password(integer, text, text, text);
 
--- -- Clean Procedure without OTP logic
--- CREATE OR REPLACE PROCEDURE public.sp_manage_password(
---     IN p_user_id integer, 
---     IN p_action text, 
---     IN p_old_password text, 
---     IN p_new_password text, 
---     OUT p_status_code text, 
---     OUT p_status_message text
--- )
--- LANGUAGE plpgsql
--- AS $procedure$
--- DECLAREAND ownerid = p_owner_id
---     v_current_hash TEXT;
---     v_user_status BOOLEAN;
--- BEGIN
---     p_status_code := 'ERR';
---     p_status_message := 'Operation failed.';
+declare
+  v_shop public.shops%rowtype;
+  v_issued_today bigint := 0;
+  v_waiting_count bigint := 0;
+  v_serving_count bigint := 0;
+  v_on_hold_count bigint := 0;
+  v_avg_service_min numeric;
+  v_services jsonb := '[]'::jsonb;
+  v_currently_serving jsonb := '[]'::jsonb;
+begin
+  if p_shop_id is null or p_shop_id <= 0 then
+    raise exception using errcode = '22023', message = 'shop_id must be a positive integer';
+  end if;
 
---     -- 1. Validate user ID
---     IF p_user_id IS NULL OR p_user_id <= 0 THEN
---         p_status_code := 'ERR_INVALID_USER';
---         p_status_message := 'Invalid user ID.';
---         RETURN;
---     END IF;
+  select s.*
+    into v_shop
+    from public.shops as s
+   where s.shopid = p_shop_id;
 
---     -- 2. Validate action
---     IF UPPER(TRIM(COALESCE(p_action, ''))) NOT IN ('CHANGE', 'RESET') THEN
---         p_status_code := 'ERR_INVALID_ACTION';
---         p_status_message := 'Action must be CHANGE or RESET.';
---         RETURN;
---     END IF;
+  if not found then
+    raise exception using errcode = 'P0002', message = 'Shop not found';
+  end if;
 
---     -- 3. Validate new password
---     IF p_new_password IS NULL
---        OR LENGTH(TRIM(p_new_password)) = 0 THEN
---         p_status_code := 'ERR_INVALID_PASSWORD';
---         p_status_message := 'New password is required.';
---         RETURN;
---     END IF;
+  if not v_shop.isactive then
+    raise exception using errcode = 'P0002', message = 'Shop is inactive';
+  end if;
 
---     -- 4. Lock user row to prevent concurrent password changes
---     SELECT passwordhash, status
---     INTO v_current_hash, v_user_status
---     FROM public.users
---     WHERE userid = p_user_id
---     FOR UPDATE;
+  select count(*)
+    into v_issued_today
+    from public.tokens as t
+   where t.shop_id = p_shop_id
+     and t.date = current_date;
 
---     IF NOT FOUND THEN
---         p_status_code := 'ERR_USER_NOT_FOUND';
---         p_status_message := 'User does not exist.';
---         RETURN;
---     END IF;
+  select
+    count(*) filter (where upper(ts.status_name) = 'WAITING'),
+    count(*) filter (where upper(ts.status_name) = 'SERVING'),
+    count(*) filter (where upper(ts.status_name) = 'ON_HOLD')
+    into v_waiting_count, v_serving_count, v_on_hold_count
+    from public.tokens as t
+    join public.token_status as ts on ts.status_id = t.status_id
+   where t.shop_id = p_shop_id
+     and t.date = current_date;
 
---     -- =========================================
---     -- CHANGE PASSWORD (Logged-in user)
---     -- =========================================
---     IF UPPER(TRIM(p_action)) = 'CHANGE' THEN
+  select avg(extract(epoch from (t.complete_time - t.start_time)) / 60.0)
+    into v_avg_service_min
+    from public.tokens as t
+    join public.token_status as ts on ts.status_id = t.status_id
+   where t.shop_id = p_shop_id
+     and upper(ts.status_name) = 'COMPLETED'
+     and t.start_time is not null
+     and t.complete_time is not null
+     and t.complete_time >= t.start_time
+     and t.complete_time >= now() - interval '30 days';
 
---         -- Only active users can change password
---         IF v_user_status IS DISTINCT FROM TRUE THEN
---             p_status_code := 'ERR_INACTIVE_USER';
---             p_status_message :=
---                 'Inactive users cannot change password. Use Forgot Password.';
---             RETURN;
---         END IF;
+  select coalesce(
+           jsonb_agg(
+             jsonb_build_object(
+               'serviceId', sv.service_id,
+               'name', sv.service_name,
+               'price', sv.price,
+               'estimatedTimeMin', sv.estimated_time_min
+             ) order by sv.service_name
+           ),
+           '[]'::jsonb
+         )
+    into v_services
+    from public.services as sv
+   where sv.shop_id = p_shop_id
+     and sv.is_active;
 
---         -- Old password is required
---         IF p_old_password IS NULL OR p_old_password = '' THEN
---             p_status_code := 'ERR_OLD_PASSWORD_REQUIRED';
---             p_status_message := 'Old password is required.';
---             RETURN;
---         END IF;
+  select coalesce(
+           jsonb_agg(
+             jsonb_build_object(
+               'tokenNumber', t.token_str,
+               'serviceName', sv.service_name,
+               'startedAt', t.start_time,
+               'estimatedDurationMin', coalesce(sv.estimated_time_min::numeric, v_avg_service_min),
+               'elapsedMin', case
+                 when t.start_time is null then null
+                 else greatest(0, floor(extract(epoch from (now() - t.start_time)) / 60.0)::integer)
+               end,
+               'remainingMin', case
+                 when t.start_time is null or coalesce(sv.estimated_time_min::numeric, v_avg_service_min) is null then null
+                 else ceil(
+                   greatest(
+                     0::numeric,
+                     coalesce(sv.estimated_time_min::numeric, v_avg_service_min) * 60
+                     - greatest(0::numeric, extract(epoch from (now() - t.start_time))::numeric)
+                   ) / 60
+                 )::integer
+               end,
+               'expectedFinishAt', case
+                 when t.start_time is null or coalesce(sv.estimated_time_min::numeric, v_avg_service_min) is null then null
+                 else t.start_time + (coalesce(sv.estimated_time_min::double precision, v_avg_service_min::double precision) * interval '1 minute')
+               end
+             ) order by t.start_time nulls last, t.token_number
+           ),
+           '[]'::jsonb
+         )
+    into v_currently_serving
+    from public.tokens as t
+    join public.token_status as ts on ts.status_id = t.status_id
+    left join public.services as sv on sv.service_id = t.service_id
+   where t.shop_id = p_shop_id
+     and t.date = current_date
+     and upper(ts.status_name) = 'SERVING';
 
---         -- Verify old password
---         IF v_current_hash IS NULL
---            OR crypt(p_old_password, v_current_hash) <> v_current_hash THEN
---             p_status_code := 'ERR_WRONG_PASSWORD';
---             p_status_message := 'Old password is incorrect.';
---             RETURN;
---         END IF;
-
---         -- Update password
---         UPDATE public.users
---         SET passwordhash = crypt(p_new_password, gen_salt('bf')),
---             updatedat = CURRENT_TIMESTAMP
---         WHERE userid = p_user_id;
-
---         p_status_code := 'SUCCESS';
---         p_status_message := 'Password changed successfully.';
-
---         RETURN;
---     END IF;
-
---     -- =========================================
---     -- RESET PASSWORD (Token already verified in Backend)
---     -- =========================================
---     IF UPPER(TRIM(p_action)) = 'RESET' THEN
-
---         -- Directly update password
---         UPDATE public.users
---         SET passwordhash = crypt(p_new_password, gen_salt('bf')),
---             updatedat = CURRENT_TIMESTAMP
---         WHERE userid = p_user_id;
-
---         p_status_code := 'SUCCESS';
---         p_status_message := 'Password reset successfully.';
-
---         RETURN;
---     END IF;
-
--- EXCEPTION
---     WHEN OTHERS THEN
---         p_status_code := 'ERR_SYSTEM';
---         p_status_message := 'An unexpected database error occurred.';
--- END;
--- $procedure$;
-
-
-
-CREATE OR REPLACE PROCEDURE public.sp_update_shop
-(
-    IN p_shop_id integer,
-    IN p_owner_id integer,
-    IN p_user_id integer,
-    IN p_shop_name character varying,
-    IN p_description character varying,
-    IN p_address character varying,
-    IN p_city character varying,
-    IN p_state character varying,
-    IN p_pincode character varying,
-    IN p_phone character varying,
-    IN p_email character varying,
-    IN p_shop_image character varying,
-    IN p_opening_time time without time zone,
-    IN p_closing_time time without time zone,
-    OUT p_status_code integer,
-    OUT p_status_message character varying
-)
-LANGUAGE plpgsql
-AS $procedure$
-DECLARE
-    v_opening_time time without time zone;
-    v_closing_time time without time zone;
-BEGIN
-
-    -- Initialize OUT parameters
-    p_status_code := 0;
-    p_status_message := NULL;
-
-    -- 1. Validate Shop ID
-    IF p_shop_id IS NULL OR p_shop_id <= 0 THEN
-        p_status_message := 'Invalid Shop ID.';
-        RETURN;
-    END IF;
-
-    -- 2. Validate Owner ID
-    IF p_owner_id IS NULL OR p_owner_id <= 0 THEN
-        p_status_message := 'Invalid Owner ID.';
-        RETURN;
-    END IF;
-
-    -- 3. Validate User ID
-    IF p_user_id IS NULL OR p_user_id <= 0 THEN
-        p_status_message := 'Invalid User ID.';
-        RETURN;
-    END IF;
-
-    -- 4. Check Owner Exists
-    IF NOT EXISTS (
-        SELECT 1 FROM public.owners WHERE ownerid = p_owner_id
-    ) THEN
-        p_status_message := 'Owner does not exist.';
-        RETURN;
-    END IF;
-
-    -- 5. Validate User Authorization
-    IF NOT EXISTS (
-        SELECT 1
-        FROM public.users
-        WHERE userid = p_user_id
-          AND status = TRUE
-          AND ownerid = p_owner_id
-          AND roleid = 2
-    ) THEN
-        p_status_message := 'User is invalid, inactive, or not authorized for this owner.';
-        RETURN;
-    END IF;
-
-    -- 6. Check Shop Exists and Belongs to Owner
-    IF NOT EXISTS (
-        SELECT 1
-        FROM public.shops
-        WHERE shopid = p_shop_id
-          AND ownerid = p_owner_id
-    ) THEN
-        p_status_message := 'Shop does not exist or does not belong to this owner.';
-        RETURN;
-    END IF;
-
-    -- 7. Validate Required Fields (Shop Name, Address, City)
-    IF p_shop_name IS NULL OR TRIM(p_shop_name) = '' THEN
-        p_status_message := 'Shop name is required.';
-        RETURN;
-    END IF;
-
-    IF p_address IS NULL OR TRIM(p_address) = '' THEN
-        p_status_message := 'Shop address is required.';
-        RETURN;
-    END IF;
-
-    IF p_city IS NULL OR TRIM(p_city) = '' THEN
-        p_status_message := 'City is required.';
-        RETURN;
-    END IF;
-
-    -- 8. Check Duplicate Shop Name for Same Owner
-    IF EXISTS (
-        SELECT 1
-        FROM public.shops
-        WHERE ownerid = p_owner_id
-          AND LOWER(TRIM(shopname)) = LOWER(TRIM(p_shop_name))
-          AND shopid <> p_shop_id
-    ) THEN
-        p_status_message := 'Another shop with this name already exists for this owner.';
-        RETURN;
-    END IF;
-
-    -- 9. Validate the resulting Opening & Closing Time
-    SELECT
-        COALESCE(p_opening_time, openingtime),
-        COALESCE(p_closing_time, closingtime)
-    INTO v_opening_time, v_closing_time
-    FROM public.shops
-    WHERE shopid = p_shop_id
-      AND ownerid = p_owner_id;
-
-    IF v_opening_time IS NOT NULL
-       AND v_closing_time IS NOT NULL
-       AND v_opening_time >= v_closing_time THEN
-        p_status_message := 'Closing time must be later than opening time.';
-        RETURN;
-    END IF;
-
-    -- 10. Update Shop Information (COALESCE prevents accidental NULL overwrite)
-    UPDATE public.shops
-    SET
-        shopname = TRIM(p_shop_name),
-        description = COALESCE(p_description, description),
-        address = TRIM(p_address),
-        city = TRIM(p_city),
-        state = COALESCE(p_state, state),
-        pincode = COALESCE(p_pincode, pincode),
-        phone = COALESCE(p_phone, phone),
-        email = COALESCE(p_email, email),
-        shopimage = COALESCE(p_shop_image, shopimage),
-        openingtime = COALESCE(p_opening_time, openingtime),
-        closingtime = COALESCE(p_closing_time, closingtime),
-        updatedat = CURRENT_TIMESTAMP
-    WHERE shopid = p_shop_id
-      AND ownerid = p_owner_id;
-
-    -- 11. Success Response
-    p_status_code := 1;
-    p_status_message := 'Shop updated successfully.';
-
-EXCEPTION
-    WHEN OTHERS THEN
-        p_status_code := -1;
-        p_status_message := SQLERRM;
-
-END;
-$procedure$;
-
-CREATE OR REPLACE PROCEDURE public.sp_create_shop
-(
-    IN p_owner_id integer,
-    IN p_user_id integer,
-    IN p_shop_name character varying,
-    IN p_description character varying,
-    IN p_address character varying,
-    IN p_city character varying,
-    IN p_state character varying,
-    IN p_pincode character varying,
-    IN p_phone character varying,
-    IN p_email character varying,
-    IN p_shop_image character varying,
-    IN p_opening_time time without time zone,
-    IN p_closing_time time without time zone,
-    OUT p_shop_id integer,
-    OUT p_status_code integer,
-    OUT p_status_message character varying
-)
-LANGUAGE plpgsql
-AS $procedure$
-BEGIN
-
-    -- Initialize output parameters
-    p_shop_id := NULL;
-    p_status_code := 0;
-    p_status_message := NULL;
-
-    -- 1. Validate Owner ID
-    IF p_owner_id IS NULL OR p_owner_id <= 0 THEN
-        p_status_code := 0;
-        p_status_message := 'Invalid Owner ID.';
-        RETURN;
-    END IF;
-
-    -- 2. Check Owner Exists
-    IF NOT EXISTS (
-        SELECT 1
-        FROM public.owners
-        WHERE ownerid = p_owner_id
-    ) THEN
-        p_status_code := 0;
-        p_status_message := 'Owner does not exist.';
-        RETURN;
-    END IF;
-
-    -- 3. Validate User ID
-    IF p_user_id IS NULL OR p_user_id <= 0 THEN
-        p_status_code := 0;
-        p_status_message := 'Invalid User ID.';
-        RETURN;
-    END IF;
-
-    -- 4. Check User Exists, Active and Belongs to Owner
-    IF NOT EXISTS (
-        SELECT 1
-        FROM public.users
-        WHERE userid = p_user_id
-          AND status = TRUE
-          AND ownerid = p_owner_id
-          AND roleid = 2
-    ) THEN
-        p_status_code := 0;
-        p_status_message := 'User is invalid, inactive, or does not belong to this owner.';
-        RETURN;
-    END IF;
-
-    -- 5. Validate Shop Name
-    IF p_shop_name IS NULL OR TRIM(p_shop_name) = '' THEN
-        p_status_code := 0;
-        p_status_message := 'Shop name is required.';
-        RETURN;
-    END IF;
-
-    -- 6. Validate Address
-    IF p_address IS NULL OR TRIM(p_address) = '' THEN
-        p_status_code := 0;
-        p_status_message := 'Shop address is required.';
-        RETURN;
-    END IF;
-
-    -- 7. Validate City
-    IF p_city IS NULL OR TRIM(p_city) = '' THEN
-        p_status_code := 0;
-        p_status_message := 'City is required.';
-        RETURN;
-    END IF;
-
-    -- 8. Check Duplicate Shop Name for Same Owner
-    IF EXISTS (
-        SELECT 1
-        FROM public.shops
-        WHERE ownerid = p_owner_id
-          AND LOWER(TRIM(shopname)) = LOWER(TRIM(p_shop_name))
-    ) THEN
-        p_status_code := 0;
-        p_status_message := 'A shop with this name already exists for this owner.';
-        RETURN;
-    END IF;
-
-    -- 9. Validate Opening & Closing Time
-    IF p_opening_time IS NOT NULL AND p_closing_time IS NOT NULL AND p_opening_time >= p_closing_time THEN
-        p_status_code := 0;
-        p_status_message := 'Closing time must be later than opening time.';
-        RETURN;
-    END IF;
-
-    -- 10. Insert New Shop
-    INSERT INTO public.shops
-    (
-        ownerid,
-        shopname,
-        description,
-        address,
-        city,
-        state,
-        pincode,
-        phone,
-        email,
-        shopimage,
-        openingtime,
-        closingtime,
-        isactive,
-        createdat,
-        updatedat
-    )
-    VALUES
-    (
-        p_owner_id,
-        TRIM(p_shop_name),
-        p_description,
-        TRIM(p_address),
-        TRIM(p_city),
-        p_state,
-        p_pincode,
-        p_phone,
-        p_email,
-        p_shop_image,
-        p_opening_time,
-        p_closing_time,
-        TRUE,
-        CURRENT_TIMESTAMP,
-        CURRENT_TIMESTAMP
-    )
-    RETURNING shopid INTO p_shop_id;
-
-    -- 11. Success Response
-    p_status_code := 1;
-    p_status_message := 'Shop created successfully.';
-
-EXCEPTION
-    WHEN OTHERS THEN
-        p_shop_id := NULL;
-        p_status_code := -1;
-        p_status_message := SQLERRM;
-
-END;
-$procedure$;
+  return jsonb_build_object(
+    'shop', jsonb_build_object(
+      'shopId', v_shop.shopid,
+      'name', v_shop.shopname,
+      'description', v_shop.description,
+      'address', v_shop.address,
+      'city', v_shop.city,
+      'state', v_shop.state,
+      'pincode', v_shop.pincode,
+      'phone', v_shop.phone,
+      'email', v_shop.email,
+      'image', v_shop.shopimage,
+      'operatingHours', v_shop.operating_hours,
+      'isActive', v_shop.isactive,
+      'queueOpen', coalesce(v_shop.isqueueopen, false)
+    ),
+    'capacity', jsonb_build_object(
+      'dailyMax', v_shop.maxdailytokens,
+      'issuedToday', v_issued_today,
+      'remainingToday', case
+        when v_shop.maxdailytokens is null then null
+        else greatest(0, v_shop.maxdailytokens::bigint - v_issued_today)
+      end,
+      'unlimited', v_shop.maxdailytokens is null,
+      'atCapacity', case
+        when v_shop.maxdailytokens is null then false
+        else v_issued_today >= v_shop.maxdailytokens
+      end
+    ),
+    'queue', jsonb_build_object(
+      'waitingCount', v_waiting_count,
+      'servingCount', v_serving_count,
+      'onHoldCount', v_on_hold_count,
+      'currentlyServing', v_currently_serving,
+      'shopAverageServiceMinLast30Days', case
+        when v_avg_service_min is null then null
+        else round(v_avg_service_min, 1)
+      end
+    ),
+    'services', v_services
+  );
+end;
