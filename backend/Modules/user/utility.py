@@ -1,4 +1,4 @@
-from .database import update_user_indb,join_queue_indb
+from .database import update_user_indb,join_queue_indb,fetch_active_shop_locations
 
 # Process user profile update
 def update_user(input:dict):
@@ -48,4 +48,23 @@ def join_queue(input: dict):
         "status": "failed",
         "error": response.get("error"),
         "message": response.get("message")
+    }
+
+
+
+
+
+
+def get_active_shop_locations_service():
+
+    locations = fetch_active_shop_locations()
+
+    return {
+        "status": "success",
+        "message": (
+            "Active shop locations fetched successfully"
+            if locations
+            else "No active shop locations found"
+        ),
+        "data": locations
     }

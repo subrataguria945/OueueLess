@@ -131,3 +131,46 @@ def join_queue_indb(user_id, shop_id, service_id):
     finally:
         if con:
             con.close()
+
+def fetch_active_shop_locations():
+
+    conn = None
+
+    try:
+        conn = get_connection()
+
+        with conn.cursor() as cur:
+
+            cur.execute(
+                "CALL public.sp_get_active_shop_locations(%s)",
+                ("location_cursor",)
+            )
+
+            cur.fetchone()
+
+            cur.execute("FETCH ALL FROM location_cursor")
+
+            rows = cur.fetchall()
+
+            locations = [
+                {
+                    "city": row[0],
+                    "pincode": str(row[1])
+                }
+                for row in rows
+            ]
+
+            cur.execute("CLOSE location_cursor")
+
+        conn.commit()
+
+        return locations
+
+    except Exception:
+        if conn:
+            conn.rollback()
+        raise
+
+    finally:
+        if conn:
+            conn.close()          

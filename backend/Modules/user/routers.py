@@ -1,8 +1,8 @@
-from fastapi import APIRouter , Depends
-from .models import UserLogin , RefreshTokenRequest , ForgetPassword, ChangePassword , ResetPassword , VerifyRegistrationOTP  , InitiateUserRegister , UserRegisterGoogle, UpdateUserRequest,JoinQueueRequest
+from fastapi import APIRouter , Depends,HTTPException
+from .models import ShopLocationResponse, UserLogin , RefreshTokenRequest , ForgetPassword, ChangePassword , ResetPassword , VerifyRegistrationOTP  , InitiateUserRegister , UserRegisterGoogle, UpdateUserRequest,JoinQueueRequest
 from Library.Authentication.utility import login_user as login , change_password as change_pass, initiate_register , veriy_and_register_user , manage_google_user , check_and_send_forget_password_link , reset_password as reset_pass , refresh_user_token
 from Library.Security.gatekeeper import require_active_user
-from Modules.user.utility import join_queue, update_user as update_user_details
+from Modules.user.utility import get_active_shop_locations_service, join_queue, update_user as update_user_details
 router = APIRouter()
 
 @router.post("/login")
@@ -69,3 +69,18 @@ def customer_join_queue(
     response = join_queue(payload)
 
     return response
+
+@router.get(
+    "/locations",
+    response_model=ShopLocationResponse
+)
+def get_active_shop_locations():
+
+    try:
+        return get_active_shop_locations_service()
+
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to fetch shop locations"
+        )  

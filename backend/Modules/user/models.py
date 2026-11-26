@@ -1,5 +1,6 @@
 from pydantic import BaseModel , EmailStr 
 from datetime import datetime
+from typing import List
 
 
 class UserLogin(BaseModel):
@@ -49,3 +50,13 @@ class UpdateUserRequest(BaseModel):
 class JoinQueueRequest(BaseModel):
     shop_id : int
     service_id : int
+
+class ShopLocation(BaseModel):
+    city: str
+    pincode: str
+
+
+class ShopLocationResponse(BaseModel):
+    status: str
+    message: str
+    data: List[ShopLocation]
