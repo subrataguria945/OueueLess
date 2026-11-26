@@ -78,3 +78,19 @@ class ShopDetail(BaseModel):
 class DeleteShopRequest(BaseModel):
     shop_id: int
 
+
+class ActiveShop(BaseModel):
+    shop_id: int
+    shop_name: str
+    description: str | None = None
+    address: str
+    city: str
+    state: str | None = None
+    pincode: str
+    phone: str | None = None
+    email: str | None = None
+    shop_image: str | None = None
+    is_active: bool
+    is_queue_open: bool
+    max_daily_tokens: int | None = None
+    operating_hours: dict | None = None

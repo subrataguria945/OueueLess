@@ -1,10 +1,6 @@
 from .database import delete_owner_indb, get_shops_details_from_db
 
 
-
-
-
-
 # Delete owner from database
 def delete_owner(input:dict):
     admin_id = input.get("admin_user_id")
@@ -25,4 +21,3 @@ def delete_owner(input:dict):
 
 def get_shop_details(owner_id: int, user_id: int):
     return get_shops_details_from_db(owner_id, user_id)
-  

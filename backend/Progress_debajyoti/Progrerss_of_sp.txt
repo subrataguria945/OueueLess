@@ -485,3 +485,81 @@ CALL public.sp_delete_shop
 * **Idempotency (একই রিকোয়েস্ট বারবার এলে):** যদি কোনো দোকান ইতিমধ্যেই নিষ্ক্রিয় (`isactive = FALSE`) অবস্থায় থাকে এবং ইউজার আবার সেটিকে ডিলিট করার রিকোয়েস্ট পাঠায়, তবে প্রসিডিউরটি `Shop is already inactive.` মেসেজ দিয়ে সেটি আটকে দেবে এবং `updatedat` টাইমস্ট্যাম্প অযথা পরিবর্তন করবে না।
 * **Cross-Owner Protection:** এক Owner যেন কোনোভাবেই অন্য Owner-এর `shopid` দিয়ে দোকান বন্ধ করতে না পারে, তার জন্য `WHERE shopid = p_shop_id AND ownerid = p_owner_id` কন্ডিশনটি কঠোরভাবে ব্যবহার করা হয়েছে।
 * **User ID Input Check (Optional Improvement):** `p_user_id` চেক করার আগে `IF p_user_id IS NULL OR p_user_id <= 0` কন্ডিশন যোগ করলে ইনভ্যালিড বা নেগেটিভ User ID দিলে আরও স্পষ্ট `'Invalid User ID.'` মেসেজ পাওয়া যাবে।
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+####`sp_get_active_shops_by_pincode` (Get Active Shops by Pincode Stored Procedure)
+
+## 1. SP-এর actual কাজটা কী?
+
+নির্দিষ্ট কোনো এলাকার **Pincode** অনুযায়ী সেই অঞ্চলে থাকা চালু (Active) দোকানগুলোর তালিকা ডেটাবেস থেকে খুঁজে বের করার জন্য এই Stored Procedure ব্যবহার করা হয়। ডেটা রিটার্ন করার আগে এটি নিচের ধাপগুলো যাচাই (Validate) করে নেয়:
+
+1. **Empty Pincode Check:** ইনপুট হিসেবে দেওয়া `p_pincode` ফাঁকা (`NULL` বা empty string) কি না তা চেক করে।
+2. **6-Digit Format Validation:** পিনকোডটি সঠিকভাবে **6 ডিজিটের সংখ্যা** (`^[0-9]{6}$`) কি না তা regex দিয়ে যাচাই করে।
+3. **Shop Existence Check:** ওই পিনকোডে অন্তত একটি সক্রিয় (`isactive = TRUE`) দোকান আছে কি না তা আগে চেক করে নেয়।
+4. **Retrieve Shop List:** দোকান থাকলে `active_shops_cursor` নামে একটি `REFCURSOR` ওপেন করে এবং `shopname`-এর বর্ণানুক্রমিক (Alphabetical - `ASC`) ক্রম অনুযায়ী দোকানগুলোর বিস্তারিত তথ্য রিটার্ন করে।
+5. সবশেষে সফলতার বার্তা হিসেবে `p_status_code = 1` এবং `p_status_message` সেট করে।
+
+---
+
+## 2. SP Calling Query
+
+যেহেতু এই প্রসিডিউরে `REFCURSOR` ব্যবহার করা হয়েছে, তাই SQL Editor-এ কার্সর থেকে ডেটা ফেচ (Fetch) করার জন্য এটিকে একটি `BEGIN ... COMMIT` ট্রানজ্যাকশন ব্লকের ভেতর কল করতে হয়:
+
+```sql
+BEGIN;
+
+CALL public.sp_get_active_shops_by_pincode
+(
+    '700016',   -- IN: p_pincode
+    NULL,       -- OUT: p_shop_details (REFCURSOR)
+    NULL,       -- OUT: p_status_code
+    NULL        -- OUT: p_status_message
+);
+
+-- Cursor থেকে ডেটা দেখার জন্য:
+FETCH ALL IN "active_shops_cursor";
+
+COMMIT;
+```
+
+---
+
+## 3. Inputs (IN Parameters)
+
+এই প্রসিডিউরে মাত্র **1টি Input Parameter** দিতে হয়:
+
+| Parameter | Data Type | সহজ বিবরণ (Description) | উদাহরণ (Example) |
+| :--- | :--- | :--- | :--- |
+| `p_pincode` | `VARCHAR` | যে এলাকার সক্রিয় দোকানগুলো খুঁজতে চান সেই এলাকার 6-ডিজিটের পিনকোড (Required) | `'700016'` |
+
+---
+
+## 4. Possible Output (OUT Parameters)
+
+আউটপুট হিসেবে মোট **3টি Parameter** পাওয়া যায়:
+
+| Parameter | Data Type | সহজ বিবরণ (Description) |
+| :--- | :--- | :--- |
+| `p_shop_details` | `REFCURSOR` | খুঁজে পাওয়া দোকানগুলোর তালিকা ধারণকারী কার্সর (`'active_shops_cursor'`) |
+| `p_status_code` | `INTEGER` | অপারেশনের রেজাল্ট কোড (`1` = Success, `0` = Validation Fail / Not Found, `-1` = DB Error) |
+| `p_status_message` | `VARCHAR` | অপারেশন সফল হলো না কেন ব্যর্থ হলো তার বিস্তারিত মেসেজ |
+
+### সম্ভাব্য আউটপুট পরিস্থিতি (Possible Output Scenarios)
+
+| Scenario | `p_shop_details` | `p_status_code` | `p_status_message` |
+| :--- | :--- | :--- | :--- |
+| **সফলভাবে দোকান পাওয়া গেলে** | Open Cursor (`active_shops_cursor`) | `1` | `Active shops retrieved successfully.` |
+| **Pincode ফাঁকা বা `NULL` দিলে** | Closed Cursor | `0` | `Pincode is required.` |
+| **Pincode 6 ডিজিটের না হলে বা অক্ষর থাকলে** | Closed Cursor | `0` | `Invalid pincode. Enter a valid 6-digit pincode.` |
+| **ওই পিনকোডে কোনো Active দোকান না থাকলে** | Closed Cursor | `0` | `No active shops found in this area.` |
+| **ডেটাবেস জনিত কোনো এরর হলে** | Closed Cursor | `-1` | `SQLERRM` *(ডেটাবেসের আসল এরর মেসেজ)* |
+
+---
+
+## 5. Any Critical Scenario (গুরুত্বপূর্ণ ও জটিল বিষয়সমূহ)
+
+* **Transaction Block Requirement (`REFCURSOR`):** PostgreSQL-এ `REFCURSOR` শুধুমাত্র একটি সক্রিয় ট্রানজ্যাকশনের ভেতরেই খোলা থাকে। তাই FastAPI (Python `psycopg2` / `asyncpg`) বা SQL Editor থেকে এই SP কল করলে অবশ্যই একই ট্রানজ্যাকশনের ভেতর `FETCH ALL IN "active_shops_cursor"` চালাতে হবে; ট্রানজ্যাকশন শেষ হয়ে গেলে কার্সরটি বন্ধ হয়ে যাবে।
+* **Unopened Cursor on Failure:** পিনকোড ভুল হলে বা কোনো দোকান না পাওয়া গেলে (`p_status_code = 0`) কার্সরটি ওপেন (`OPEN`) হয় না। তাই ব্যাকএন্ড কোডে আগে `p_status_code == 1` চেক করে তারপরই কার্সর থেকে ডেটা ফেচ করতে হবে, নাহলে `cursor "active_shops_cursor" does not exist` এরর আসবে।
+* **Schema Compatibility Check:** এই SP-এর `SELECT` কুয়েরিতে `isactive`, `isqueueopen`, `maxdailytokens`, এবং `operating_hours` কলামগুলো কল করা হয়েছে। যদি আপনার `shops` টেবিলে এগুলোর বদলে `status`, `openingtime`, বা `closingtime` নাম থাকে, তবে সেই অনুযায়ী কলামের নামগুলো আপডেট করে নিতে হবে।

@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status,Query
 
 from Library.Security.gatekeeper import require_active_user
 from .models import CreateShopRequest, DeleteShopRequest, UpdateShopRequest
-from .utility import create_shop, delete_shop, update_shop
+from .utility import create_shop, delete_shop, update_shop, get_active_shops
 
 router = APIRouter()
 
@@ -145,4 +145,54 @@ def delete_shop_route(
     raise HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail="Shop deactivation failed due to a database error.",
+    )
+@router.get("/activeshops-by-pincode")
+def get_active_shops_route(
+    pincode: str = Query(
+        ...,
+        min_length=6,
+        max_length=6,
+        pattern=r"^\d{6}$",
+        description="6-digit Indian pincode",
+    ),
+):
+    result = get_active_shops(pincode)
+
+    status_code = result["status_code"]
+    message = result["message"]
+
+    if status_code == 1:
+        return {
+            "status": "success",
+            "message": message,
+            "shops": result["shops"],
+        }
+
+    if status_code == 0:
+        if message == "Pincode is required.":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=message,
+            )
+
+        if message == "Invalid pincode. Enter a valid 6-digit pincode.":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=message,
+            )
+
+        if message == "Invalid shop status detected. Inactive shops cannot have an open queue.":
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=message,
+            )
+
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=message,
+        )
+
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail=message or "Unable to retrieve active shops.",
     )
