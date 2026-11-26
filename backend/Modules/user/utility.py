@@ -1,4 +1,4 @@
-from .database import update_user_indb, join_queue_indb
+from .database import update_user_indb, join_queue_indb, get_shop_by_id_indb
 
 # Process user profile update
 def update_user(input:dict):
@@ -48,3 +48,7 @@ def join_queue(input: dict):
         "error": response.get("error"),
         "message": response.get("message")
     }
+
+# Retrieve shop details by shop_id
+def get_shop_by_id(shop_id: int):
+    return get_shop_by_id_indb(shop_id)
